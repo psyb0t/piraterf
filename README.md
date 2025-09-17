@@ -103,6 +103,8 @@ Connect your fucking antenna to the Pi Zero:
 
 **⚠️ IMPORTANT**: The 75cm antenna is a fucking liability outdoors - your signal will travel way beyond your property and you'll be violating regulations. Stick to short wires for testing or build proper filtered antenna systems for serious use.
 
+**⚠️ USE A FUCKING LOW PASS FILTER!** The Pi GPIO outputs square waves which generate harmonics across the entire spectrum. Without proper filtering, you'll spray RF energy all over the fucking place and violate spurious emission regulations. Always use an appropriate low pass filter for your transmission frequency!
+
 ### 1. Initial Pi Setup and Configuration
 
 Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
@@ -347,16 +349,14 @@ Want to make this pirate ship even more badass?
 
 ## 📝 License
 
-This project is licensed under the terms specified in the `LICENSE` file.
+This project is licensed under WTFPL (Do What The Fuck You Want To Public License).
 
-## 🙏 Acknowledgments
+## 🔗 Dependencies
 
 - **[rpitx](https://github.com/F5OEO/rpitx)** - The legendary RF transmission library that makes this all possible
 - **[servicepack](https://github.com/psyb0t/servicepack)** - The framework that keeps this project organized and deployable
 - **[aichteeteapee](https://github.com/psyb0t/aichteeteapee)** - The HTTP server framework powering the web interface
 - **[gorpitx](https://github.com/psyb0t/gorpitx)** - Go wrapper for rpitx that makes RF transmission elegant
-- **Go community** - For building such a fucking excellent language
-- **Raspberry Pi Foundation** - For creating the perfect pirate ship hardware
 
 ---
 
