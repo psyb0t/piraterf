@@ -1,0 +1,15 @@
+.vscode
+.log
+__pycache__
+coverage.out
+coverage.html
+coverage.txt
+build
+scripts/.post-update-temp
+CLAUDE.md
+.env
+research_files
+.backup
+.tls
+.test
+uploads

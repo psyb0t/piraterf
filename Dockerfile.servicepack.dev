@@ -1,0 +1,25 @@
+# Development Dockerfile
+FROM golang:1.24.6-alpine
+
+# Install build dependencies
+RUN apk add --no-cache \
+    make \
+    gcc \
+    musl-dev \
+    bash
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Set env vars
+ENV ENV=dev
+ENV LOG_LEVEL=debug
+ENV LOG_FORMAT=text
+ENV LOG_CALLER=true
+ENV SERVICES_ENABLED=
+
+# Default command - shows available make targets
+CMD ["make", "help"]

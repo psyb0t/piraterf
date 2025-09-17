@@ -1,0 +1,4 @@
+.vscode
+coverage.*
+CLAUDE.md
+.test

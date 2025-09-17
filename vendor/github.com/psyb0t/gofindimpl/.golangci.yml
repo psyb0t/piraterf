@@ -1,0 +1,110 @@
+version: "2"
+linters:
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - err113
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - gosec
+    - gosmopolitan
+    - grouper
+    - importas
+    - interfacebloat
+    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - mnd
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl_v5
+    - zerologlint
+  settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/sirupsen/logrus
+            - github.com/stretchr/testify
+            - github.com/psyb0t
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+    paths:
+      - _test\.go$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - _test\.go$

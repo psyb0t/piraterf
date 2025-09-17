@@ -1,0 +1,9 @@
+.vscode
+test
+.env
+coverage.*
+__pycache__
+*.out
+CLAUDE.md
+.test*
+research_files

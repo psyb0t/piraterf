@@ -1,0 +1,44 @@
+# Development Dockerfile for PIrateRF
+FROM golang:1.24.6-alpine
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    make \
+    bash \
+    gcc \
+    musl-dev \
+    sox \
+    ffmpeg \
+    imagemagick
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Env variables
+ENV ENV=dev
+ENV LOG_LEVEL=debug
+ENV LOG_FORMAT=text
+ENV LOG_CALLER=true
+ENV SERVICES_ENABLED=
+
+ENV GORPITX_PATH=/home/fucker/rpitx
+ENV HTTP_SERVER_LISTENADDRESS=0.0.0.0:8080
+ENV HTTP_SERVER_TLSENABLED=true
+ENV HTTP_SERVER_TLSLISTENADDRESS=0.0.0.0:8443
+ENV HTTP_SERVER_TLSCERTFILE=./.tls/cert.pem
+ENV HTTP_SERVER_TLSKEYFILE=./.tls/key.pem
+
+ENV PIRATERF_HTMLDIR=./html
+ENV PIRATERF_STATICDIR=./static
+ENV PIRATERF_FILESDIR=./files
+ENV PIRATERF_UPLOADDIR=./uploads
+
+# Expose ports - HTTP and HTTPS
+EXPOSE 8080 8443
+
+# Default command - shows available make targets
+CMD ["make", "help"]
