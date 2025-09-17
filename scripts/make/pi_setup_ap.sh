@@ -5,6 +5,10 @@
 
 set -e
 
+# Source Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../pi_config.sh"
+
 # Check if running as root, if not, re-run with sudo
 if [ "$EUID" -ne 0 ]; then
     echo "🔐 Need root privileges, re-running with sudo..."

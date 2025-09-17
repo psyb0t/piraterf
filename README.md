@@ -214,8 +214,7 @@ make uninstall          # Remove PIrateRF from Pi
 ### Morse Code (CW)
 
 - **Text to Morse**: Automatic conversion with configurable WPM (words per minute)
-- **Custom Messages**: Send any text as Morse code
-- **RF Transmission**: Transmit via radio frequency (not audio beeps)
+- **CW Transmission**: Continuous wave RF transmission
 
 ### Tune Mode
 
@@ -229,20 +228,8 @@ make uninstall          # Remove PIrateRF from Pi
 
 ## 🌐 Network Configuration
 
-The Pi automatically configures itself as a **standalone WiFi access point**:
+The Pi automatically configures itself as a **standalone WiFi access point**. Access point settings (SSID, password, IP ranges, etc.) are configured in `scripts/make/pi_setup_ap.sh`.
 
-- **SSID**: "🏴‍☠️📡"
-- **Password**: "FUCKER!!!"
-- **IP Range**: 192.168.4.1/24 (Pi is at 192.168.4.1)
-- **DHCP**: Automatic IP assignment for connected devices
-- **Web Interface**: `https://piraterf.local` (port 443) - or whatever hostname you configured
-
-## 🔒 Security Features
-
-- **Self-signed TLS**: Auto-generated certificates for HTTPS
-- **Isolated Network**: Pi runs its own WiFi network
-- **File Upload Security**: Secure multipart upload with validation
-- **No Authentication**: Designed for standalone/isolated use (add your own if needed)
 
 ## 📁 Project Structure
 
@@ -306,14 +293,7 @@ The Pi connection settings are defined in `scripts/pi_config.sh` (configured in 
 
 ### Service Configuration
 
-The PIrateRF service uses environment variables for configuration:
-
-```bash
-PIRATERF_HTMLDIR=/path/to/html       # Web templates directory
-PIRATERF_STATICDIR=/path/to/static   # Static assets directory
-PIRATERF_FILESDIR=/path/to/files     # Audio/image file storage
-PIRATERF_UPLOADDIR=/path/to/uploads  # Upload staging directory
-```
+The PIrateRF service uses environment variables for configuration. See `scripts/piraterf.sh` for all available configuration options and their default values.
 
 ## 🎵 Audio Processing Pipeline
 
