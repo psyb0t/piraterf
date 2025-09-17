@@ -80,17 +80,20 @@ This will get your Pi Zero connected via USB with SSH access so you can actually
 1. **Set connection to shared**: In Ubuntu Network Settings, find the USB connection (usually shows as `usb0` or similar), click on it, go to IPv4 settings, and change the method from "Link-Local Only" to "Shared to other computers". This is fucking critical!
 
 2. **Stop Docker services** (they fuck with networking):
+
 ```bash
 sudo systemctl stop docker.socket
 sudo systemctl stop docker
 ```
 
 3. **Restart NetworkManager**:
+
 ```bash
 sudo systemctl restart NetworkManager
 ```
 
 4. **Configure iptables rules** (replace `usb0` and `enp5s0` with your actual interfaces):
+
 ```bash
 sudo iptables -A INPUT -i lo -j ACCEPT
 sudo iptables -A OUTPUT -o lo -j ACCEPT
@@ -115,6 +118,7 @@ Connect your fucking antenna to the Pi Zero:
 **GPIO Connection**: Connect your antenna cable to **GPIO 4 (Physical Pin 7)** on the Pi Zero W. This is your RF output pin.
 
 **Antenna Options**:
+
 1. **Short wire** (~10-20cm): Best for indoor testing and learning. Keeps power low and legal.
 2. **75cm wire**: Longer range but too much signal leaks outside your property - use this **ONLY indoors**
 3. **Proper antenna with low pass filter**: Build or buy a proper antenna system with SMA connector and appropriate low pass filter for your frequency
@@ -134,6 +138,7 @@ cd piraterf
 ```
 
 Edit scripts/pi_config.sh and modify these values to match your Pi:
+
 ```bash
 export PI_USER="fucker"              # Pi username
 export PI_HOST="piraterf.local"      # Pi hostname/IP
@@ -248,8 +253,7 @@ make uninstall          # Remove PIrateRF from Pi
 
 ## 🌐 Network Configuration
 
-The Pi automatically configures itself as a **standalone WiFi access point**. Access point settings (SSID, password, IP ranges, etc.) are configured in `scripts/make/pi_setup_ap.sh`.
-
+The `make pi-setup-ap` command configures the Pi as a **standalone WiFi access point**. Access point settings (SSID, password, IP ranges, etc.) are configured in `scripts/make/pi_setup_ap.sh`.
 
 ## 📁 Project Structure
 

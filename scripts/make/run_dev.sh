@@ -53,6 +53,21 @@ docker run -i --rm \
     -v "$(pwd)/uploads:/app/uploads" \
     -v "$(pwd)/files:/app/files" \
     -v "$(pwd)/.tls:/app/.tls" \
+    -e ENV=dev \
+    -e LOG_LEVEL=debug \
+    -e LOG_FORMAT=text \
+    -e LOG_CALLER=true \
+    -e SERVICES_ENABLED= \
+    -e GORPITX_PATH=/home/$PI_USER/rpitx \
+    -e HTTP_SERVER_LISTENADDRESS=0.0.0.0:8080 \
+    -e HTTP_SERVER_TLSENABLED=true \
+    -e HTTP_SERVER_TLSLISTENADDRESS=0.0.0.0:8443 \
+    -e HTTP_SERVER_TLSCERTFILE=./.tls/cert.pem \
+    -e HTTP_SERVER_TLSKEYFILE=./.tls/key.pem \
+    -e PIRATERF_HTMLDIR=./html \
+    -e PIRATERF_STATICDIR=./static \
+    -e PIRATERF_FILESDIR=./files \
+    -e PIRATERF_UPLOADDIR=./uploads \
     "$APP_NAME-dev" sh -c "CGO_ENABLED=1 go build -race -o ./build/$APP_NAME ./cmd/... && ./build/$APP_NAME run"
 
 success "✅ Development container fucking finished"
