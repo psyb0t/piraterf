@@ -71,6 +71,10 @@ func (m *mockServiceWithError) Stop(_ context.Context) error {
 
 // createTestApp creates an app with mock services instead of real ones.
 func createTestApp() *App {
+	// Reset and clear the service manager to avoid loading real services
+	servicemanager.ResetInstance()
+	servicemanager.GetInstance().ClearServices()
+
 	app := &App{
 		doneCh:         make(chan struct{}),
 		serviceManager: servicemanager.GetInstance(),
@@ -166,6 +170,9 @@ func TestApp_Run(t *testing.T) {
 			runFunc: func(t *testing.T, _ *App, ctx context.Context) {
 				t.Helper()
 				// Create app with failing service
+				servicemanager.ResetInstance()
+				servicemanager.GetInstance().ClearServices()
+
 				failingApp := &App{
 					doneCh:         make(chan struct{}),
 					serviceManager: servicemanager.GetInstance(),
@@ -222,7 +229,11 @@ func TestApp_GetInstance(t *testing.T) {
 	resetInstance()
 
 	t.Run("successful app instance creation", func(t *testing.T) {
+		// First call should create the instance
 		app := GetInstance()
+		// Clear any real services that may have been loaded
+		app.serviceManager.ClearServices()
+
 		assert.NotNil(t, app)
 		assert.NotNil(t, app.serviceManager)
 		assert.NotNil(t, app.doneCh)
