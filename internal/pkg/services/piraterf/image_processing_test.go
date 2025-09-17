@@ -1,6 +1,7 @@
 package piraterf
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,62 +13,242 @@ import (
 func TestMoveFile(t *testing.T) {
 	tests := []struct {
 		name        string
-		setupFunc   func(t *testing.T) (string, string)
+		setupFiles  func(tempDir string) (source, dest string)
 		expectError bool
-		validate    func(t *testing.T, sourcePath, destPath string)
+		validate    func(t *testing.T, source, dest string)
 	}{
 		{
 			name: "successful file move",
-			setupFunc: func(t *testing.T) (string, string) {
-				tempDir := t.TempDir()
-				sourceFile := filepath.Join(tempDir, "source.txt")
-				destFile := filepath.Join(tempDir, "dest.txt")
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				dest = filepath.Join(tempDir, "dest.txt")
 
-				// Create source file
-				err := os.WriteFile(sourceFile, []byte("test content"), 0644)
+				err := os.WriteFile(source, []byte("test content"), 0644)
 				require.NoError(t, err)
 
-				return sourceFile, destFile
+				return source, dest
 			},
 			expectError: false,
-			validate: func(t *testing.T, sourcePath, destPath string) {
+			validate: func(t *testing.T, source, dest string) {
 				// Source should not exist
-				_, err := os.Stat(sourcePath)
-				assert.True(t, os.IsNotExist(err))
+				_, err := os.Stat(source)
+				assert.True(t, os.IsNotExist(err), "Source file should be deleted")
 
 				// Destination should exist with same content
-				content, err := os.ReadFile(destPath)
+				content, err := os.ReadFile(dest)
 				assert.NoError(t, err)
 				assert.Equal(t, "test content", string(content))
 			},
 		},
 		{
-			name: "move non-existent file",
-			setupFunc: func(t *testing.T) (string, string) {
-				tempDir := t.TempDir()
-				sourceFile := filepath.Join(tempDir, "nonexistent.txt")
-				destFile := filepath.Join(tempDir, "dest.txt")
+			name: "move to different directory",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				destDir := filepath.Join(tempDir, "subdir")
+				err := os.MkdirAll(destDir, 0755)
+				require.NoError(t, err)
+				dest = filepath.Join(destDir, "moved.txt")
 
-				return sourceFile, destFile
+				err = os.WriteFile(source, []byte("move me"), 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: false,
+			validate: func(t *testing.T, source, dest string) {
+				// Verify file was moved
+				_, err := os.Stat(source)
+				assert.True(t, os.IsNotExist(err))
+
+				content, err := os.ReadFile(dest)
+				assert.NoError(t, err)
+				assert.Equal(t, "move me", string(content))
+			},
+		},
+		{
+			name: "move non-existent file",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "nonexistent.txt")
+				dest = filepath.Join(tempDir, "dest.txt")
+				return source, dest
 			},
 			expectError: true,
+			validate: func(t *testing.T, source, dest string) {
+				// Destination should not exist
+				_, err := os.Stat(dest)
+				assert.True(t, os.IsNotExist(err))
+			},
+		},
+		{
+			name: "move to existing file (overwrite)",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				dest = filepath.Join(tempDir, "existing.txt")
+
+				err := os.WriteFile(source, []byte("new content"), 0644)
+				require.NoError(t, err)
+
+				err = os.WriteFile(dest, []byte("old content"), 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: false,
+			validate: func(t *testing.T, source, dest string) {
+				// Source should not exist
+				_, err := os.Stat(source)
+				assert.True(t, os.IsNotExist(err))
+
+				// Destination should have new content
+				content, err := os.ReadFile(dest)
+				assert.NoError(t, err)
+				assert.Equal(t, "new content", string(content))
+			},
+		},
+		{
+			name: "move to directory without write permissions",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				restrictedDir := filepath.Join(tempDir, "restricted")
+				err := os.MkdirAll(restrictedDir, 0555) // Read-only directory
+				require.NoError(t, err)
+				dest = filepath.Join(restrictedDir, "dest.txt")
+
+				err = os.WriteFile(source, []byte("test"), 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: true,
+			validate: func(t *testing.T, source, dest string) {
+				// Source should still exist
+				_, err := os.Stat(source)
+				assert.NoError(t, err)
+
+				// Destination should not exist
+				_, err = os.Stat(dest)
+				assert.True(t, os.IsNotExist(err))
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sourcePath, destPath := tt.setupFunc(t)
+			tempDir := t.TempDir()
+			source, dest := tt.setupFiles(tempDir)
 
-			err := moveFile(sourcePath, destPath)
+			err := moveFile(source, dest)
 
 			if tt.expectError {
 				assert.Error(t, err)
-				return
+			} else {
+				assert.NoError(t, err)
 			}
 
-			assert.NoError(t, err)
 			if tt.validate != nil {
-				tt.validate(t, sourcePath, destPath)
+				tt.validate(t, source, dest)
+			}
+		})
+	}
+}
+
+func TestImageConversionPostprocessor(t *testing.T) {
+	tests := []struct {
+		name         string
+		inputResponse map[string]any
+		setupFiles   func(tempDir string) string
+		expectError  bool
+		expectConversion bool
+	}{
+		{
+			name: "png image conversion fails without convert",
+			inputResponse: map[string]any{
+				"path": "image.png",
+				"name": "image.png",
+			},
+			setupFiles: func(tempDir string) string {
+				inputPath := filepath.Join(tempDir, "image.png")
+				err := os.WriteFile(inputPath, []byte("fake png"), 0644)
+				require.NoError(t, err)
+				return inputPath
+			},
+			expectError: true, // Expected since we don't have ImageMagick convert
+			expectConversion: false,
+		},
+		{
+			name: "jpg image conversion fails without convert",
+			inputResponse: map[string]any{
+				"path": "photo.jpg",
+				"name": "photo.jpg",
+			},
+			setupFiles: func(tempDir string) string {
+				inputPath := filepath.Join(tempDir, "photo.jpg")
+				err := os.WriteFile(inputPath, []byte("fake jpg"), 0644)
+				require.NoError(t, err)
+				return inputPath
+			},
+			expectError: true, // Expected since we don't have ImageMagick convert
+			expectConversion: false,
+		},
+		{
+			name: "non-image file ignored",
+			inputResponse: map[string]any{
+				"path": "document.txt",
+				"name": "document.txt",
+			},
+			setupFiles: func(tempDir string) string {
+				inputPath := filepath.Join(tempDir, "document.txt")
+				err := os.WriteFile(inputPath, []byte("text content"), 0644)
+				require.NoError(t, err)
+				return inputPath
+			},
+			expectError: false,
+			expectConversion: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+
+			// Create required directory structure
+			imagesUploadsDir := filepath.Join(tempDir, "images", "uploads")
+			err := os.MkdirAll(imagesUploadsDir, 0755)
+			require.NoError(t, err)
+
+			service := &PIrateRF{
+				serviceCtx: context.Background(),
+				config: Config{
+					FilesDir: tempDir,
+				},
+			}
+
+			// Set up files if needed
+			if tt.setupFiles != nil {
+				inputPath := tt.setupFiles(tempDir)
+				if inputPath != "" {
+					tt.inputResponse["path"] = inputPath
+				}
+			}
+
+			result, err := service.imageConversionPostprocessor(tt.inputResponse)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+
+				// Check if conversion happened as expected
+				converted, hasConverted := result["converted"].(bool)
+				if tt.expectConversion {
+					assert.True(t, hasConverted, "Result should have 'converted' key")
+					assert.True(t, converted, "File should be marked as converted")
+				} else {
+					// Either no converted key or converted=false
+					if hasConverted {
+						assert.False(t, converted, "File should not be marked as converted")
+					}
+				}
 			}
 		})
 	}
@@ -76,61 +257,148 @@ func TestMoveFile(t *testing.T) {
 func TestCopyFileStream(t *testing.T) {
 	tests := []struct {
 		name        string
-		setupFunc   func(t *testing.T) (string, string)
+		setupFiles  func(tempDir string) (source, dest string)
 		expectError bool
-		validate    func(t *testing.T, sourcePath, destPath string)
+		validate    func(t *testing.T, source, dest string)
 	}{
 		{
 			name: "successful file copy",
-			setupFunc: func(t *testing.T) (string, string) {
-				tempDir := t.TempDir()
-				sourceFile := filepath.Join(tempDir, "source.txt")
-				destFile := filepath.Join(tempDir, "dest.txt")
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				dest = filepath.Join(tempDir, "dest.txt")
 
-				// Create source file
-				err := os.WriteFile(sourceFile, []byte("test content for copy"), 0644)
+				err := os.WriteFile(source, []byte("copy this content"), 0644)
 				require.NoError(t, err)
 
-				return sourceFile, destFile
+				return source, dest
 			},
 			expectError: false,
-			validate: func(t *testing.T, sourcePath, destPath string) {
+			validate: func(t *testing.T, source, dest string) {
 				// Both files should exist
-				_, err := os.Stat(sourcePath)
+				_, err := os.Stat(source)
 				assert.NoError(t, err)
 
-				content, err := os.ReadFile(destPath)
+				content, err := os.ReadFile(dest)
 				assert.NoError(t, err)
-				assert.Equal(t, "test content for copy", string(content))
+				assert.Equal(t, "copy this content", string(content))
+
+				// Source should still exist with same content
+				sourceContent, err := os.ReadFile(source)
+				assert.NoError(t, err)
+				assert.Equal(t, "copy this content", string(sourceContent))
+			},
+		},
+		{
+			name: "copy large file",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "large.txt")
+				dest = filepath.Join(tempDir, "large_copy.txt")
+
+				// Create a larger file to test streaming
+				largeContent := make([]byte, 10240) // 10KB
+				for i := range largeContent {
+					largeContent[i] = byte(i % 256)
+				}
+
+				err := os.WriteFile(source, largeContent, 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: false,
+			validate: func(t *testing.T, source, dest string) {
+				sourceContent, err := os.ReadFile(source)
+				assert.NoError(t, err)
+
+				destContent, err := os.ReadFile(dest)
+				assert.NoError(t, err)
+
+				assert.Equal(t, sourceContent, destContent)
+				assert.Equal(t, 10240, len(destContent))
 			},
 		},
 		{
 			name: "copy non-existent file",
-			setupFunc: func(t *testing.T) (string, string) {
-				tempDir := t.TempDir()
-				sourceFile := filepath.Join(tempDir, "nonexistent.txt")
-				destFile := filepath.Join(tempDir, "dest.txt")
-
-				return sourceFile, destFile
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "nonexistent.txt")
+				dest = filepath.Join(tempDir, "dest.txt")
+				return source, dest
 			},
 			expectError: true,
+			validate: func(t *testing.T, source, dest string) {
+				// Destination should not exist
+				_, err := os.Stat(dest)
+				assert.True(t, os.IsNotExist(err))
+			},
+		},
+		{
+			name: "copy to existing file (overwrite)",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				dest = filepath.Join(tempDir, "existing.txt")
+
+				err := os.WriteFile(source, []byte("new content"), 0644)
+				require.NoError(t, err)
+
+				err = os.WriteFile(dest, []byte("old content"), 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: false,
+			validate: func(t *testing.T, source, dest string) {
+				// Both should exist
+				_, err := os.Stat(source)
+				assert.NoError(t, err)
+
+				// Destination should have new content
+				content, err := os.ReadFile(dest)
+				assert.NoError(t, err)
+				assert.Equal(t, "new content", string(content))
+			},
+		},
+		{
+			name: "copy to directory without write permissions",
+			setupFiles: func(tempDir string) (source, dest string) {
+				source = filepath.Join(tempDir, "source.txt")
+				restrictedDir := filepath.Join(tempDir, "restricted")
+				err := os.MkdirAll(restrictedDir, 0555) // Read-only directory
+				require.NoError(t, err)
+				dest = filepath.Join(restrictedDir, "dest.txt")
+
+				err = os.WriteFile(source, []byte("test"), 0644)
+				require.NoError(t, err)
+
+				return source, dest
+			},
+			expectError: true,
+			validate: func(t *testing.T, source, dest string) {
+				// Source should still exist
+				_, err := os.Stat(source)
+				assert.NoError(t, err)
+
+				// Destination should not exist
+				_, err = os.Stat(dest)
+				assert.True(t, os.IsNotExist(err))
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sourcePath, destPath := tt.setupFunc(t)
+			tempDir := t.TempDir()
+			source, dest := tt.setupFiles(tempDir)
 
-			err := copyFileStream(sourcePath, destPath)
+			err := copyFileStream(source, dest)
 
 			if tt.expectError {
 				assert.Error(t, err)
-				return
+			} else {
+				assert.NoError(t, err)
 			}
 
-			assert.NoError(t, err)
 			if tt.validate != nil {
-				tt.validate(t, sourcePath, destPath)
+				tt.validate(t, source, dest)
 			}
 		})
 	}

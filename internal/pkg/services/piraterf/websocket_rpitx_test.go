@@ -384,3 +384,171 @@ func TestProcessAudioModifications(t *testing.T) {
 		assert.JSONEq(t, string(argsJSON), string(finalArgs), "Should return original args")
 	})
 }
+
+func TestProcessImageModifications(t *testing.T) {
+	tests := []struct {
+		name        string
+		args        any // Changed to any to handle both map[string]any and string
+		setupFiles  func(tempDir string) string
+		expectError bool
+		checkResult func(t *testing.T, originalArgs, result json.RawMessage, tempDir string)
+	}{
+		{
+			name: "valid image file conversion",
+			args: map[string]any{
+				"pictureFile": "", // Will be set in test
+				"frequency":   88.0,
+			},
+			setupFiles: func(tempDir string) string {
+				// Create an image file to convert
+				imagePath := filepath.Join(tempDir, "test_image.png")
+				err := os.WriteFile(imagePath, []byte("fake png content"), 0644)
+				require.NoError(t, err)
+				return imagePath
+			},
+			expectError: true, // Expected since ImageMagick convert won't be available
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// Since ImageMagick won't be available, we expect the original args back
+				assert.Equal(t, originalArgs, result)
+			},
+		},
+		{
+			name: "missing pictureFile field",
+			args: map[string]any{
+				"frequency": 88.0,
+			},
+			setupFiles: func(tempDir string) string {
+				return ""
+			},
+			expectError: false,
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// Should return original args unchanged
+				assert.Equal(t, originalArgs, result)
+			},
+		},
+		{
+			name: "empty pictureFile",
+			args: map[string]any{
+				"pictureFile": "",
+				"frequency":   88.0,
+			},
+			setupFiles: func(tempDir string) string {
+				return ""
+			},
+			expectError: false,
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// Should return original args unchanged
+				assert.Equal(t, originalArgs, result)
+			},
+		},
+		{
+			name: "invalid args format",
+			args: "invalid json",
+			setupFiles: func(tempDir string) string {
+				return ""
+			},
+			expectError: true,
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// Should return original args
+				assert.Equal(t, originalArgs, result)
+			},
+		},
+		{
+			name: "non-string pictureFile",
+			args: map[string]any{
+				"pictureFile": 123, // Invalid type
+				"frequency":   88.0,
+			},
+			setupFiles: func(tempDir string) string {
+				return ""
+			},
+			expectError: false,
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// Should return original args unchanged
+				assert.Equal(t, originalArgs, result)
+			},
+		},
+		{
+			name: "already YUV format file",
+			args: map[string]any{
+				"pictureFile": "", // Will be set to .Y file
+				"frequency":   88.0,
+			},
+			setupFiles: func(tempDir string) string {
+				// Create directory structure
+				imagesDir := filepath.Join(tempDir, "images", "uploads")
+				err := os.MkdirAll(imagesDir, 0755)
+				require.NoError(t, err)
+
+				// Create a .Y file
+				yFilePath := filepath.Join(imagesDir, "test.Y")
+				err = os.WriteFile(yFilePath, []byte("fake yuv content"), 0644)
+				require.NoError(t, err)
+				return yFilePath
+			},
+			expectError: false,
+			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
+				// For .Y files, the path should remain unchanged
+				var originalMap, resultMap map[string]any
+				err := json.Unmarshal(originalArgs, &originalMap)
+				require.NoError(t, err)
+				err = json.Unmarshal(result, &resultMap)
+				require.NoError(t, err)
+
+				// The pictureFile should be the same since it's already in .Y format
+				assert.Equal(t, originalMap["pictureFile"], resultMap["pictureFile"])
+				assert.Equal(t, originalMap["frequency"], resultMap["frequency"])
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+
+			// Create required directory structure
+			imagesUploadsDir := filepath.Join(tempDir, "images", "uploads")
+			err := os.MkdirAll(imagesUploadsDir, 0755)
+			require.NoError(t, err)
+
+			service := &PIrateRF{
+				serviceCtx: context.Background(),
+				config: Config{
+					FilesDir: tempDir,
+				},
+			}
+
+			// Setup files and update args if needed
+			filePath := ""
+			if tt.setupFiles != nil {
+				filePath = tt.setupFiles(tempDir)
+				if filePath != "" {
+					if argsMap, ok := tt.args.(map[string]any); ok {
+						argsMap["pictureFile"] = filePath
+					}
+				}
+			}
+
+			// Marshal args to JSON
+			originalArgs, err := json.Marshal(tt.args)
+			require.NoError(t, err)
+
+			// Create logger
+			logger := logrus.WithField("test", tt.name)
+
+			// Call the function
+			result, err := service.processImageModifications(originalArgs, logger)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			// Run custom checks
+			if tt.checkResult != nil {
+				tt.checkResult(t, originalArgs, result, tempDir)
+			}
+		})
+	}
+}

@@ -2,6 +2,7 @@ package piraterf
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -9,9 +10,15 @@ import (
 	"github.com/psyb0t/common-go/env"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/gorpitx"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	// Suppress debug logs in tests
+	logrus.SetLevel(logrus.WarnLevel)
+}
 
 func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	// Set ENV=dev to avoid root check
@@ -208,4 +215,207 @@ func TestExecutionManager_IsExpectedTermination(t *testing.T) {
 			assert.Equal(t, tt.expected, result, "isExpectedTermination should return %v for %s", tt.expected, tt.name)
 		})
 	}
+}
+
+func TestExecutionManager_StartExecution(t *testing.T) {
+	// Set ENV=dev to avoid root check
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	tests := []struct {
+		name          string
+		initialState  executionState
+		moduleName    gorpitx.ModuleName
+		args          json.RawMessage
+		timeout       int
+		expectError   bool
+		expectedState executionState
+	}{
+		{
+			name:          "start with invalid args returns to idle",
+			initialState:  executionStateIdle,
+			moduleName:    gorpitx.ModuleNamePIFMRDS,
+			args:          json.RawMessage(`{"freq": 88.0}`), // Missing required audio field
+			timeout:       10,
+			expectError:   false,
+			expectedState: executionStateIdle, // Returns to idle after validation failure
+		},
+		{
+			name:          "start while already executing",
+			initialState:  executionStateExecuting,
+			moduleName:    gorpitx.ModuleNamePIFMRDS,
+			args:          json.RawMessage(`{"freq": 88.0}`),
+			timeout:       10,
+			expectError:   false, // Function returns nil but broadcasts error
+			expectedState: executionStateExecuting, // State remains unchanged
+		},
+		{
+			name:          "start while stopping",
+			initialState:  executionStateStopping,
+			moduleName:    gorpitx.ModuleNamePIFMRDS,
+			args:          json.RawMessage(`{"freq": 88.0}`),
+			timeout:       10,
+			expectError:   false, // Function returns nil but broadcasts error
+			expectedState: executionStateStopping, // State remains unchanged
+		},
+		{
+			name:          "start with invalid file returns to idle",
+			initialState:  executionStateIdle,
+			moduleName:    gorpitx.ModuleNameSPECTRUMPAINT,
+			args:          json.RawMessage(`{"pictureFile": "/path/to/image.png"}`), // File doesn't exist
+			timeout:       0,
+			expectError:   false,
+			expectedState: executionStateIdle, // Returns to idle after validation failure
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hub := websocket.NewHub("test")
+			rpitx := gorpitx.GetInstance()
+			em := newExecutionManager(rpitx, hub)
+
+			// Set initial state
+			em.setState(tt.initialState)
+
+			// Create a mock client
+			client := &websocket.Client{}
+
+			// Call startExecution
+			err := em.startExecution(
+				context.Background(),
+				tt.moduleName,
+				tt.args,
+				tt.timeout,
+				client,
+				nil, // callback
+			)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			// Give goroutine a moment to start - execution validation might take time
+			time.Sleep(50 * time.Millisecond)
+
+			// Check final state
+			finalState := executionState(em.state.Load())
+			if tt.expectedState == executionStateExecuting && finalState != executionStateExecuting {
+				// If we expected executing but didn't get it, wait a bit longer for async operations
+				time.Sleep(100 * time.Millisecond)
+				finalState = executionState(em.state.Load())
+			}
+			assert.Equal(t, tt.expectedState, finalState, "Final state should match expected")
+
+			// Cleanup - stop any started execution
+			if finalState == executionStateExecuting {
+				em.stopExecution(client)
+				// Wait for stop to complete
+				time.Sleep(100 * time.Millisecond)
+			}
+
+			hub.Close()
+		})
+	}
+}
+
+func TestExecutionManager_StopExecution(t *testing.T) {
+	// Set ENV=dev to avoid root check
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	tests := []struct {
+		name          string
+		initialState  executionState
+		expectError   bool
+		expectedState executionState
+	}{
+		{
+			name:          "stop when idle (idempotent)",
+			initialState:  executionStateIdle,
+			expectError:   false,
+			expectedState: executionStateIdle,
+		},
+		{
+			name:          "stop when executing",
+			initialState:  executionStateExecuting,
+			expectError:   false,
+			expectedState: executionStateIdle,
+		},
+		{
+			name:          "stop when already stopping (idempotent)",
+			initialState:  executionStateStopping,
+			expectError:   false,
+			expectedState: executionStateStopping,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hub := websocket.NewHub("test")
+			rpitx := gorpitx.GetInstance()
+			em := newExecutionManager(rpitx, hub)
+
+			// Set initial state
+			em.setState(tt.initialState)
+
+			// Create a mock client
+			client := &websocket.Client{}
+
+			// Call stopExecution
+			err := em.stopExecution(client)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			// Check final state
+			finalState := executionState(em.state.Load())
+			assert.Equal(t, tt.expectedState, finalState, "Final state should match expected")
+
+			hub.Close()
+		})
+	}
+}
+
+func TestExecutionManager_ValidateTimeout(t *testing.T) {
+	// Set ENV=dev to avoid root check
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	hub := websocket.NewHub("test")
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	tests := []struct {
+		name     string
+		timeout  int
+		expected time.Duration
+	}{
+		{
+			name:     "zero timeout (no timeout)",
+			timeout:  0,
+			expected: 0,
+		},
+		{
+			name:     "positive timeout",
+			timeout:  30,
+			expected: 30 * time.Second,
+		},
+		{
+			name:     "small positive timeout",
+			timeout:  1,
+			expected: 1 * time.Second,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := em.validateTimeout(tt.timeout)
+			assert.Equal(t, tt.expected, result, "validateTimeout should return correct duration")
+		})
+	}
+
+	hub.Close()
 }

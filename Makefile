@@ -13,9 +13,6 @@ include Makefile.servicepack
 build: ## Build the fucking PIrateRF beast
 	@./$(SCRIPTS_DIR)/make/build.sh
 
-test-coverage: ## Run the fucking tests with coverage
-	ENV=dev $(MAKE) -f Makefile.servicepack test-coverage
-
 tls: ## Generate fucking TLS certificates for HTTPS
 	@./$(SCRIPTS_DIR)/make/tls.sh
 
