@@ -161,46 +161,37 @@ func TestImageConversionPostprocessor(t *testing.T) {
 		expectConversion bool
 	}{
 		{
-			name: "png image conversion fails without convert",
+			name: "png image conversion succeeds with convert",
 			inputResponse: map[string]any{
-				"path": "image.png",
-				"name": "image.png",
+				"path": "/workspace/.fixtures/test_red_100x50.png",
+				"name": "test_red_100x50.png",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "image.png")
-				err := os.WriteFile(inputPath, []byte("fake png"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_red_100x50.png"
 			},
-			expectError: true, // Expected since we don't have ImageMagick convert
-			expectConversion: false,
+			expectError: false, // ImageMagick convert is available
+			expectConversion: true,
 		},
 		{
-			name: "jpg image conversion fails without convert",
+			name: "jpg image conversion succeeds with convert",
 			inputResponse: map[string]any{
-				"path": "photo.jpg",
-				"name": "photo.jpg",
+				"path": "/workspace/.fixtures/test_gradient_200x100.jpg",
+				"name": "test_gradient_200x100.jpg",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "photo.jpg")
-				err := os.WriteFile(inputPath, []byte("fake jpg"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_gradient_200x100.jpg"
 			},
-			expectError: true, // Expected since we don't have ImageMagick convert
-			expectConversion: false,
+			expectError: false, // ImageMagick convert is available
+			expectConversion: true,
 		},
 		{
 			name: "non-image file ignored",
 			inputResponse: map[string]any{
-				"path": "document.txt",
-				"name": "document.txt",
+				"path": "/workspace/.fixtures/test_document.txt",
+				"name": "test_document.txt",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "document.txt")
-				err := os.WriteFile(inputPath, []byte("text content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_document.txt"
 			},
 			expectError: false,
 			expectConversion: false,

@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/psyb0t/aichteeteapee/server/websocket"
+	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,7 +18,7 @@ import (
 
 func TestProcessAudioModifications(t *testing.T) {
 	// Set up logger to debug level for tests
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.WarnLevel)
 
 	// Create temporary directory for test output
 	tempDir := t.TempDir()
@@ -400,11 +403,8 @@ func TestProcessImageModifications(t *testing.T) {
 				"frequency":   88.0,
 			},
 			setupFiles: func(tempDir string) string {
-				// Create an image file to convert
-				imagePath := filepath.Join(tempDir, "test_image.png")
-				err := os.WriteFile(imagePath, []byte("fake png content"), 0644)
-				require.NoError(t, err)
-				return imagePath
+				// Use fixture image file
+				return "/workspace/.fixtures/test_red_100x50.png"
 			},
 			expectError: true, // Expected since ImageMagick convert won't be available
 			checkResult: func(t *testing.T, originalArgs, result json.RawMessage, tempDir string) {
@@ -551,4 +551,27 @@ func TestProcessImageModifications(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHandleRPITXExecutionStop(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	service := &PIrateRF{
+		websocketHub:     hub,
+		rpitx:           rpitx,
+		executionManager: newExecutionManager(rpitx, hub),
+	}
+	client := &websocket.Client{}
+	event := &websocket.Event{
+		Type: "rpitx.execution.stop",
+		Data: json.RawMessage(`{}`),
+	}
+
+	require.NotPanics(t, func() {
+		service.handleRPITXExecutionStop(hub, client, event)
+	})
 }

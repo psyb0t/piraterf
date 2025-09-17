@@ -3,7 +3,6 @@ package piraterf
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -25,7 +24,8 @@ func TestRootHandler(t *testing.T) {
 			requestPath: "/",
 			setupFiles: func(tempDir string) {
 				indexPath := filepath.Join(tempDir, "index.html")
-				err := os.WriteFile(indexPath, []byte("<html><body>PIrateRF</body></html>"), 0644)
+				src := "/workspace/.fixtures/test_index.html"
+				err := copyFile(src, indexPath)
 				require.NoError(t, err)
 			},
 			expectedStatus: http.StatusOK,
@@ -68,7 +68,8 @@ func TestRootHandler(t *testing.T) {
 			setupFiles: func(tempDir string) {
 				// Create index.html but path is not /
 				indexPath := filepath.Join(tempDir, "index.html")
-				err := os.WriteFile(indexPath, []byte("<html>Safe</html>"), 0644)
+				src := "/workspace/.fixtures/test_safe.html"
+				err := copyFile(src, indexPath)
 				require.NoError(t, err)
 			},
 			expectedStatus: http.StatusNotFound,

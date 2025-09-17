@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/psyb0t/aichteeteapee/server/websocket"
 	"github.com/psyb0t/common-go/env"
 	commonerrors "github.com/psyb0t/common-go/errors"
@@ -418,4 +419,20 @@ func TestExecutionManager_ValidateTimeout(t *testing.T) {
 	}
 
 	hub.Close()
+}
+
+func TestSendStoppedEvent(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	clientID := uuid.New()
+
+	require.NotPanics(t, func() {
+		em.sendStoppedEvent(clientID)
+	})
 }

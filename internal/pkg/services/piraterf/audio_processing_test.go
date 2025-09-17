@@ -22,15 +22,11 @@ func TestFileConversionPostprocessor(t *testing.T) {
 		{
 			name: "audio file conversion fails when ffmpeg not available",
 			inputResponse: map[string]any{
-				"path": "test.mp3",
-				"name": "test.mp3",
+				"path": "/workspace/.fixtures/test_2s.mp3",
+				"name": "test_2s.mp3",
 			},
 			setupFiles: func(tempDir string) string {
-				// Create input file
-				inputPath := filepath.Join(tempDir, "test.mp3")
-				err := os.WriteFile(inputPath, []byte("fake mp3 content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_2s.mp3"
 			},
 			expectError: true, // Expected since we don't have ffmpeg in test env
 			expectResult: map[string]any{},
@@ -38,18 +34,15 @@ func TestFileConversionPostprocessor(t *testing.T) {
 		{
 			name: "non-audio file unchanged",
 			inputResponse: map[string]any{
-				"path": "document.txt",
-				"name": "document.txt",
+				"path": "/workspace/.fixtures/test_document.txt",
+				"name": "test_document.txt",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "document.txt")
-				err := os.WriteFile(inputPath, []byte("text content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_document.txt"
 			},
 			expectError: false,
 			expectResult: map[string]any{
-				"name": "document.txt",
+				"name": "test_document.txt",
 				// path will be absolute so we check it separately
 			},
 		},
@@ -119,7 +112,7 @@ func TestFileConversionPostprocessor(t *testing.T) {
 					assert.True(t, exists, "Result should contain path")
 					pathStr, ok := pathValue.(string)
 					assert.True(t, ok, "Path should be string")
-					assert.Contains(t, pathStr, "document.txt")
+					assert.Contains(t, pathStr, "test_document.txt")
 				}
 			}
 		})
@@ -137,14 +130,11 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 		{
 			name: "mp3 file conversion fails without ffmpeg",
 			inputResponse: map[string]any{
-				"path": "test.mp3",
-				"name": "test.mp3",
+				"path": "/workspace/.fixtures/test_2s.mp3",
+				"name": "test_2s.mp3",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "test.mp3")
-				err := os.WriteFile(inputPath, []byte("fake mp3"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_2s.mp3"
 			},
 			expectError: true, // Expected since we don't have ffmpeg
 			expectConversion: false,
@@ -152,14 +142,11 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 		{
 			name: "wav file conversion fails without ffmpeg",
 			inputResponse: map[string]any{
-				"path": "audio.wav",
-				"name": "audio.wav",
+				"path": "/workspace/.fixtures/test_2s.wav",
+				"name": "test_2s.wav",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "audio.wav")
-				err := os.WriteFile(inputPath, []byte("fake wav"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_2s.wav"
 			},
 			expectError: true, // Expected since we don't have ffmpeg
 			expectConversion: false,
@@ -167,14 +154,11 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 		{
 			name: "non-audio file ignored",
 			inputResponse: map[string]any{
-				"path": "document.pdf",
-				"name": "document.pdf",
+				"path": "/workspace/.fixtures/test_red_100x50.png",
+				"name": "test_red_100x50.png",
 			},
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "document.pdf")
-				err := os.WriteFile(inputPath, []byte("pdf content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_red_100x50.png"
 			},
 			expectError: false,
 			expectConversion: false,
@@ -249,10 +233,7 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 		{
 			name: "successful conversion of mp3 file",
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "test.mp3")
-				err := os.WriteFile(inputPath, []byte("fake mp3 content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_2s.mp3"
 			},
 			expectError: false,
 			expectWasConverted: true,
@@ -260,10 +241,7 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 		{
 			name: "conversion of wav file (still processed)",
 			setupFiles: func(tempDir string) string {
-				inputPath := filepath.Join(tempDir, "audio.wav")
-				err := os.WriteFile(inputPath, []byte("fake wav content"), 0644)
-				require.NoError(t, err)
-				return inputPath
+				return "/workspace/.fixtures/test_2s.wav"
 			},
 			expectError: false,
 			expectWasConverted: true,
@@ -271,7 +249,7 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 		{
 			name: "non-existent input file",
 			setupFiles: func(tempDir string) string {
-				return filepath.Join(tempDir, "missing.mp3")
+				return "/workspace/.fixtures/missing.mp3"
 			},
 			expectError: true,
 			expectWasConverted: false,

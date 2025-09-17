@@ -20,7 +20,7 @@ import (
 
 func TestHandleRPITXExecutionStart_FullIntegration(t *testing.T) {
 	// Set up logger to debug level for tests
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.WarnLevel)
 
 	// Set ENV=dev to use mock execution
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)

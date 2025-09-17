@@ -16,7 +16,7 @@ import (
 
 func TestCreatePlaylistFromFiles_Integration(t *testing.T) {
 	// Set up logger to debug level for tests
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.WarnLevel)
 
 	// Create temporary directory for test output
 	tempDir := t.TempDir()
