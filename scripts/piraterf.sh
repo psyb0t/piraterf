@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Source Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/pi_config.sh" ]; then
+    source "$SCRIPT_DIR/pi_config.sh"
+fi
+
 # Check if running as root, if not, re-run with sudo
 if [ "$EUID" -ne 0 ]; then
     echo "🔐 Need root privileges, re-running with sudo..."
@@ -10,7 +16,7 @@ export ENV=prod
 export LOG_LEVEL=warn
 export LOG_FORMAT=json
 export LOG_CALLER=true
-export GORPITX_PATH=/home/fucker/rpitx
+export GORPITX_PATH="/home/${PI_USER}/rpitx"
 export HTTP_SERVER_LISTENADDRESS=0.0.0.0:80
 
 # Create TLS directory and generate certificates if they don't exist

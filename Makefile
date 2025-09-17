@@ -7,20 +7,14 @@
 # Include servicepack framework commands
 include Makefile.servicepack
 
-# Pi Configuration - for deploying to the bastard Pi
-PI_USER := fucker
-PI_HOST := piraterf.local
-PI_PASS := FUCKER
-PI_TARGET := $(PI_USER)@$(PI_HOST)
-DEPLOY_DIR := /home/$(PI_USER)/piraterf
-SSH_CMD := sshpass -p "$(PI_PASS)" ssh
-SCP_CMD := sshpass -p "$(PI_PASS)" scp
-
 .PHONY: tls pi-setup-deps pi-setup-ap pi-setup-branding \
 	pi-reboot ssh pi-setup deploy uninstall install complete
 
 build: ## Build the fucking PIrateRF beast
 	@./$(SCRIPTS_DIR)/make/build.sh
+
+test-coverage: ## Run the fucking tests with coverage
+	ENV=dev $(MAKE) -f Makefile.servicepack test-coverage
 
 tls: ## Generate fucking TLS certificates for HTTPS
 	@./$(SCRIPTS_DIR)/make/tls.sh

@@ -47,7 +47,8 @@ cd build && tar -czf piraterf.tar.gz \
     --transform 's|.*scripts/||' \
     ../scripts/piraterf.sh \
     ../scripts/install.sh \
-    ../scripts/uninstall.sh
+    ../scripts/uninstall.sh \
+    ../scripts/pi_config.sh
 
 # Remove binary, keep only archive
 rm "$APP_NAME"
