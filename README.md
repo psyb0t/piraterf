@@ -2,6 +2,24 @@
 
 **PIrateRF** is a fucking badass software-defined radio (SDR) transmission platform that turns your **Raspberry Pi Zero W** into a portable RF signal generator with a sleek web interface. This beast enables you to transmit various types of radio signals including FM radio broadcasts, Morse code, carrier waves, and even spectrum painting - all controlled through your browser like a proper pirate! 📡⚡
 
+## 📋 Table of Contents
+
+- [What the Fuck Does This Thing Do?](#-what-the-fuck-does-this-thing-do)
+- [Architecture & Technology Stack](#️-architecture--technology-stack)
+- [Quick Fucking Setup](#-quick-fucking-setup)
+- [Development Workflow](#️-development-workflow)
+- [RF Transmission Modes](#-rf-transmission-modes)
+- [Network Configuration](#-network-configuration)
+- [Project Structure](#-project-structure)
+- [Make Targets Reference](#-make-targets-reference)
+- [Configuration](#-configuration)
+- [Audio Processing Pipeline](#-audio-processing-pipeline)
+- [Image Processing for Spectrum Painting](#️-image-processing-for-spectrum-painting)
+- [Legal and Safety Notice](#️-legal-and-safety-notice)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Dependencies](#-dependencies)
+
 ## 🎯 What the Fuck Does This Thing Do?
 
 PIrateRF transforms your Pi Zero into a **standalone RF transmission station** that can:
