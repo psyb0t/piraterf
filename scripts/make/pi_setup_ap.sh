@@ -33,7 +33,7 @@ DHCP_LEASE_TIME="12h"
 LOCAL_DNS="192.168.4.1"
 
 # System Configuration
-BACKUP_USER="fucker"
+BACKUP_USER="$PI_USER"
 TARGET_OS_VERSION="11"
 REQUIRED_PACKAGES="hostapd dnsmasq"
 

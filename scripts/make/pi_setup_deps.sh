@@ -5,9 +5,14 @@
 
 set -e
 
+# Source common functions and Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/servicepack/common.sh"
+source "$SCRIPT_DIR/common.sh"
+
 # Configuration
 RPITX_REPO="https://github.com/psyb0t/rpitx.git"
-INSTALL_DIR="/home/fucker/rpitx"
+INSTALL_DIR="/home/$PI_USER/rpitx"
 
 # Color codes
 RED='\033[0;31m'

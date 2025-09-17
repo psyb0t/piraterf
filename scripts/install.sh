@@ -2,6 +2,10 @@
 
 # PIrateRF installation script - runs on the Pi after deployment
 
+# Source Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/pi_config.sh"
+
 # Check if running as root, if not, re-run with sudo
 if [ "$EUID" -ne 0 ]; then
     echo "🔐 Need root privileges, re-running with sudo..."
@@ -26,8 +30,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/fucker/piraterf
-ExecStart=/home/fucker/piraterf/piraterf.sh
+WorkingDirectory=/home/$PI_USER/piraterf
+ExecStart=/home/$PI_USER/piraterf/piraterf.sh
 Restart=always
 RestartSec=5
 
