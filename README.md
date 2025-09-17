@@ -10,7 +10,7 @@ PIrateRF transforms your Pi Zero into a **standalone RF transmission station** t
 - **📻 Morse Code Transmission**: Send CW (continuous wave) Morse code signals
 - **🎛️ Carrier Wave Generation**: Simple tone generation for testing and tuning
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
-- **🎧 Real-time Audio Processing**: Upload files or record directly through the browser
+- **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
 
 All of this runs on a **Pi Zero W configured as a WiFi access point**, making it a completely standalone, portable RF transmission platform that you can take anywhere and control from any device with a browser.
@@ -53,6 +53,54 @@ PIrateRF is a **single Go service** with modular components:
 
 This will get your Pi Zero connected via USB with SSH access so you can actually deploy PIrateRF to the bastard. Don't skip this step or you'll be fucked trying to connect to your Pi later!
 
+**🌐 INTERNET SHARING REQUIRED**: After USB connection is working, you MUST share internet from your computer to the Pi Zero. The setup scripts need to download packages and dependencies. Your Pi Zero connects via USB but has no internet unless you share it from your host computer.
+
+**Set up internet sharing on Ubuntu/Linux** (complete fucking setup):
+
+1. **Set connection to shared**: In Ubuntu Network Settings, find the USB connection (usually shows as `usb0` or similar), click on it, go to IPv4 settings, and change the method from "Link-Local Only" to "Shared to other computers". This is fucking critical!
+
+2. **Stop Docker services** (they fuck with networking):
+```bash
+sudo systemctl stop docker.socket
+sudo systemctl stop docker
+```
+
+3. **Restart NetworkManager**:
+```bash
+sudo systemctl restart NetworkManager
+```
+
+4. **Configure iptables rules** (replace `usb0` and `enp5s0` with your actual interfaces):
+```bash
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A OUTPUT -o lo -j ACCEPT
+sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A FORWARD -i usb0 -o enp5s0 -j ACCEPT
+sudo iptables -A FORWARD -i enp5s0 -o usb0 -j ACCEPT
+sudo iptables -t nat -A POSTROUTING -s 10.42.0.0/24 -o enp5s0 -j MASQUERADE
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+```
+
+5. **Test it**: SSH into your Pi and run `ping 8.8.8.8` - if it works, you're fucking golden!
+
+**Find your interfaces**: Use `ip link show` to see `usb0` (Pi connection) and your main internet interface (usually `eth0`, `wlan0`, `enp0s3`, etc.). Without this internet sharing setup, the dependency installation will fail because the Pi can't reach package repositories!
+
+### 🔌 ANTENNA SETUP
+
+Connect your fucking antenna to the Pi Zero:
+
+**GPIO Connection**: Connect your antenna cable to **GPIO 4 (Physical Pin 7)** on the Pi Zero W. This is your RF output pin.
+
+**Antenna Options**:
+1. **Short wire** (~10-20cm): Best for indoor testing and learning. Keeps power low and legal.
+2. **75cm wire**: Longer range but too much signal leaks outside your property - use this **ONLY indoors**
+3. **Proper antenna with low pass filter**: Build or buy a proper antenna system with SMA connector and appropriate low pass filter for your frequency
+
+**⚠️ IMPORTANT**: The 75cm antenna is a fucking liability outdoors - your signal will travel way beyond your property and you'll be violating regulations. Stick to short wires for testing or build proper filtered antenna systems for serious use.
+
 ### 1. Initial Pi Setup and Configuration
 
 Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
@@ -61,11 +109,13 @@ Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
 # Clone this badass project
 git clone https://github.com/psyb0t/piraterf.git
 cd piraterf
+```
 
-# Edit scripts/pi_config.sh and modify these values to match your Pi:
-# export PI_USER="fucker"              # Pi username
-# export PI_HOST="piraterf.local"      # Pi hostname/IP
-# export PI_PASS="FUCKER"             # Pi password
+Edit scripts/pi_config.sh and modify these values to match your Pi:
+```bash
+export PI_USER="fucker"              # Pi username
+export PI_HOST="piraterf.local"      # Pi hostname/IP
+export PI_PASS="FUCKER"             # Pi password
 ```
 
 ### 2. Complete Automated Setup
@@ -154,21 +204,20 @@ make uninstall          # Remove PIrateRF from Pi
 ### FM Radio Broadcasting (PIFMRDS)
 
 - **Audio Support**: MP3, WAV, FLAC, and more (auto-converted to 48kHz/16-bit/mono)
-- **RDS Metadata**: Station name, radio text, PI codes, and program type
+- **RDS Metadata**: Station name, radio text, and PI codes
 - **Playlist Mode**: Create playlists with intro/outro support
 - **Play Once Mode**: Single play with automatic timeout calculation
-- **Live Recording**: Record audio directly through the browser interface
+- **Microphone Recording**: Record audio directly through the browser interface
 
 ### Morse Code (CW)
 
 - **Text to Morse**: Automatic conversion with configurable WPM (words per minute)
 - **Custom Messages**: Send any text as Morse code
-- **Frequency Control**: Adjustable carrier frequency for different bands
+- **RF Transmission**: Transmit via radio frequency (not audio beeps)
 
 ### Tune Mode
 
 - **Carrier Wave**: Simple tone generation for testing and frequency verification
-- **Frequency Sweep**: Testing and calibration support
 
 ### Spectrum Painting
 
@@ -219,7 +268,6 @@ piraterf/
 ├── static/                # CSS, JavaScript, images
 ├── files/                 # Audio and image file storage
 ├── uploads/               # Temporary upload staging
-├── .tls/                  # TLS certificates
 ├── Makefile              # Main build configuration
 └── Makefile.servicepack  # Framework integration
 ```
@@ -296,6 +344,8 @@ Images are processed for RF spectrum transmission:
 - Respect power limitations and spurious emission requirements
 - Don't interfere with emergency services or licensed operators
 - When in doubt, consult your local RF regulatory authority
+
+**⚠️ USE A FUCKING LOW PASS FILTER!** The Pi GPIO outputs square waves which generate harmonics across the entire spectrum. Without proper filtering, you'll spray RF energy all over the fucking place and violate spurious emission regulations. Always use an appropriate low pass filter for your transmission frequency!
 
 **PIrateRF is designed for educational, experimental, and licensed amateur radio use. The developers are not responsible for any misuse or regulatory violations.**
 
