@@ -6,13 +6,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-MIN_TEST_COVERAGE=90
+MIN_TEST_COVERAGE=${MIN_TEST_COVERAGE:-90}
 
 section "Running Tests with Coverage Check"
 info "Running tests with coverage analysis..."
 
 # Ensure cleanup on exit
-trap 'rm -f coverage.txt' EXIT
+trap 'rm -f coverage.txt coverage_filtered.txt' EXIT
 
 # Run tests with coverage
 # Run tests with coverage - need to use array for proper word splitting
@@ -22,8 +22,9 @@ if ! go test -race -coverprofile=coverage.txt "${packages[@]}"; then
     exit 1
 fi
 
-# Calculate coverage
-result=$(go tool cover -func=coverage.txt | grep -oP 'total:\s+\(statements\)\s+\K\d+' || echo "0")
+# Filter out mocks.go from coverage and calculate coverage
+grep -v 'github.com/psyb0t/servicepack/internal/pkg/service-manager/mocks.go:' coverage.txt > coverage_filtered.txt || cp coverage.txt coverage_filtered.txt
+result=$(go tool cover -func=coverage_filtered.txt | grep -oP 'total:\s+\(statements\)\s+\K\d+' || echo "0")
 
 if [ "$result" -eq 0 ]; then
     warning "No test coverage information available"

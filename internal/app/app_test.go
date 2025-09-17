@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -10,64 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mockService implements the Service interface for testing.
-type mockService struct {
-	name     string
-	running  int32
-	stopCh   chan struct{}
-	runError error
-}
 
-func newMockService(name string) *mockService {
-	return &mockService{
-		name:   name,
-		stopCh: make(chan struct{}),
-	}
-}
-
-func (m *mockService) Name() string {
-	return m.name
-}
-
-func (m *mockService) Run(ctx context.Context) error {
-	atomic.StoreInt32(&m.running, 1)
-
-	if m.runError != nil {
-		return m.runError
-	}
-
-	select {
-	case <-ctx.Done():
-		return nil
-	case <-m.stopCh:
-		return nil
-	}
-}
-
-func (m *mockService) Stop(_ context.Context) error {
-	close(m.stopCh)
-	atomic.StoreInt32(&m.running, 0)
-
-	return nil
-}
-
-// mockServiceWithError implements the Service interface for testing error cases.
-type mockServiceWithError struct {
-	name     string
-	runError error
-}
-
-func (m *mockServiceWithError) Name() string {
-	return m.name
-}
-
-func (m *mockServiceWithError) Run(_ context.Context) error {
-	return m.runError
-}
-
-func (m *mockServiceWithError) Stop(_ context.Context) error {
-	return nil
-}
 
 // createTestApp creates an app with mock services instead of real ones.
 func createTestApp() *App {
@@ -90,11 +32,11 @@ func createTestApp() *App {
 }
 
 func (a *App) setupTestServices() {
-	// Use mock services instead of real ones
-	mockSvc1 := newMockService("TestService1")
-	mockSvc2 := newMockService("TestService2")
-
-	a.serviceManager.Add(mockSvc1, mockSvc2)
+	// Add minimal mock services for app testing
+	a.serviceManager.Add(
+		servicemanager.NewTestService("TestService1"),
+		servicemanager.NewTestService("TestService2"),
+	)
 }
 
 func TestApp_Run(t *testing.T) {
@@ -181,7 +123,7 @@ func TestApp_Run(t *testing.T) {
 				failingApp.config = cfg
 
 				// Add a service that returns an error
-				failingSvc := &mockServiceWithError{name: "failing", runError: assert.AnError}
+				failingSvc := servicemanager.NewMockService("failing").WithRunError(assert.AnError)
 				failingApp.serviceManager.Add(failingSvc)
 
 				err := failingApp.Run(ctx)
@@ -229,14 +171,15 @@ func TestApp_GetInstance(t *testing.T) {
 	resetInstance()
 
 	t.Run("successful app instance creation", func(t *testing.T) {
-		// First call should create the instance
-		app := GetInstance()
-		// Clear any real services that may have been loaded
-		app.serviceManager.ClearServices()
-
+		// Use createTestApp to avoid calling services.Init()
+		app := createTestApp()
 		assert.NotNil(t, app)
 		assert.NotNil(t, app.serviceManager)
 		assert.NotNil(t, app.doneCh)
+
+		// Manually set the singleton to test singleton behavior
+		instance = app
+		once.Do(func() {}) // Mark as initialized
 
 		// Test that subsequent calls return the same instance
 		app2 := GetInstance()
@@ -317,9 +260,9 @@ func TestApp_ServiceActivity(t *testing.T) {
 			servicemanager.GetInstance().ClearServices()
 
 			// Create mock services that track their activity
-			var mockServices []*mockServiceWithActivity
+			var mockServices []*servicemanager.MockService
 			for _, name := range tt.serviceNames {
-				mockServices = append(mockServices, &mockServiceWithActivity{name: name})
+				mockServices = append(mockServices, servicemanager.NewMockService(name))
 			}
 
 			// Create app manually and add mock services
@@ -353,8 +296,8 @@ func TestApp_ServiceActivity(t *testing.T) {
 
 			// Verify all services are running
 			for i, mockSvc := range mockServices {
-				assert.Equal(t, int32(1), atomic.LoadInt32(&mockSvc.running),
-					"Service %d (%s) should be running", i, mockSvc.name)
+				assert.True(t, mockSvc.IsRunning(),
+					"Service %d (%s) should be running", i, mockSvc.Name())
 			}
 
 			// Stop using specified method
@@ -383,42 +326,10 @@ func TestApp_ServiceActivity(t *testing.T) {
 
 			// Verify all services have stopped
 			for i, mockSvc := range mockServices {
-				assert.Equal(t, int32(0), atomic.LoadInt32(&mockSvc.running),
-					"Service %d (%s) should be stopped", i, mockSvc.name)
+				assert.False(t, mockSvc.IsRunning(),
+					"Service %d (%s) should be stopped", i, mockSvc.Name())
 			}
 		})
 	}
 }
 
-// mockServiceWithActivity is a mock service that tracks its running state.
-type mockServiceWithActivity struct {
-	name    string
-	running int32
-	stopCh  chan struct{}
-}
-
-func (m *mockServiceWithActivity) Name() string {
-	return m.name
-}
-
-func (m *mockServiceWithActivity) Run(ctx context.Context) error {
-	m.stopCh = make(chan struct{})
-	atomic.StoreInt32(&m.running, 1)
-
-	select {
-	case <-ctx.Done():
-		return nil
-	case <-m.stopCh:
-		return nil
-	}
-}
-
-func (m *mockServiceWithActivity) Stop(_ context.Context) error {
-	if m.stopCh != nil {
-		close(m.stopCh)
-	}
-
-	atomic.StoreInt32(&m.running, 0)
-
-	return nil
-}

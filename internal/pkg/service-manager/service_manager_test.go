@@ -16,62 +16,6 @@ var (
 	errTestServiceStop = errors.New("stop error")
 )
 
-// mockService implements the Service interface for testing.
-type mockService struct {
-	name       string
-	runCalled  int32
-	stopCalled int32
-	runError   error
-	stopError  error
-	stopCh     chan struct{}
-	runDelay   time.Duration
-}
-
-func newMockService(name string) *mockService {
-	return &mockService{
-		name:   name,
-		stopCh: make(chan struct{}),
-	}
-}
-
-func (m *mockService) Name() string {
-	return m.name
-}
-
-func (m *mockService) Run(ctx context.Context) error {
-	atomic.StoreInt32(&m.runCalled, 1)
-
-	if m.runError != nil {
-		return m.runError
-	}
-
-	if m.runDelay > 0 {
-		time.Sleep(m.runDelay)
-	}
-
-	select {
-	case <-ctx.Done():
-		return nil
-	case <-m.stopCh:
-		return nil
-	}
-}
-
-func (m *mockService) Stop(_ context.Context) error {
-	atomic.StoreInt32(&m.stopCalled, 1)
-	close(m.stopCh)
-
-	return m.stopError
-}
-
-func (m *mockService) wasRunCalled() bool {
-	return atomic.LoadInt32(&m.runCalled) == 1
-}
-
-func (m *mockService) wasStopCalled() bool {
-	return atomic.LoadInt32(&m.stopCalled) == 1
-}
-
 func TestGetInstance(t *testing.T) {
 	// Reset singleton before test
 	ResetInstance()
@@ -99,17 +43,17 @@ func TestServiceManager_Add(t *testing.T) {
 	}{
 		{
 			name:     "add single service",
-			services: []Service{newMockService("test1")},
+			services: []Service{NewMockService("test1")},
 			expected: 1,
 		},
 		{
 			name:     "add multiple services",
-			services: []Service{newMockService("test1"), newMockService("test2")},
+			services: []Service{NewMockService("test1"), NewMockService("test2")},
 			expected: 2,
 		},
 		{
 			name:     "add services with duplicate names overwrites",
-			services: []Service{newMockService("test1"), newMockService("test1")},
+			services: []Service{NewMockService("test1"), NewMockService("test1")},
 			expected: 1,
 		},
 		{
@@ -150,7 +94,7 @@ func TestServiceManager_Run(t *testing.T) {
 	}{
 		{
 			name:     "run single service with context cancellation",
-			services: []Service{newMockService("test1")},
+			services: []Service{NewMockService("test1")},
 			contextSetup: func() (context.Context, context.CancelFunc) {
 				ctx, cancel := context.WithCancel(context.Background())
 				go func() {
@@ -165,7 +109,7 @@ func TestServiceManager_Run(t *testing.T) {
 		},
 		{
 			name:     "run multiple services with context cancellation",
-			services: []Service{newMockService("test1"), newMockService("test2")},
+			services: []Service{NewMockService("test1"), NewMockService("test2")},
 			contextSetup: func() (context.Context, context.CancelFunc) {
 				ctx, cancel := context.WithCancel(context.Background())
 				go func() {
@@ -180,7 +124,7 @@ func TestServiceManager_Run(t *testing.T) {
 		},
 		{
 			name:     "run service with error",
-			services: []Service{&mockService{name: "failing", runError: errTestService, stopCh: make(chan struct{})}},
+			services: []Service{NewMockService("failing").WithRunError(errTestService)},
 			contextSetup: func() (context.Context, context.CancelFunc) {
 				return context.WithCancel(context.Background())
 			},
@@ -189,7 +133,7 @@ func TestServiceManager_Run(t *testing.T) {
 		},
 		{
 			name:     "run with stop method",
-			services: []Service{newMockService("test1")},
+			services: []Service{NewMockService("test1")},
 			contextSetup: func() (context.Context, context.CancelFunc) {
 				return context.WithCancel(context.Background())
 			},
@@ -235,8 +179,8 @@ func TestServiceManager_Run(t *testing.T) {
 			// Verify services started (for non-error cases)
 			if !tt.expectError && len(tt.services) > 0 {
 				for _, svc := range tt.services {
-					if mockSvc, ok := svc.(*mockService); ok {
-						assert.True(t, mockSvc.wasRunCalled(), "Service %s should have Run called", mockSvc.name)
+					if mockSvc, ok := svc.(*MockService); ok {
+						assert.True(t, mockSvc.WasRunCalled(), "Service %s should have Run called", mockSvc.name)
 					}
 				}
 			}
@@ -275,27 +219,22 @@ func TestServiceManager_Stop(t *testing.T) {
 	}{
 		{
 			name:      "stop single service",
-			services:  []Service{newMockService("test1")},
+			services:  []Service{NewMockService("test1")},
 			stopTwice: false,
 		},
 		{
 			name:      "stop multiple services",
-			services:  []Service{newMockService("test1"), newMockService("test2")},
+			services:  []Service{NewMockService("test1"), NewMockService("test2")},
 			stopTwice: false,
 		},
 		{
 			name:      "stop same manager twice (sync.Once behavior)",
-			services:  []Service{newMockService("test1")},
+			services:  []Service{NewMockService("test1")},
 			stopTwice: true,
 		},
 		{
 			name: "stop service with error",
-			services: []Service{func() *mockService {
-				svc := newMockService("failing")
-				svc.stopError = errTestServiceStop
-
-				return svc
-			}()},
+			services: []Service{NewMockService("failing").WithStopError(errTestServiceStop)},
 			expectStopErrors: true,
 		},
 		{
@@ -341,8 +280,8 @@ func TestServiceManager_Stop(t *testing.T) {
 			// Verify all services had Stop called (only for non-empty services)
 			if len(tt.services) > 0 {
 				for _, svc := range tt.services {
-					if mockSvc, ok := svc.(*mockService); ok {
-						assert.True(t, mockSvc.wasStopCalled(), "Service %s should have Stop called", mockSvc.name)
+					if mockSvc, ok := svc.(*MockService); ok {
+						assert.True(t, mockSvc.WasStopCalled(), "Service %s should have Stop called", mockSvc.name)
 					}
 				}
 			}
@@ -351,7 +290,7 @@ func TestServiceManager_Stop(t *testing.T) {
 			if tt.stopTwice {
 				// Reset the stop called flag for testing
 				for _, svc := range tt.services {
-					if mockSvc, ok := svc.(*mockService); ok {
+					if mockSvc, ok := svc.(*MockService); ok {
 						atomic.StoreInt32(&mockSvc.stopCalled, 0)
 					}
 				}
@@ -361,8 +300,8 @@ func TestServiceManager_Stop(t *testing.T) {
 
 				// Services should NOT be stopped again due to sync.Once
 				for _, svc := range tt.services {
-					if mockSvc, ok := svc.(*mockService); ok {
-						assert.False(t, mockSvc.wasStopCalled(), "Service %s should NOT have Stop called again", mockSvc.name)
+					if mockSvc, ok := svc.(*MockService); ok {
+						assert.False(t, mockSvc.WasStopCalled(), "Service %s should NOT have Stop called again", mockSvc.name)
 					}
 				}
 			}
@@ -381,7 +320,7 @@ func TestServiceManager_Concurrency(t *testing.T) {
 
 		for i := range 10 {
 			go func(id int) {
-				svc := newMockService(fmt.Sprintf("service%d", id))
+				svc := NewMockService(fmt.Sprintf("service%d", id))
 				sm.Add(svc)
 
 				done <- true

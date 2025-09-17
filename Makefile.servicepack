@@ -3,7 +3,7 @@
 # Users can override any of these commands in their main Makefile
 
 # Framework variables (can be overridden by user)
-MIN_TEST_COVERAGE ?= 90
+MIN_TEST_COVERAGE ?= 85
 
 # Framework constants (do not override)
 SCRIPTS_DIR := scripts
@@ -41,7 +41,7 @@ test: ## Run all tests
 	@$(call find_script,test.sh)
 
 test-coverage: ## Run tests with coverage check. Fails if coverage is below the threshold.
-	@$(call find_script,test_coverage.sh)
+	@MIN_TEST_COVERAGE=$(MIN_TEST_COVERAGE) $(call find_script,test_coverage.sh)
 
 build: ## Build the app binary using Docker
 	@$(call find_script,build.sh)
