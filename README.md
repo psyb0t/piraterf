@@ -53,6 +53,8 @@ PIrateRF is a **single Go service** with modular components:
 
 This will get your Pi Zero connected via USB with SSH access so you can actually deploy PIrateRF to the bastard. Don't skip this step or you'll be fucked trying to connect to your Pi later!
 
+**Credentials setup**: During the Pi Zero setup tutorial, I used username `fucker`, hostname `piraterf.local`, password `FUCKER`. Use these same credentials if you don't want to get confused with the rest of this tutorial - otherwise go ahead and set up some lame ass shit with your own credentials.
+
 **🌐 INTERNET SHARING REQUIRED**: After USB connection is working, you MUST share internet from your computer to the Pi Zero. The setup scripts need to download packages and dependencies. Your Pi Zero connects via USB but has no internet unless you share it from your host computer.
 
 **Set up internet sharing on Ubuntu/Linux** (complete fucking setup):
@@ -140,10 +142,10 @@ This fucking command will:
 After reboot:
 
 1. **Connect to WiFi**: "🏴‍☠️📡" with password "FUCKER!!!"
-2. **Open browser**: Navigate to `https://piraterf.local` **ONLY** (don't use the IP address!)
+2. **Open browser**: Navigate to `https://piraterf.local` (or whatever hostname you configured)
 3. **Start transmitting**: Upload audio, configure RDS, and broadcast like a proper pirate!
 
-**⚠️ IMPORTANT**: Use `https://piraterf.local` **NOT** the IP address (`192.168.4.1`). The fucking microphone recording feature requires HTTPS with a proper hostname to work due to browser security restrictions. Using the IP address will break microphone access!
+**⚠️ IMPORTANT**: Use the HTTPS hostname for full functionality. The fucking microphone recording feature requires HTTPS with a proper hostname to work due to browser security restrictions.
 
 **🎉 Pirate Crew Mode**: Connect multiple devices to the same WiFi network and all access the web interface simultaneously! While only one transmission can run at a time (because GPIO doesn't fucking share), all connected devices see real-time transmission status, output logs, and can take turns controlling the RF transmissions. Perfect for fucking around with friends in a radio wave gangbang! 📡💥
 
@@ -233,10 +235,7 @@ The Pi automatically configures itself as a **standalone WiFi access point**:
 - **Password**: "FUCKER!!!"
 - **IP Range**: 192.168.4.1/24 (Pi is at 192.168.4.1)
 - **DHCP**: Automatic IP assignment for connected devices
-- **Web Interface**:
-  - **Primary**: `https://piraterf.local` (port 443) - **USE THIS ONE**
-  - **Fallback HTTP**: `http://192.168.4.1` (port 80) - limited functionality
-  - **Fallback HTTPS**: `https://192.168.4.1` (port 443) - microphone won't work
+- **Web Interface**: `https://piraterf.local` (port 443) - or whatever hostname you configured
 
 ## 🔒 Security Features
 
