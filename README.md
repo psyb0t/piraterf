@@ -28,7 +28,7 @@ All of this runs on a **Pi Zero W configured as a WiFi access point**, making it
 ### Service Architecture
 PIrateRF is a **single Go service** with modular components:
 - **RF Transmission Engine**: Core logic for generating FM, Morse, and spectrum signals
-- **Execution Manager**: Handles concurrent RF transmission execution with atomic state control
+- **Execution Manager**: Handles RF transmission execution with atomic state control preventing concurrent transmissions
 - **WebSocket Hub**: Real-time bidirectional communication with the frontend interface
 - **HTTP Server**: Serves the web interface and handles secure file uploads
 - **Audio/Image Processing**: Automatic format conversion and optimization pipelines
@@ -48,17 +48,7 @@ PIrateRF is a **single Go service** with modular components:
 
 This will get your Pi Zero connected via USB with SSH access so you can actually deploy PIrateRF to the bastard. Don't skip this step or you'll be fucked trying to connect to your Pi later!
 
-### 1. Configure Your Pi Connection
-**FIRST FUCKING THING** - Edit `scripts/pi_config.sh` to match your Pi setup:
-
-```bash
-# Edit scripts/pi_config.sh and modify these values:
-export PI_USER="fucker"              # Pi username
-export PI_HOST="piraterf.local"      # Pi hostname/IP
-export PI_PASS="FUCKER"             # Pi password
-```
-
-### 2. Initial Pi Setup
+### 1. Initial Pi Setup and Configuration
 Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
 
 ```bash
@@ -66,10 +56,13 @@ Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
 git clone https://github.com/psyb0t/piraterf.git
 cd piraterf
 
-# Your Pi connection is already configured in step 1
+# Edit scripts/pi_config.sh and modify these values to match your Pi:
+# export PI_USER="fucker"              # Pi username
+# export PI_HOST="piraterf.local"      # Pi hostname/IP
+# export PI_PASS="FUCKER"             # Pi password
 ```
 
-### 3. Complete Automated Setup
+### 2. Complete Automated Setup
 Run the full setup pipeline that configures everything automatically:
 
 ```bash
@@ -79,22 +72,26 @@ make complete
 This fucking command will:
 1. **Install dependencies** (rpitx, sox, ffmpeg, etc.)
 2. **Configure WiFi Access Point** (SSID: "🏴‍☠️📡", Password: "FUCKER!!!")
-3. **Setup system branding** and user accounts
+3. **Setup system branding** (MOTD, terminal aliases, pirate theme)
 4. **Build and deploy** the PIrateRF application
 5. **Install systemd service** for auto-start
 6. **Reboot** the Pi into pirate mode
 
-### 4. Connect and Use
+### 3. Connect and Use
 After reboot:
 1. **Connect to WiFi**: "🏴‍☠️📡" with password "FUCKER!!!"
-2. **Open browser**: Navigate to `https://192.168.4.1` or `http://piraterf.local`
+2. **Open browser**: Navigate to `https://piraterf.local` **ONLY** (don't use the IP address!)
 3. **Start transmitting**: Upload audio, configure RDS, and broadcast like a proper pirate!
+
+**⚠️ IMPORTANT**: Use `https://piraterf.local` **NOT** the IP address (`192.168.4.1`). The fucking microphone recording feature requires HTTPS with a proper hostname to work due to browser security restrictions. Using the IP address will break microphone access!
+
+**🎉 Pirate Crew Mode**: Connect multiple devices to the same WiFi network and all access the web interface simultaneously! While only one transmission can run at a time (because GPIO doesn't fucking share), all connected devices see real-time transmission status, output logs, and can take turns controlling the RF transmissions. Perfect for fucking around with friends in a radio wave gangbang! 📡💥
 
 ## 🛠️ Development Workflow
 
 ### Local Development
 ```bash
-# Run locally with hot reload
+# Run locally in development mode
 make run-dev
 
 # Format and lint code
@@ -171,9 +168,9 @@ The Pi automatically configures itself as a **standalone WiFi access point**:
 - **IP Range**: 192.168.4.1/24 (Pi is at 192.168.4.1)
 - **DHCP**: Automatic IP assignment for connected devices
 - **Web Interface**:
-  - HTTPS: `https://192.168.4.1` (port 443)
-  - HTTP: `http://192.168.4.1` (port 80)
-  - mDNS: `http://piraterf.local`
+  - **Primary**: `https://piraterf.local` (port 443) - **USE THIS ONE**
+  - **Fallback HTTP**: `http://192.168.4.1` (port 80) - limited functionality
+  - **Fallback HTTPS**: `https://192.168.4.1` (port 443) - microphone won't work
 
 ## 🔒 Security Features
 

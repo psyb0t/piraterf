@@ -5,6 +5,10 @@
 
 set -euo pipefail
 
+# Source Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../pi_config.sh"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -126,7 +130,7 @@ chmod 644 /etc/motd
 chmod 644 /etc/bash.bashrc
 
 # Override user's ~/.bashrc completely with global config
-USER_HOME=$(getent passwd fucker | cut -d: -f6)
+USER_HOME=$(getent passwd "$PI_USER" | cut -d: -f6)
 if [[ -n "$USER_HOME" && -d "$USER_HOME" ]]; then
     echo -e "${YELLOW}Overriding user ~/.bashrc with global PIrateRF config...${NC}"
     # Back up user's bashrc
@@ -136,7 +140,7 @@ if [[ -n "$USER_HOME" && -d "$USER_HOME" ]]; then
 # PIrateRF User Configuration - Sources global config
 source /etc/bash.bashrc
 USER_BASHRC_EOF
-    chown fucker:fucker "$USER_HOME/.bashrc"
+    chown "$PI_USER:$PI_USER" "$USER_HOME/.bashrc"
     echo -e "${GREEN}✅ User bashrc overridden with global config${NC}"
 fi
 
