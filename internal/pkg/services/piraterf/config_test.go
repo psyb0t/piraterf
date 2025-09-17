@@ -81,8 +81,8 @@ func TestParseConfig(t *testing.T) {
 func TestConstants(t *testing.T) {
 	tests := []struct {
 		name     string
-		constant interface{}
-		expected interface{}
+		constant any
+		expected any
 	}{
 		{
 			name:     "service name",
@@ -226,8 +226,8 @@ func TestExecutionStateConstants(t *testing.T) {
 func TestPermissionsConstants(t *testing.T) {
 	tests := []struct {
 		name        string
-		permissions interface{}
-		expected    interface{}
+		permissions any
+		expected    any
 	}{
 		{
 			name:        "directory permissions",
