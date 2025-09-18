@@ -436,3 +436,143 @@ func TestSendStoppedEvent(t *testing.T) {
 		em.sendStoppedEvent(clientID)
 	})
 }
+
+func TestSendError(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	// Test that SendError doesn't panic
+	assert.NotPanics(t, func() {
+		em.SendError("TEST_ERROR", "test error message")
+	})
+}
+
+func TestSendOutputEvent(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	// Test that sendOutputEvent doesn't panic
+	assert.NotPanics(t, func() {
+		em.sendOutputEvent("stdout", "test output line")
+	})
+}
+
+func TestExecutionManagerStreamOutput(t *testing.T) {
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	// Test streamOutput with context cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Start streamOutput in goroutine
+	done := make(chan bool)
+	go func() {
+		em.streamOutput(ctx)
+		done <- true
+	}()
+
+	// Cancel context to stop streaming
+	cancel()
+
+	// Wait for function to return
+	select {
+	case <-done:
+		// Success - function returned when context was cancelled
+	case <-time.After(1 * time.Second):
+		t.Fatal("streamOutput did not return when context was cancelled")
+	}
+}
+
+func TestExecutionManagerSendStoppedEvent(t *testing.T) {
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	stoppingClientID := uuid.New()
+
+	// Test with no initiating client
+	require.NotPanics(t, func() {
+		em.sendStoppedEvent(stoppingClientID)
+	})
+
+	// Test with initiating client set
+	initiatingClientID := uuid.New()
+	em.initiatingClient.Store(initiatingClientID)
+
+	require.NotPanics(t, func() {
+		em.sendStoppedEvent(stoppingClientID)
+	})
+}
+
+func TestProcessOutputChannels(t *testing.T) {
+	hub := websocket.NewHub("test")
+	defer hub.Close()
+
+	rpitx := gorpitx.GetInstance()
+	em := newExecutionManager(rpitx, hub)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	tests := []struct {
+		name           string
+		setupChannels  func() (chan string, chan string)
+		expectReturn   bool
+	}{
+		{
+			name: "nil channels should return false",
+			setupChannels: func() (chan string, chan string) {
+				return nil, nil
+			},
+			expectReturn: false,
+		},
+		{
+			name: "context cancelled should return false",
+			setupChannels: func() (chan string, chan string) {
+				stdoutCh := make(chan string, 1)
+				stderrCh := make(chan string, 1)
+				return stdoutCh, stderrCh
+			},
+			expectReturn: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdoutCh, stderrCh := tt.setupChannels()
+
+			// Set up channels in execution manager
+			em.mu.Lock()
+			em.outputChannels.stdout = stdoutCh
+			em.outputChannels.stderr = stderrCh
+			em.mu.Unlock()
+
+			if tt.name == "context cancelled should return false" {
+				// Cancel context for this test
+				testCtx, testCancel := context.WithCancel(context.Background())
+				testCancel() // Cancel immediately
+
+				result := em.processOutputChannels(testCtx)
+				assert.Equal(t, tt.expectReturn, result)
+			} else {
+				result := em.processOutputChannels(ctx)
+				assert.Equal(t, tt.expectReturn, result)
+			}
+		})
+	}
+}

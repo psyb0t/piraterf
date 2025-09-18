@@ -24,7 +24,7 @@ func TestRootHandler(t *testing.T) {
 			requestPath: "/",
 			setupFiles: func(tempDir string) {
 				indexPath := filepath.Join(tempDir, "index.html")
-				src := "/workspace/.fixtures/test_index.html"
+				src := ".fixtures/test_index.html"
 				err := copyFile(src, indexPath)
 				require.NoError(t, err)
 			},
@@ -68,7 +68,7 @@ func TestRootHandler(t *testing.T) {
 			setupFiles: func(tempDir string) {
 				// Create index.html but path is not /
 				indexPath := filepath.Join(tempDir, "index.html")
-				src := "/workspace/.fixtures/test_safe.html"
+				src := ".fixtures/test_safe.html"
 				err := copyFile(src, indexPath)
 				require.NoError(t, err)
 			},

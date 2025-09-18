@@ -1,61 +1,26 @@
 #!/bin/bash
 
-# Pi Zero W Dependencies Setup - RF Transmission Library + Audio Processing
-# Installs rpitx for RF signal generation and sox for audio conversion
-
 set -e
 
-# Source common functions and Pi configuration
+# Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/servicepack/common.sh"
 source "$SCRIPT_DIR/common.sh"
 
-# Configuration
-RPITX_REPO="https://github.com/psyb0t/rpitx.git"
-INSTALL_DIR="/home/$PI_USER/rpitx"
+section "📡 Setting up dependencies on the fucking Pi"
 
-# Color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+info "📡 Copying dependencies setup script to the fucking Pi..."
+# Copy setup script and config to Pi
+$SCP_CMD scripts/setup_deps.sh scripts/pi_config.sh $PI_TARGET:/tmp/
 
-echo -e "${GREEN}📡 Pi Zero W Dependencies Installation - Let's fucking transmit! 📡${NC}"
-echo "Installing rpitx for RF signal generation and sox for audio conversion..."
-
-# Check if directory exists first before doing any system updates
-if [ -d "$INSTALL_DIR" ]; then
-    echo "⚠️  Directory $INSTALL_DIR already exists."
-    read -p "Wanna fuckin' reinstall? [y/N]: " choice
-    case $choice in
-        y|Y)
-            echo "🗑️ Removing existing rpitx directory..."
-            rm -rf "$INSTALL_DIR"
-            ;;
-        *)
-            echo "❌ Installation cancelled."
-            exit 0
-            ;;
-    esac
+info "🔧 Executing dependencies setup on this bastard Pi..."
+# Execute the setup script on the Pi and clean up
+if $SSH_CMD $PI_TARGET "bash /tmp/setup_deps.sh && rm -f /tmp/setup_deps.sh /tmp/pi_config.sh"; then
+    success "✅ Dependencies setup fucking complete!"
+    exit 0
 fi
 
-echo "🔄 Updating this fucking system..."
-sudo apt-get update
-
-echo "📦 Installing the fucking dependencies..."
-sudo apt-get install -y git sox libsox-fmt-all ffmpeg openssl
-
-echo "📥 Cloning the fucking rpitx repository..."
-
-git clone "$RPITX_REPO" "$INSTALL_DIR"
-cd "$INSTALL_DIR"
-
-echo "⚙️ Running the fucking rpitx installation..."
-./install.sh
-
-echo ""
-echo -e "${GREEN}✅ Dependencies installation fucking complete!${NC}"
-echo -e "${GREEN}📡 rpitx: RF signal generation${NC}"
-echo -e "${GREEN}🔊 sox: Audio file manipulation${NC}"
-echo -e "${GREEN}🎬 ffmpeg: Audio/video conversion${NC}"
-echo -e "${GREEN}🔒 openssl: TLS certificate generation${NC}"
+error "💥 Dependencies setup failed!"
+# Clean up even on failure
+$SSH_CMD $PI_TARGET "rm -f /tmp/setup_deps.sh /tmp/pi_config.sh" || true
+exit 1

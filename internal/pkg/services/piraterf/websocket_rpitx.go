@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/psyb0t/aichteeteapee/server/websocket"
-	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/constants"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/psyb0t/gorpitx"
@@ -64,7 +63,6 @@ type rpitxExecutionOutputLineMessageData struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-//nolint:funlen
 func (s *PIrateRF) handleRPITXExecutionStart(
 	_ websocket.Hub,
 	client *websocket.Client,
@@ -77,102 +75,113 @@ func (s *PIrateRF) handleRPITXExecutionStart(
 
 	logger.Debug("RPITX execution start requested")
 
+	msg, err := s.parseExecutionMessage(event, logger)
+	if err != nil {
+		return err
+	}
+
+	if err := s.validateModuleInDev(msg.ModuleName, logger); err != nil {
+		return s.handleModuleValidationError(err, msg.ModuleName, logger)
+	}
+
+	return s.processModuleExecution(msg, client, logger)
+}
+
+func (s *PIrateRF) parseExecutionMessage(
+	event *websocket.Event,
+	logger *logrus.Entry,
+) (*rpitxExecutionStartMessage, error) {
 	var msg rpitxExecutionStartMessage
 	if err := json.Unmarshal(event.Data, &msg); err != nil {
 		logger.WithError(err).Error("failed to unmarshal RPITX exec message")
 
-		return ctxerrors.Wrap(err, "failed to unmarshal RPITX exec message")
+		return nil, ctxerrors.Wrap(err, "failed to unmarshal RPITX exec message")
 	}
 
-	// Early module validation in dev mode
-	if err := s.validateModuleInDev(msg.ModuleName, logger); err != nil {
-		logger.WithError(err).
-			WithField("module", msg.ModuleName).
-			Error("Module validation failed - unsupported module")
+	return &msg, nil
+}
 
-		// Send error event to UI as well
-		s.executionManager.SendError(
-			"unknown module",
-			fmt.Sprintf("%s: unknown module", msg.ModuleName),
-		)
+func (s *PIrateRF) handleModuleValidationError(err error, moduleName gorpitx.ModuleName, logger *logrus.Entry) error {
+	logger.WithError(err).
+		WithField("module", moduleName).
+		Error("Module validation failed - unsupported module")
 
-		return ctxerrors.Wrap(err, "module validation failed")
-	}
+	s.executionManager.SendError(
+		"unknown module",
+		fmt.Sprintf("%s: unknown module", moduleName),
+	)
 
+	return ctxerrors.Wrap(err, "module validation failed")
+}
+
+func (s *PIrateRF) processModuleExecution(
+	msg *rpitxExecutionStartMessage,
+	client *websocket.Client,
+	logger *logrus.Entry,
+) error {
 	finalTimeout := msg.Timeout
-
 	finalArgs := msg.Args
 
-	// Handle audio modifications for pifmrds module
-	if msg.ModuleName == gorpitx.ModuleNamePIFMRDS {
-		var (
-			err         error
-			cleanupPath string
-		)
+	switch msg.ModuleName {
+	case gorpitx.ModuleNamePIFMRDS:
+		return s.handlePIFMRDSExecution(msg, finalTimeout, client, logger)
+	case gorpitx.ModuleNameSPECTRUMPAINT:
+		return s.handleSPECTRUMPAINTExecution(msg, finalTimeout, client, logger)
+	default:
+		return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, finalTimeout, client, nil)
+	}
+}
 
-		finalTimeout, cleanupPath, finalArgs, err = s.processAudioModifications(
-			msg,
-			finalTimeout,
-			logger,
-		)
-		if err != nil {
-			logger.WithError(err).Error("Audio processing failed")
+func (s *PIrateRF) handlePIFMRDSExecution(
+	msg *rpitxExecutionStartMessage,
+	finalTimeout int,
+	client *websocket.Client,
+	logger *logrus.Entry,
+) error {
+	processedTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(*msg, finalTimeout, logger)
+	if err != nil {
+		logger.WithError(err).Error("Audio processing failed")
 
-			return ctxerrors.Wrap(err, "audio processing failed")
-		}
-
-		// Create callback for temporary file cleanup
-		var callback func() error
-		if cleanupPath != "" {
-			callback = func() error {
-				if err := os.Remove(cleanupPath); err != nil {
-					logger.WithError(err).
-						WithField("path", cleanupPath).
-						Warn("Failed to cleanup temporary audio file")
-
-					return ctxerrors.Wrap(err, "failed to remove temporary audio file")
-				}
-
-				logger.WithField("path", cleanupPath).
-					Debug("Cleaned up temporary audio file")
-
-				return nil
-			}
-		}
-
-		return s.executionManager.startExecution(
-			s.serviceCtx,
-			msg.ModuleName,
-			finalArgs,
-			finalTimeout,
-			client,
-			callback,
-		)
+		return ctxerrors.Wrap(err, "audio processing failed")
 	}
 
-	// Handle image modifications for spectrumpaint module
-	if msg.ModuleName == gorpitx.ModuleNameSPECTRUMPAINT {
-		modifiedArgs, err := s.processImageModifications(
-			msg.Args,
-			logger,
-		)
-		if err != nil {
-			logger.WithError(err).Error("Image processing failed")
+	callback := s.createCleanupCallback(cleanupPath, logger)
 
-			return ctxerrors.Wrap(err, "image processing failed")
-		}
+	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, processedTimeout, client, callback)
+}
 
-		finalArgs = modifiedArgs
+func (s *PIrateRF) handleSPECTRUMPAINTExecution(
+	msg *rpitxExecutionStartMessage,
+	finalTimeout int,
+	client *websocket.Client,
+	logger *logrus.Entry,
+) error {
+	modifiedArgs, err := s.processImageModifications(msg.Args, logger)
+	if err != nil {
+		logger.WithError(err).Error("Image processing failed")
+
+		return ctxerrors.Wrap(err, "image processing failed")
 	}
 
-	return s.executionManager.startExecution(
-		s.serviceCtx,
-		msg.ModuleName,
-		finalArgs,
-		finalTimeout,
-		client,
-		nil,
-	)
+	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, modifiedArgs, finalTimeout, client, nil)
+}
+
+func (s *PIrateRF) createCleanupCallback(cleanupPath string, logger *logrus.Entry) func() error {
+	if cleanupPath == "" {
+		return nil
+	}
+
+	return func() error {
+		if err := os.Remove(cleanupPath); err != nil {
+			logger.WithError(err).WithField("path", cleanupPath).Warn("Failed to cleanup temporary audio file")
+
+			return ctxerrors.Wrap(err, "failed to remove temporary audio file")
+		}
+
+		logger.WithField("path", cleanupPath).Debug("Cleaned up temporary audio file")
+
+		return nil
+	}
 }
 
 func (s *PIrateRF) handleRPITXExecutionStop(
@@ -192,9 +201,7 @@ func (s *PIrateRF) handleRPITXExecutionStop(
 
 func (s *PIrateRF) getAudioDurationWithSox(audioFile string) (float64, error) {
 	// Use sox to get audio duration
-	cmd := commander.New()
-
-	stdout, stderr, err := cmd.Output(
+	stdout, stderr, err := s.commander.Output(
 		s.serviceCtx,
 		"sox",
 		[]string{"--info", "-D", audioFile},
@@ -417,77 +424,78 @@ func (s *PIrateRF) processPlayOnceSilence(
 	modifiedArgs json.RawMessage,
 	logger *logrus.Entry,
 ) (string, string, json.RawMessage, error) {
-	// Only add silence if Play Once is enabled
 	if !msg.PlayOnce {
 		return audioFile, existingTempPath, modifiedArgs, nil
 	}
 
-	// Generate unique filename for audio file with silence
-	playlistID := uuid.New().String()
-	silenceAudioPath := "/tmp/" + playlistID + "_with_silence" +
-		constants.FileExtensionWAV
+	silenceAudioPath := s.generateSilenceFilePath()
+	if err := s.addSilenceToAudio(audioFile, silenceAudioPath, logger); err != nil {
+		return audioFile, existingTempPath, modifiedArgs, err
+	}
 
+	finalArgs, err := s.updateArgsWithSilenceFile(modifiedArgs, silenceAudioPath)
+	if err != nil {
+		return audioFile, existingTempPath, modifiedArgs, err
+	}
+
+	return silenceAudioPath, silenceAudioPath, finalArgs, nil
+}
+
+func (s *PIrateRF) generateSilenceFilePath() string {
+	playlistID := uuid.New().String()
+
+	return "/tmp/" + playlistID + "_with_silence" + constants.FileExtensionWAV
+}
+
+func (s *PIrateRF) addSilenceToAudio(audioFile, silenceAudioPath string, logger *logrus.Entry) error {
 	logger.WithFields(logrus.Fields{
 		"originalAudio": audioFile,
 		"silenceFile":   silenceAudioPath,
 	}).Debug("Creating audio file with 2 seconds of silence for Play Once mode")
 
-	// Use sox to add 2 seconds of silence at the end
-	// sox input.wav silence_output.wav pad 0 2
-	cmd := commander.New()
-
 	ctx, cancel := context.WithTimeout(s.serviceCtx, audioConversionTimeout)
 	defer cancel()
 
-	process, err := cmd.Start(ctx, "sox", []string{
+	process, err := s.commander.Start(ctx, "sox", []string{
 		audioFile,
 		silenceAudioPath,
-		"pad", "0", "2", // Add 2 seconds of silence at the end
+		"pad", "0", "2",
 	})
 	if err != nil {
-		return audioFile, existingTempPath, modifiedArgs,
-			ctxerrors.Wrapf(err, "failed to start sox silence addition")
+		return ctxerrors.Wrapf(err, "failed to start sox silence addition")
 	}
 
 	if err := process.Wait(); err != nil {
-		return audioFile,
-			existingTempPath,
-			modifiedArgs,
-			ctxerrors.Wrapf(err, "sox silence addition failed")
+		return ctxerrors.Wrapf(err, "sox silence addition failed")
 	}
 
-	// Verify the output file was created
 	if _, err := os.Stat(silenceAudioPath); err != nil {
-		return audioFile,
-			existingTempPath,
-			modifiedArgs,
-			ctxerrors.Wrapf(err, "silence audio file not found")
+		return ctxerrors.Wrapf(err, "silence audio file not found")
 	}
 
 	logger.WithField("silenceAudioPath", silenceAudioPath).
 		Debug("Successfully created audio file with silence")
 
-	// Update the args to use the new audio file with silence
+	return nil
+}
+
+func (s *PIrateRF) updateArgsWithSilenceFile(
+	modifiedArgs json.RawMessage,
+	silenceAudioPath string,
+) (json.RawMessage, error) {
 	var argsMap map[string]any
 	if err := json.Unmarshal(modifiedArgs, &argsMap); err != nil {
-		return audioFile,
-			existingTempPath,
-			modifiedArgs,
-			ctxerrors.Wrapf(err, "failed to unmarshal args")
+		return modifiedArgs, ctxerrors.Wrapf(err, "failed to unmarshal args")
 	}
 
 	argsMap["audio"] = silenceAudioPath
 
 	finalArgs, err := json.Marshal(argsMap)
 	if err != nil {
-		return audioFile,
-			existingTempPath,
-			modifiedArgs,
-			ctxerrors.Wrapf(err, "failed to marshal final args")
+		return modifiedArgs, ctxerrors.Wrapf(err, "failed to marshal final args")
 	}
 
-	// Return the new file path, cleanup path, and updated args
-	return silenceAudioPath, silenceAudioPath, finalArgs, nil
+	return finalArgs, nil
 }
 
 // validateModuleInDev validates that a module is supported in development mode.

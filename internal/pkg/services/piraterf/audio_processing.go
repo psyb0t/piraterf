@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/constants"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/sirupsen/logrus"
@@ -142,7 +141,6 @@ func (s *PIrateRF) convertAudioFileWithFFmpeg(
 	)
 
 	// Use ffmpeg to convert to optimal format: 16-bit 48kHz mono WAV
-	cmd := commander.New()
 
 	ctx, cancel := context.WithTimeout(
 		s.serviceCtx,
@@ -151,7 +149,7 @@ func (s *PIrateRF) convertAudioFileWithFFmpeg(
 	defer cancel()
 
 	// ffmpeg -i input.webm -ar 48000 -ac 1 -c:a pcm_s16le output.wav
-	process, err := cmd.Start(ctx, "ffmpeg", []string{
+	process, err := s.commander.Start(ctx, "ffmpeg", []string{
 		"-i", inputPath,
 		"-ar", audioSampleRate, // 48kHz sample rate
 		"-ac", audioChannels, // mono (1 channel)
@@ -186,78 +184,67 @@ func (s *PIrateRF) createPlaylistFromFiles(
 	filePaths []string,
 	outputDir ...string,
 ) (string, error) {
-	var outputPath string
-
-	if len(outputDir) > 0 && outputDir[0] != "" {
-		// Use specified directory (for temporary playlists)
-		// Ensure the playlist name ends with .wav
-		if !strings.HasSuffix(
-			playlistName,
-			constants.FileExtensionWAV,
-		) {
-			playlistName += constants.FileExtensionWAV
-		}
-
-		outputPath = filepath.Join(outputDir[0], playlistName)
-	} else {
-		// Use default uploads directory (for permanent playlists)
-		// Ensure files directory structure exists
-		if err := s.ensureFilesDirsExist(); err != nil {
-			return "", err
-		}
-
-		// Generate output path in uploads directory
-		audioUploadsDir := path.Join(
-			s.config.FilesDir,
-			audioUploadsPath,
-		)
-
-		// Ensure the playlist name ends with .wav
-		if !strings.HasSuffix(
-			playlistName,
-			constants.FileExtensionWAV,
-		) {
-			playlistName += constants.FileExtensionWAV
-		}
-
-		outputPath = filepath.Join(audioUploadsDir, playlistName)
+	outputPath := s.getPlaylistOutputPath(playlistName, outputDir...)
+	if outputPath == "" {
+		return "", ctxerrors.New("failed to determine output path")
 	}
 
-	// Use sox to concatenate files with consistent format
-	cmd := commander.New()
+	return s.executePlaylistCreation(filePaths, outputPath)
+}
 
-	ctx, cancel := context.WithTimeout(
-		s.serviceCtx,
-		audioPlaylistTimeout, // Longer timeout for playlist creation
-	)
+func (s *PIrateRF) getPlaylistOutputPath(playlistName string, outputDir ...string) string {
+	playlistName = s.ensureWavExtension(playlistName)
+
+	if len(outputDir) > 0 && outputDir[0] != "" {
+		return filepath.Join(outputDir[0], playlistName)
+	}
+
+	if err := s.ensureFilesDirsExist(); err != nil {
+		return ""
+	}
+
+	audioUploadsDir := path.Join(s.config.FilesDir, audioUploadsPath)
+
+	return filepath.Join(audioUploadsDir, playlistName)
+}
+
+func (s *PIrateRF) ensureWavExtension(playlistName string) string {
+	if !strings.HasSuffix(playlistName, constants.FileExtensionWAV) {
+		return playlistName + constants.FileExtensionWAV
+	}
+
+	return playlistName
+}
+
+func (s *PIrateRF) executePlaylistCreation(filePaths []string, outputPath string) (string, error) {
+	ctx, cancel := context.WithTimeout(s.serviceCtx, audioPlaylistTimeout)
 	defer cancel()
 
-	// sox input1.wav input2.wav input3.wav -r 48000 -b 16 -c 1 output.wav
-	soxArgs := make(
-		[]string,
-		0,
-		len(filePaths)+audioArgsReservedCount,
-	)
+	soxArgs := s.buildSoxArgs(filePaths, outputPath)
+
+	process, err := s.commander.Start(ctx, "sox", soxArgs)
+	if err != nil {
+		return "", ctxerrors.Wrapf(err, "start sox playlist creation")
+	}
+
+	if err := process.Wait(); err != nil {
+		return "", ctxerrors.Wrapf(err, "sox playlist creation failed")
+	}
+
+	if _, err := os.Stat(outputPath); err != nil {
+		return "", ctxerrors.Wrapf(err, "playlist file not found")
+	}
+
+	return outputPath, nil
+}
+
+func (s *PIrateRF) buildSoxArgs(filePaths []string, outputPath string) []string {
+	soxArgs := make([]string, 0, len(filePaths)+audioArgsReservedCount)
 	soxArgs = append(soxArgs, filePaths...)
 	soxArgs = append(soxArgs, "-r", audioSampleRate)
 	soxArgs = append(soxArgs, "-b", audioBitDepth)
 	soxArgs = append(soxArgs, "-c", audioChannels)
 	soxArgs = append(soxArgs, outputPath)
 
-	process, err := cmd.Start(ctx, "sox", soxArgs)
-	if err != nil {
-		return "", ctxerrors.Wrapf(err, "start sox playlist creation")
-	}
-
-	// Wait for concatenation to complete
-	if err := process.Wait(); err != nil {
-		return "", ctxerrors.Wrapf(err, "sox playlist creation failed")
-	}
-
-	// Verify the output file was created
-	if _, err := os.Stat(outputPath); err != nil {
-		return "", ctxerrors.Wrapf(err, "playlist file not found")
-	}
-
-	return outputPath, nil
+	return soxArgs
 }

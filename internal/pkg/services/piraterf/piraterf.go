@@ -10,6 +10,7 @@ import (
 
 	"github.com/psyb0t/aichteeteapee/server"
 	"github.com/psyb0t/aichteeteapee/server/websocket"
+	"github.com/psyb0t/commander"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
@@ -63,6 +64,7 @@ type PIrateRF struct {
 	httpServer       *server.Server
 	websocketHub     websocket.Hub
 	executionManager *executionManager
+	commander        commander.Commander
 	serviceCtx       context.Context //nolint:containedctx
 	// need service ctx to pass down to process execution
 	doneCh   chan struct{}
@@ -80,9 +82,10 @@ func New() (*PIrateRF, error) {
 
 func NewWithConfig(config Config) (*PIrateRF, error) {
 	s := &PIrateRF{
-		config: config,
-		rpitx:  gorpitx.GetInstance(),
-		doneCh: make(chan struct{}),
+		config:    config,
+		rpitx:     gorpitx.GetInstance(),
+		commander: commander.New(),
+		doneCh:    make(chan struct{}),
 	}
 
 	// Ensure directories exist during construction

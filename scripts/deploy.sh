@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# PIrateRF deployment script - copy and extract files on Pi
+
+# Configuration
+DEPLOY_USER="$(whoami)"
+DEPLOY_DIR="/home/${DEPLOY_USER}/piraterf"
+TAR_FILE="piraterf.tar.gz"
+EXECUTABLE="piraterf.sh"
+
+# No sudo needed - just deploying files to user directory
+
+echo "🚀 Starting PIrateRF deployment..."
+
+# Check if directory exists and ask about overwriting
+if [ -d "$DEPLOY_DIR" ]; then
+    echo "⚠️  Directory $DEPLOY_DIR already exists."
+    read -p "Wanna fuckin' overwrite? [y/N]: " choice
+    case $choice in
+        y|Y)
+            echo "💥 Nuking the existing shit..."
+            sudo rm -rf "$DEPLOY_DIR"
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+            ;;
+        *)
+            echo "🔄 Just overwriting the files..."
+            cd "$DEPLOY_DIR"
+            ;;
+    esac
+else
+    echo "📁 Creating deployment directory..."
+    mkdir -p "$DEPLOY_DIR"
+    cd "$DEPLOY_DIR"
+fi
+
+# Extract the tar file from /tmp
+echo "📦 Extracting deployment package..."
+tar -xzf "/tmp/$TAR_FILE"
+rm "/tmp/$TAR_FILE"
+
+# Make executables
+chmod +x "$EXECUTABLE"
+chmod +x install.sh
+chmod +x uninstall.sh
+
+echo "🧹 Cleaning up temp files..."
+rm -f /tmp/deploy.sh
+
+echo "🔄 Restarting piraterf service..."
+if sudo systemctl restart piraterf; then
+    echo "✅ PIrateRF deployment and restart fucking complete!"
+else
+    echo "⚠️  Service restart failed, but deployment completed"
+    exit 1
+fi

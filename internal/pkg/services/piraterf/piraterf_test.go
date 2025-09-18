@@ -7,6 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/gorpitx"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -495,6 +498,50 @@ func TestPIrateRF_Run(t *testing.T) {
 				assert.NoError(t, err)
 			case <-time.After(2 * time.Second):
 				t.Fatal("service did not stop within timeout")
+			}
+		})
+	}
+}
+
+func TestValidateModuleInDev(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
+	tests := []struct {
+		name         string
+		module       gorpitx.ModuleName
+		expectError  bool
+	}{
+		{
+			name:        "supported module PIFMRDS",
+			module:      gorpitx.ModuleNamePIFMRDS,
+			expectError: false,
+		},
+		{
+			name:        "supported module SPECTRUMPAINT",
+			module:      gorpitx.ModuleNameSPECTRUMPAINT,
+			expectError: false,
+		},
+		{
+			name:        "invalid module",
+			module:      gorpitx.ModuleName("INVALID"),
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rpitx := gorpitx.GetInstance()
+			service := &PIrateRF{
+				rpitx: rpitx,
+			}
+
+			logger := logrus.WithField("test", "validateModuleInDev")
+			err := service.validateModuleInDev(tt.module, logger)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

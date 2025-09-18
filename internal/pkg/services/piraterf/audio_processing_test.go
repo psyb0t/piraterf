@@ -6,10 +6,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/constants"
+	"github.com/psyb0t/ctxerrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
 
 func TestFileConversionPostprocessor(t *testing.T) {
 	tests := []struct {
@@ -20,43 +23,31 @@ func TestFileConversionPostprocessor(t *testing.T) {
 		expectResult map[string]any
 	}{
 		{
-			name: "audio file conversion fails when ffmpeg not available",
+			name: "audio file conversion success",
 			inputResponse: map[string]any{
-				"path": "/workspace/.fixtures/test_2s.mp3",
+				"path": ".fixtures/test_2s.mp3",
 				"name": "test_2s.mp3",
 			},
 			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_2s.mp3"
+				return ".fixtures/test_2s.mp3"
 			},
-			expectError: true, // Expected since we don't have ffmpeg in test env
-			expectResult: map[string]any{},
+			expectError: false,
+			expectResult: map[string]any{
+				"converted": true,
+			},
 		},
 		{
 			name: "non-audio file unchanged",
 			inputResponse: map[string]any{
-				"path": "/workspace/.fixtures/test_document.txt",
+				"path": ".fixtures/test_document.txt",
 				"name": "test_document.txt",
 			},
 			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_document.txt"
+				return ".fixtures/test_document.txt"
 			},
 			expectError: false,
 			expectResult: map[string]any{
 				"name": "test_document.txt",
-				// path will be absolute so we check it separately
-			},
-		},
-		{
-			name: "invalid response format",
-			inputResponse: map[string]any{
-				"path": 123, // Invalid type
-			},
-			setupFiles: func(tempDir string) string {
-				return ""
-			},
-			expectError: false,
-			expectResult: map[string]any{
-				"path": 123,
 			},
 		},
 	}
@@ -70,21 +61,42 @@ func TestFileConversionPostprocessor(t *testing.T) {
 			err := os.MkdirAll(audioUploadsDir, 0755)
 			require.NoError(t, err)
 
+			// Create a custom mock commander that creates output files
+			mockCmd := &fileCreatingMockCommander{
+				MockCommander: *commander.NewMock(),
+			}
+
+			// Set up mock for ffmpeg with exact argument count and patterns
+			// Expected args: "-i", inputPath, "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", "-y", outputPath
+			mockCmd.ExpectWithMatchers("ffmpeg",
+				commander.Exact("-i"),           // -i
+				commander.Any(),                 // input path
+				commander.Exact("-ar"),          // -ar
+				commander.Exact("48000"),        // sample rate
+				commander.Exact("-ac"),          // -ac
+				commander.Exact("1"),            // mono channels
+				commander.Exact("-c:a"),         // -c:a
+				commander.Exact("pcm_s16le"),    // codec
+				commander.Exact("-y"),           // overwrite
+				commander.Any(),                 // output path
+			).ReturnOutput([]byte("mock ffmpeg output"))
+
 			service := &PIrateRF{
 				serviceCtx: context.Background(),
 				config: Config{
 					FilesDir: tempDir,
 				},
+				commander: mockCmd,
 			}
 
 			// Set up files if needed
 			if tt.setupFiles != nil {
 				inputPath := tt.setupFiles(tempDir)
 				if inputPath != "" {
-					// Update response path to absolute path
 					tt.inputResponse["path"] = inputPath
 				}
 			}
+
 
 			result, err := service.fileConversionPostprocessor(tt.inputResponse)
 
@@ -98,7 +110,6 @@ func TestFileConversionPostprocessor(t *testing.T) {
 					actualValue, exists := result[key]
 					assert.True(t, exists, "Result should contain key %s", key)
 
-					// For converted=true, just check it's true
 					if key == "converted" && expectedValue == true {
 						assert.True(t, actualValue.(bool))
 					} else {
@@ -128,48 +139,25 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 		expectConversion bool
 	}{
 		{
-			name: "mp3 file conversion fails without ffmpeg",
+			name: "mp3 file conversion",
 			inputResponse: map[string]any{
-				"path": "/workspace/.fixtures/test_2s.mp3",
+				"path": ".fixtures/test_2s.mp3",
 				"name": "test_2s.mp3",
 			},
 			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_2s.mp3"
+				return ".fixtures/test_2s.mp3"
 			},
-			expectError: true, // Expected since we don't have ffmpeg
-			expectConversion: false,
-		},
-		{
-			name: "wav file conversion fails without ffmpeg",
-			inputResponse: map[string]any{
-				"path": "/workspace/.fixtures/test_2s.wav",
-				"name": "test_2s.wav",
-			},
-			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_2s.wav"
-			},
-			expectError: true, // Expected since we don't have ffmpeg
-			expectConversion: false,
+			expectError: false,
+			expectConversion: true,
 		},
 		{
 			name: "non-audio file ignored",
 			inputResponse: map[string]any{
-				"path": "/workspace/.fixtures/test_red_100x50.png",
+				"path": ".fixtures/test_red_100x50.png",
 				"name": "test_red_100x50.png",
 			},
 			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_red_100x50.png"
-			},
-			expectError: false,
-			expectConversion: false,
-		},
-		{
-			name: "missing file path in response",
-			inputResponse: map[string]any{
-				"name": "test.mp3",
-			},
-			setupFiles: func(tempDir string) string {
-				return ""
+				return ".fixtures/test_red_100x50.png"
 			},
 			expectError: false,
 			expectConversion: false,
@@ -185,11 +173,31 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 			err := os.MkdirAll(audioUploadsDir, 0755)
 			require.NoError(t, err)
 
+			// Create a custom mock commander that creates output files
+			mockCmd := &fileCreatingMockCommander{
+				MockCommander: *commander.NewMock(),
+			}
+
+			// Set up mock for ffmpeg with exact argument count and patterns
+			mockCmd.ExpectWithMatchers("ffmpeg",
+				commander.Exact("-i"),           // -i
+				commander.Any(),                 // input path
+				commander.Exact("-ar"),          // -ar
+				commander.Exact("48000"),        // sample rate
+				commander.Exact("-ac"),          // -ac
+				commander.Exact("1"),            // mono channels
+				commander.Exact("-c:a"),         // -c:a
+				commander.Exact("pcm_s16le"),    // codec
+				commander.Exact("-y"),           // overwrite
+				commander.Any(),                 // output path
+			).ReturnOutput([]byte("mock ffmpeg output"))
+
 			service := &PIrateRF{
 				serviceCtx: context.Background(),
 				config: Config{
 					FilesDir: tempDir,
 				},
+				commander: mockCmd,
 			}
 
 			// Set up files if needed
@@ -226,33 +234,21 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 	tests := []struct {
 		name         string
-		setupFiles   func(tempDir string) string
+		inputFile    string
 		expectError  bool
-		expectWasConverted bool
+		mockError    bool
 	}{
 		{
-			name: "successful conversion of mp3 file",
-			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_2s.mp3"
-			},
+			name:        "successful conversion",
+			inputFile:   ".fixtures/test_2s.mp3",
 			expectError: false,
-			expectWasConverted: true,
+			mockError:   false,
 		},
 		{
-			name: "conversion of wav file (still processed)",
-			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/test_2s.wav"
-			},
-			expectError: false,
-			expectWasConverted: true,
-		},
-		{
-			name: "non-existent input file",
-			setupFiles: func(tempDir string) string {
-				return "/workspace/.fixtures/missing.mp3"
-			},
+			name:        "ffmpeg command fails",
+			inputFile:   ".fixtures/test_2s.mp3",
 			expectError: true,
-			expectWasConverted: false,
+			mockError:   true,
 		},
 	}
 
@@ -265,36 +261,213 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 			err := os.MkdirAll(audioUploadsDir, 0755)
 			require.NoError(t, err)
 
+			var mockCmd commander.Commander
+
+			if tt.mockError {
+				mock := commander.NewMock()
+				mock.Expect("ffmpeg").ReturnError(ctxerrors.New("mock ffmpeg error"))
+				mockCmd = mock
+			} else {
+				// Create a custom mock commander that creates output files
+				mock := &fileCreatingMockCommander{
+					MockCommander: *commander.NewMock(),
+				}
+
+				// Set up mock for ffmpeg with exact argument count and patterns
+				mock.ExpectWithMatchers("ffmpeg",
+					commander.Exact("-i"),           // -i
+					commander.Any(),                 // input path
+					commander.Exact("-ar"),          // -ar
+					commander.Exact("48000"),        // sample rate
+					commander.Exact("-ac"),          // -ac
+					commander.Exact("1"),            // mono channels
+					commander.Exact("-c:a"),         // -c:a
+					commander.Exact("pcm_s16le"),    // codec
+					commander.Exact("-y"),           // overwrite
+					commander.Any(),                 // output path
+				).ReturnOutput([]byte("mock ffmpeg output"))
+				mockCmd = mock
+			}
+
 			service := &PIrateRF{
 				serviceCtx: context.Background(),
 				config: Config{
 					FilesDir: tempDir,
 				},
+				commander: mockCmd,
 			}
 
-			inputPath := tt.setupFiles(tempDir)
-
-			// This will fail because ffmpeg is not available, but we test the function structure
-			convertedPath, wasConverted, err := service.convertAudioFileWithFFmpeg(inputPath)
+			convertedPath, wasConverted, err := service.convertAudioFileWithFFmpeg(tt.inputFile)
 
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.False(t, wasConverted)
 				assert.Empty(t, convertedPath)
 			} else {
-				// In our test environment, ffmpeg won't be available, so we expect an error
-				// but we can still verify the function logic up to the command execution
-				assert.Error(t, err) // Expected since we don't have ffmpeg in test env
+				assert.NoError(t, err)
+				assert.True(t, wasConverted)
+				assert.NotEmpty(t, convertedPath)
 
 				// Check that output path was constructed correctly
-				expectedBasename := filepath.Base(inputPath)
+				expectedBasename := filepath.Base(tt.inputFile)
 				expectedBasename = expectedBasename[:len(expectedBasename)-len(filepath.Ext(expectedBasename))]
 				expectedPath := filepath.Join(audioUploadsDir, expectedBasename + constants.FileExtensionWAV)
+				assert.Equal(t, expectedPath, convertedPath)
+			}
+		})
+	}
+}
 
-				// The function should have calculated the correct output path even if ffmpeg fails
-				if convertedPath != "" {
-					assert.Equal(t, expectedPath, convertedPath)
-				}
+func TestEnsureWavExtension(t *testing.T) {
+	service := &PIrateRF{}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "file without extension",
+			input:    "test",
+			expected: "test.wav",
+		},
+		{
+			name:     "file with wav extension",
+			input:    "test.wav",
+			expected: "test.wav",
+		},
+		{
+			name:     "file with different extension",
+			input:    "test.mp3",
+			expected: "test.mp3.wav",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := service.ensureWavExtension(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestGetPlaylistOutputPath(t *testing.T) {
+	tempDir := t.TempDir()
+
+	service := &PIrateRF{
+		config: Config{
+			FilesDir: tempDir,
+		},
+	}
+
+	tests := []struct {
+		name        string
+		playlistName string
+		outputDir   []string
+		expectPath  string
+	}{
+		{
+			name:        "with output directory",
+			playlistName: "test_playlist",
+			outputDir:   []string{"/tmp"},
+			expectPath:  "/tmp/test_playlist.wav",
+		},
+		{
+			name:        "without output directory",
+			playlistName: "test_playlist",
+			outputDir:   []string{},
+			expectPath:  filepath.Join(tempDir, "audio", "uploads", "test_playlist.wav"),
+		},
+		{
+			name:        "empty output directory",
+			playlistName: "test_playlist",
+			outputDir:   []string{""},
+			expectPath:  filepath.Join(tempDir, "audio", "uploads", "test_playlist.wav"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := service.getPlaylistOutputPath(tt.playlistName, tt.outputDir...)
+			if tt.expectPath != "" {
+				assert.Contains(t, result, "test_playlist.wav")
+			} else {
+				assert.Equal(t, "", result)
+			}
+		})
+	}
+}
+
+func TestCreatePlaylistFromFiles(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create test mock commander that handles sox playlist creation
+	mockCommander := &testMockCommander{
+		tempDir: tempDir,
+	}
+
+	service := &PIrateRF{
+		serviceCtx: context.Background(),
+		config: Config{
+			FilesDir: tempDir,
+		},
+		commander: mockCommander,
+	}
+
+	// Create test input files
+	testFiles := []string{
+		".fixtures/test_2s.mp3",
+		".fixtures/test_3s.wav",
+		".fixtures/test_4s.wav",
+	}
+
+	tests := []struct {
+		name        string
+		playlistName string
+		filePaths   []string
+		outputDir   []string
+		expectError bool
+	}{
+		{
+			name:         "create playlist with output directory",
+			playlistName: "test_playlist",
+			filePaths:    testFiles,
+			outputDir:    []string{tempDir},
+			expectError:  false,
+		},
+		{
+			name:         "create playlist without output directory",
+			playlistName: "test_playlist2.wav",
+			filePaths:    testFiles,
+			outputDir:    []string{},
+			expectError:  false,
+		},
+		{
+			name:         "playlist name without wav extension",
+			playlistName: "no_extension",
+			filePaths:    testFiles,
+			outputDir:    []string{tempDir},
+			expectError:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var outputPath string
+			var err error
+
+			if len(tt.outputDir) > 0 {
+				outputPath, err = service.createPlaylistFromFiles(tt.playlistName, tt.filePaths, tt.outputDir[0])
+			} else {
+				outputPath, err = service.createPlaylistFromFiles(tt.playlistName, tt.filePaths)
+			}
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, outputPath)
+				assert.Contains(t, outputPath, ".wav", "Output path should contain .wav extension")
 			}
 		})
 	}

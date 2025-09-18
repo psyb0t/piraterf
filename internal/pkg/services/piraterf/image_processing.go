@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/psyb0t/commander"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/sirupsen/logrus"
 )
@@ -81,108 +80,129 @@ func (s *PIrateRF) convertImageToYUV(
 	inputPath string,
 	logger *logrus.Entry,
 ) (string, error) {
-	// Ensure images directory structure exists
 	if err := s.ensureFilesDirsExist(); err != nil {
 		return "", err
 	}
 
+	outputPath := s.getImageOutputPath(inputPath)
+
+	// Handle .Y files that may just need moving
+	if strings.HasSuffix(inputPath, ".Y") {
+		return s.handleYFile(inputPath, outputPath)
+	}
+
+	// Convert regular image to .Y format
+	return s.convertImageToYFormat(inputPath, outputPath, logger)
+}
+
+func (s *PIrateRF) getImageOutputPath(inputPath string) string {
+	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
+	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+
+	return filepath.Join(imagesUploadsDir, baseFilename+".Y")
+}
+
+func (s *PIrateRF) handleYFile(inputPath, outputPath string) (string, error) {
 	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
 
-	// Generate output path in ./files/images/uploads with .Y extension
-	baseFilename := strings.TrimSuffix(
-		filepath.Base(inputPath),
-		filepath.Ext(inputPath),
-	)
-	outputPath := filepath.Join(
-		imagesUploadsDir,
-		baseFilename+".Y",
-	)
-
-	// Check if the file is already in .Y format
-	if strings.HasSuffix(inputPath, ".Y") {
-		// If it's already a .Y file in the correct directory, no conversion needed
-		if filepath.Dir(inputPath) == imagesUploadsDir {
-			return inputPath, nil
-		}
-
-		// Move .Y file to correct directory
-		if err := moveFile(inputPath, outputPath); err != nil {
-			return "", ctxerrors.Wrapf(err, "failed to move .Y file")
-		}
-
-		return outputPath, nil
+	if filepath.Dir(inputPath) == imagesUploadsDir {
+		return inputPath, nil
 	}
 
-	// Create temporary directory for ImageMagick conversion
+	if err := moveFile(inputPath, outputPath); err != nil {
+		return "", ctxerrors.Wrapf(err, "failed to move .Y file")
+	}
+
+	return outputPath, nil
+}
+
+func (s *PIrateRF) convertImageToYFormat(inputPath, outputPath string, logger *logrus.Entry) (string, error) {
+	tmpDir, tmpBasePath, err := s.createTempConversionDir()
+	if err != nil {
+		return "", err
+	}
+	defer s.cleanupTempDir(tmpDir, logger)
+
+	if err := s.runImageMagickConversion(inputPath, tmpBasePath); err != nil {
+		return "", err
+	}
+
+	if err := s.moveConvertedYFile(tmpBasePath, outputPath); err != nil {
+		return "", err
+	}
+
+	s.cleanupOriginalFile(inputPath, logger)
+	s.logConversionSuccess(inputPath, outputPath, logger)
+
+	return outputPath, nil
+}
+
+func (s *PIrateRF) createTempConversionDir() (string, string, error) {
 	tmpDir, err := os.MkdirTemp("", "piraterf_image_convert_")
 	if err != nil {
-		return "", ctxerrors.Wrapf(err, "failed to create temp directory")
+		return "", "", ctxerrors.Wrapf(err, "failed to create temp directory")
 	}
 
-	defer func() {
-		if removeErr := os.RemoveAll(tmpDir); removeErr != nil {
-			logger.WithError(removeErr).
-				WithField("tmpDir", tmpDir).
-				Warn("Failed to remove temporary directory")
-		}
-	}()
-
-	// Generate temporary output base name for ImageMagick
 	tmpBasePath := filepath.Join(tmpDir, "converted")
 
-	// Use ImageMagick convert to create YUV format
-	cmd := commander.New()
+	return tmpDir, tmpBasePath, nil
+}
 
-	ctx, cancel := context.WithTimeout(
-		s.serviceCtx,
-		audioConversionTimeout, // Reuse audio timeout for images
-	)
+func (s *PIrateRF) cleanupTempDir(tmpDir string, logger *logrus.Entry) {
+	if removeErr := os.RemoveAll(tmpDir); removeErr != nil {
+		logger.WithError(removeErr).WithField("tmpDir", tmpDir).Warn("Failed to remove temporary directory")
+	}
+}
+
+func (s *PIrateRF) runImageMagickConversion(inputPath, tmpBasePath string) error {
+	ctx, cancel := context.WithTimeout(s.serviceCtx, audioConversionTimeout)
 	defer cancel()
 
-	// convert input.jpg -resize 320x -flip -quantize YUV -dither FloydSteinberg
-	// -colors 4 -interlace partition converted.yuv
-	process, err := cmd.Start(ctx, "convert", []string{
+	process, err := s.commander.Start(ctx, "convert", []string{
 		inputPath,
-		"-resize", "320x", // Fixed width of 320 pixels
-		"-flip",            // Flip image (required by rpitx)
-		"-quantize", "YUV", // Convert to YUV color space
-		"-dither", "FloydSteinberg", // Apply dithering
-		"-colors", "4", // Reduce to 4 colors
-		"-interlace", "partition", // Create separate Y, U, V files
+		"-resize", "320x",
+		"-flip",
+		"-quantize", "YUV",
+		"-dither", "FloydSteinberg",
+		"-colors", "4",
+		"-interlace", "partition",
 		tmpBasePath + ".yuv",
 	})
 	if err != nil {
-		return "", ctxerrors.Wrapf(err, "failed to start convert command")
+		return ctxerrors.Wrapf(err, "failed to start convert command")
 	}
 
-	// Wait for conversion to complete
 	if err := process.Wait(); err != nil {
-		return "", ctxerrors.Wrapf(err, "convert command failed")
+		return ctxerrors.Wrapf(err, "convert command failed")
 	}
 
-	// Move the .Y file (luminance channel) to final destination
+	return nil
+}
+
+func (s *PIrateRF) moveConvertedYFile(tmpBasePath, outputPath string) error {
 	tmpYPath := tmpBasePath + ".Y"
 	if _, err := os.Stat(tmpYPath); err != nil {
-		return "", ctxerrors.Wrapf(err, "converted .Y file not found")
+		return ctxerrors.Wrapf(err, "converted .Y file not found")
 	}
 
 	if err := moveFile(tmpYPath, outputPath); err != nil {
-		return "", ctxerrors.Wrapf(err, "failed to move converted .Y file")
+		return ctxerrors.Wrapf(err, "failed to move converted .Y file")
 	}
 
-	// Clean up the original uploaded image file
+	return nil
+}
+
+func (s *PIrateRF) cleanupOriginalFile(inputPath string, logger *logrus.Entry) {
 	if removeErr := os.Remove(inputPath); removeErr != nil {
-		logger.WithError(removeErr).
-			WithField("file", inputPath).
-			Warn("Failed to remove original image file")
+		logger.WithError(removeErr).WithField("file", inputPath).Warn("Failed to remove original image file")
 	}
+}
 
+func (s *PIrateRF) logConversionSuccess(inputPath, outputPath string, logger *logrus.Entry) {
 	logger.WithFields(logrus.Fields{
 		"original":  inputPath,
 		"converted": outputPath,
 	}).Info("Image converted to YUV format for SPECTRUMPAINT")
-
-	return outputPath, nil
 }
 
 // moveFile moves a file from src to dst, handling cross-device link errors.
@@ -211,13 +231,23 @@ func copyFileStream(src, dst string) error {
 	if err != nil {
 		return ctxerrors.Wrapf(err, "failed to open source file")
 	}
-	defer sourceFile.Close()
+
+	defer func() {
+		if closeErr := sourceFile.Close(); closeErr != nil {
+			logrus.WithError(closeErr).Warn("Failed to close source file")
+		}
+	}()
 
 	destFile, err := os.Create(dst)
 	if err != nil {
 		return ctxerrors.Wrapf(err, "failed to create destination file")
 	}
-	defer destFile.Close()
+
+	defer func() {
+		if closeErr := destFile.Close(); closeErr != nil {
+			logrus.WithError(closeErr).Warn("Failed to close destination file")
+		}
+	}()
 
 	_, err = io.Copy(destFile, sourceFile)
 	if err != nil {

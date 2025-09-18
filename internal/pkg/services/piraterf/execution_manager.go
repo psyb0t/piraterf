@@ -133,7 +133,6 @@ func (em *executionManager) stopExecution(_ *websocket.Client) error {
 	return nil
 }
 
-//nolint:funlen
 func (em *executionManager) executeModule(
 	ctx context.Context,
 	moduleName gorpitx.ModuleName,
@@ -142,47 +141,55 @@ func (em *executionManager) executeModule(
 	client *websocket.Client,
 	callback func() error,
 ) {
-	defer func() {
-		logrus.WithField("clientID", client.ID()).
-			Debug("executeModule finished, setting state to idle")
+	defer em.cleanupAfterExecution(client, callback)
 
-		em.setState(executionStateIdle)
-		// Reset stop requested flag for next execution
-		em.stopRequested.Store(false)
+	em.logExecutionStart(moduleName, timeout, client)
+	em.sendStartedEvent(moduleName, args, client.ID())
+	em.setupOutputChannels(ctx)
 
-		// Run callback if provided
-		if callback != nil {
-			if err := callback(); err != nil {
-				logrus.WithError(err).
-					Error("callback failed")
-			}
+	err := em.runExecution(ctx, moduleName, args, timeout)
+	em.handleExecutionResult(err, client)
+}
+
+func (em *executionManager) cleanupAfterExecution(client *websocket.Client, callback func() error) {
+	logrus.WithField("clientID", client.ID()).
+		Debug("executeModule finished, setting state to idle")
+
+	em.setState(executionStateIdle)
+	em.stopRequested.Store(false)
+
+	if callback != nil {
+		if err := callback(); err != nil {
+			logrus.WithError(err).Error("callback failed")
 		}
-	}()
+	}
+}
 
+func (em *executionManager) logExecutionStart(
+	moduleName gorpitx.ModuleName,
+	timeout time.Duration,
+	client *websocket.Client,
+) {
 	logrus.WithFields(logrus.Fields{
 		"moduleName": moduleName,
 		"timeout":    timeout,
 		"clientID":   client.ID(),
 	}).Debug("starting executeModule")
+}
 
-	// Send started event
-	em.sendStartedEvent(moduleName, args, client.ID())
-
-	// Setup output channels
-	em.setupOutputChannels(ctx)
-
-	// Start Exec in goroutine
+func (em *executionManager) runExecution(
+	ctx context.Context,
+	moduleName gorpitx.ModuleName,
+	args json.RawMessage,
+	timeout time.Duration,
+) error {
 	execDone := make(chan error, 1)
 
-	// Start streaming BEFORE execution begins
-	// Capture channels to avoid race conditions when stopStreaming() sets
-	// them to nil
 	em.mu.RLock()
 	stdoutCh := em.outputChannels.stdout
 	stderrCh := em.outputChannels.stderr
 	em.mu.RUnlock()
 
-	// Start async streaming before exec - it will wait for process to be created
 	em.rpitx.StreamOutputsAsync(stdoutCh, stderrCh)
 
 	go func() {
@@ -194,22 +201,20 @@ func (em *executionManager) executeModule(
 		execDone <- err
 	}()
 
-	// Wait for execution to complete
-	err := <-execDone
+	return <-execDone
+}
+
+func (em *executionManager) handleExecutionResult(err error, client *websocket.Client) {
 	logrus.WithFields(logrus.Fields{
 		"error":    err,
 		"clientID": client.ID(),
 	}).Debug("execution completed, processing cleanup")
 
-	// Stop streaming and cleanup
 	em.stopStreaming()
 
-	// Send completion events
 	if err != nil {
-		// Check if this is an expected termination (not a real error)
 		if em.isExpectedTermination(err) {
-			logrus.WithError(err).
-				Debug("execution completed with expected termination")
+			logrus.WithError(err).Debug("execution completed with expected termination")
 			em.sendStoppedEvent(client.ID())
 
 			return
@@ -221,8 +226,7 @@ func (em *executionManager) executeModule(
 		return
 	}
 
-	logrus.WithField("clientID", client.ID()).
-		Debug("sending stopped event")
+	logrus.WithField("clientID", client.ID()).Debug("sending stopped event")
 	em.sendStoppedEvent(client.ID())
 }
 
@@ -242,47 +246,54 @@ func (em *executionManager) setupOutputChannels(ctx context.Context) {
 	go em.streamOutput(streamingCtx)
 }
 
-//nolint:cyclop
 func (em *executionManager) streamOutput(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			// Get channel references safely
-			em.mu.RLock()
-			stdoutCh := em.outputChannels.stdout
-			stderrCh := em.outputChannels.stderr
-			em.mu.RUnlock()
-
-			if stdoutCh == nil && stderrCh == nil {
+			if !em.processOutputChannels(ctx) {
 				return
-			}
-
-			// Now read from channels safely
-			select {
-			case <-ctx.Done():
-				return
-			case line, ok := <-stdoutCh:
-				if !ok {
-					continue
-				}
-
-				em.sendOutputEvent("stdout", line)
-			case line, ok := <-stderrCh:
-				if !ok {
-					continue
-				}
-
-				em.sendOutputEvent("stderr", line)
-			default:
-				// Avoid busy loop
-				continue
 			}
 		}
 
 		time.Sleep(time.Millisecond)
 	}
+}
+
+func (em *executionManager) processOutputChannels(ctx context.Context) bool {
+	// Get channel references safely
+	em.mu.RLock()
+	stdoutCh := em.outputChannels.stdout
+	stderrCh := em.outputChannels.stderr
+	em.mu.RUnlock()
+
+	if stdoutCh == nil && stderrCh == nil {
+		return false
+	}
+
+	// Now read from channels safely
+	select {
+	case <-ctx.Done():
+		return false
+	case line, ok := <-stdoutCh:
+		if !ok {
+			return true
+		}
+
+		em.sendOutputEvent("stdout", line)
+	case line, ok := <-stderrCh:
+		if !ok {
+			return true
+		}
+
+		em.sendOutputEvent("stderr", line)
+	default:
+		// Avoid busy loop
+		return true
+	}
+
+	return true
 }
 
 func (em *executionManager) stopStreaming() {
