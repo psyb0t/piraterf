@@ -2,8 +2,12 @@
 
 # PIrateRF deployment script - copy and extract files on Pi
 
+# Source Pi configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/pi_config.sh"
+
 # Configuration
-DEPLOY_USER="$(whoami)"
+DEPLOY_USER="$PI_USER"
 DEPLOY_DIR="/home/${DEPLOY_USER}/piraterf"
 TAR_FILE="piraterf.tar.gz"
 EXECUTABLE="piraterf.sh"

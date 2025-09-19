@@ -18,11 +18,9 @@ fi
 # Always non-interactive - no fucking questions
 NON_INTERACTIVE=true
 
-# Configuration
-AP_SSID="🏴‍☠️📡"
-AP_PASSWORD="FUCKER!!!"
-AP_CHANNEL="7"
-COUNTRY_CODE="US"
+# Configuration - Use values from pi_config.sh
+# AP_SSID, AP_PASSWORD, AP_CHANNEL, and AP_COUNTRY are sourced from pi_config.sh
+COUNTRY_CODE="$AP_COUNTRY"
 
 # Network Configuration - Standalone AP with DHCP
 WIFI_INTERFACE="wlan0"

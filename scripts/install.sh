@@ -30,8 +30,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/$PI_USER/piraterf
-ExecStart=/home/$PI_USER/piraterf/piraterf.sh
+WorkingDirectory=/home/${PI_USER}/piraterf
+ExecStart=/home/${PI_USER}/piraterf/piraterf.sh
 Restart=always
 RestartSec=5
 

@@ -143,6 +143,12 @@ Edit scripts/pi_config.sh and modify these values to match your Pi:
 export PI_USER="fucker"              # Pi username
 export PI_HOST="piraterf.local"      # Pi hostname/IP
 export PI_PASS="FUCKER"             # Pi password
+
+# WiFi AP Configuration
+export AP_SSID="🏴‍☠️📡"             # WiFi access point name
+export AP_PASSWORD="FUCKER!!!"      # WiFi access point password
+export AP_CHANNEL="7"                # WiFi channel (1-14)
+export AP_COUNTRY="US"               # WiFi country code (US, UK, DE, etc.)
 ```
 
 ### 2. Complete Automated Setup
@@ -313,7 +319,12 @@ piraterf/
 
 ### Pi Connection Settings
 
-The Pi connection settings are defined in `scripts/pi_config.sh` (configured in setup step 1).
+All Pi configuration values are centralized in `scripts/pi_config.sh`:
+
+- **PI_USER, PI_HOST, PI_PASS**: SSH connection credentials
+- **AP_SSID, AP_PASSWORD**: WiFi access point credentials
+- **AP_CHANNEL**: WiFi channel (1-14, avoid crowded channels)
+- **AP_COUNTRY**: WiFi country code for regulatory compliance
 
 ### Service Configuration
 
