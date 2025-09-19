@@ -275,10 +275,20 @@ piraterf/
 │       ├── image_*.go     # Image processing for spectrum paint
 │       └── execution_*.go # RF transmission management
 ├── scripts/
-│   └── make/              # Build and deployment scripts
+│   ├── pi_config.sh       # Central configuration for Pi setup
+│   ├── piraterf.sh        # Main Pi runtime script
+│   ├── setup_*.sh         # Pi setup scripts (deps, AP, branding)
+│   ├── deploy.sh          # Pi deployment script
+│   ├── install.sh         # Pi service installation
+│   ├── uninstall.sh       # Pi service removal
+│   └── make/              # Make target implementations
+│       ├── pi.sh          # Complete Pi setup pipeline
 │       ├── build.sh       # Cross-compilation for Pi
-│       ├── pi_setup_*.sh  # Pi configuration scripts
 │       ├── deploy.sh      # Deployment automation
+│       ├── install.sh     # Service installation
+│       ├── pi_setup_*.sh  # Pi configuration scripts
+│       ├── ssh.sh         # SSH connection helper
+│       ├── tls.sh         # TLS certificate generation
 │       └── servicepack/   # Framework scripts
 ├── html/                  # Web interface templates
 ├── static/                # CSS, JavaScript, images
