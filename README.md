@@ -156,7 +156,7 @@ export AP_COUNTRY="US"               # WiFi country code (US, UK, DE, etc.)
 Run the full setup pipeline that configures everything automatically:
 
 ```bash
-make complete
+make pi
 ```
 
 This fucking command will:
@@ -304,7 +304,7 @@ piraterf/
 - `make pi-setup-branding` - Setup system branding and accounts
 - `make deploy` - Copy built files to Pi
 - `make install` - Install and start systemd service
-- `make complete` - Run full setup pipeline
+- `make pi` - Run full setup pipeline
 - `make ssh` - SSH into the Pi
 - `make pi-reboot` - Reboot the Pi
 - `make uninstall` - Remove PIrateRF from Pi

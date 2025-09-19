@@ -8,7 +8,7 @@
 include Makefile.servicepack
 
 .PHONY: tls pi-setup-deps pi-setup-ap pi-setup-branding \
-	pi-reboot ssh pi-setup deploy uninstall install complete
+	pi-reboot ssh deploy uninstall install pi
 
 build: ## Build the fucking PIrateRF beast
 	@./$(SCRIPTS_DIR)/make/build.sh
@@ -31,8 +31,6 @@ pi-reboot: ## Reboot the fucking Pi
 ssh: ## SSH into the fucking Pi
 	@./$(SCRIPTS_DIR)/make/ssh.sh
 
-pi-setup: pi-setup-deps pi-setup-ap pi-setup-branding pi-reboot ## Setup the bastard Pi for the fkin' mission
-	@./$(SCRIPTS_DIR)/make/pi_setup.sh
 
 deploy: build ## Deploy the fucking PIrateRF files to the bastard Pi
 	@./$(SCRIPTS_DIR)/make/deploy.sh
@@ -46,5 +44,5 @@ uninstall: ## Remove the fucking PIrateRF shit from the Pi completely
 install: ## Install the fucking PIrateRF to the bastard Pi
 	@./$(SCRIPTS_DIR)/make/install.sh
 
-complete: pi-setup-deps pi-setup-ap pi-setup-branding deploy install pi-reboot ## Complete setup of the fkin' Pi
-	@./$(SCRIPTS_DIR)/make/complete.sh
+pi: ## Complete setup of the fkin' Pi
+	@./$(SCRIPTS_DIR)/make/pi.sh
