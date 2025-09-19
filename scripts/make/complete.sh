@@ -17,7 +17,6 @@ make pi-setup-ap
 make pi-setup-branding
 make deploy
 make install
-make pi-setup-branding
 make pi-reboot
 
 success "🏴‍☠️ PIrateRF is ready to do some fucking fuckage!"
