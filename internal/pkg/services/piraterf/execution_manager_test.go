@@ -246,7 +246,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			moduleName:    gorpitx.ModuleNamePIFMRDS,
 			args:          json.RawMessage(`{"freq": 88.0}`),
 			timeout:       10,
-			expectError:   false, // Function returns nil but broadcasts error
+			expectError:   false,                   // Function returns nil but broadcasts error
 			expectedState: executionStateExecuting, // State remains unchanged
 		},
 		{
@@ -255,7 +255,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			moduleName:    gorpitx.ModuleNamePIFMRDS,
 			args:          json.RawMessage(`{"freq": 88.0}`),
 			timeout:       10,
-			expectError:   false, // Function returns nil but broadcasts error
+			expectError:   false,                  // Function returns nil but broadcasts error
 			expectedState: executionStateStopping, // State remains unchanged
 		},
 		{
@@ -526,13 +526,12 @@ func TestProcessOutputChannels(t *testing.T) {
 	rpitx := gorpitx.GetInstance()
 	em := newExecutionManager(rpitx, hub)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	tests := []struct {
-		name           string
-		setupChannels  func() (chan string, chan string)
-		expectReturn   bool
+		name          string
+		setupChannels func() (chan string, chan string)
+		expectReturn  bool
 	}{
 		{
 			name: "nil channels should return false",

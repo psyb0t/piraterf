@@ -39,5 +39,5 @@ func copyFile(src, dst string) error {
 		return err
 	}
 
-	return os.WriteFile(dst, input, 0644)
+	return os.WriteFile(dst, input, 0o644)
 }
