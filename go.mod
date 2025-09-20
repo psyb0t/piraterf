@@ -9,7 +9,7 @@ require (
 	github.com/psyb0t/common-go v0.0.0-20250914061813-a517b076b64a
 	github.com/psyb0t/ctxerrors v0.2.0
 	github.com/psyb0t/gonfiguration v1.3.0
-	github.com/psyb0t/gorpitx v0.0.0-20250917042121-58359945654d
+	github.com/psyb0t/gorpitx v0.0.0-20250920020726-821a0ae1c05d
 	github.com/psyb0t/logrus-configurator v1.1.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1

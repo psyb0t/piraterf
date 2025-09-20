@@ -24,9 +24,10 @@
 
 PIrateRF transforms your Pi Zero into a **standalone RF transmission station** that can:
 
-- **🎵 FM Radio Broadcasting**: Transmit audio with full RDS (Radio Data System) metadata including station names, radio text, and PI codes
+- **🎵 FM Radio Broadcasting**: Transmit FM modulated audio with full RDS (Radio Data System) metadata including station names, radio text, and PI codes
 - **📻 Morse Code Transmission**: Send CW (continuous wave) Morse code signals
-- **🎛️ Carrier Wave Generation**: Simple tone generation for testing and tuning
+- **🎛️ Carrier Wave Generation**: Simple carrier frequency generation for testing and tuning
+- **🌊 Frequency Sweep**: Generate carrier frequency sweeps for RF testing and analysis or just for teh lulz
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
 - **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
@@ -234,9 +235,9 @@ make uninstall          # Remove PIrateRF from Pi
 
 ## 📡 RF Transmission Modes
 
-### FM Radio Broadcasting (PIFMRDS)
+### FM Radio Broadcasting
 
-- **Audio Support**: MP3, WAV, FLAC, and more (auto-converted to 48kHz/16-bit/mono)
+- **Audio Support**: MP3, WAV, and more (auto-converted to 48kHz/16-bit/mono)
 - **RDS Metadata**: Station name, radio text, and PI codes
 - **Playlist Mode**: Create playlists with intro/outro support
 - **Play Once Mode**: Single play with automatic timeout calculation
@@ -247,9 +248,15 @@ make uninstall          # Remove PIrateRF from Pi
 - **Text to Morse**: Automatic conversion with configurable WPM (words per minute)
 - **CW Transmission**: Continuous wave RF transmission
 
+### Frequency Sweep (CHIRP)
+
+- **Configurable Sweeps**: Generate carrier wave sweeps with customizable center frequency, bandwidth, and duration
+- **RF Testing**: Perfect for antenna analysis, filter characterization, and RF circuit testing
+- **Wide Range Support**: Supports frequencies from 50 kHz to 1500 MHz with variable bandwidth
+
 ### Tune Mode
 
-- **Carrier Wave**: Simple tone generation for testing and frequency verification
+- **Carrier Wave**: Simple carrier wave generation for testing and verification
 
 ### Spectrum Painting
 

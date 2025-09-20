@@ -712,7 +712,7 @@ github.com/psyb0t/gofindimpl
 # github.com/psyb0t/gonfiguration v1.3.0
 ## explicit; go 1.24.5
 github.com/psyb0t/gonfiguration
-# github.com/psyb0t/gorpitx v0.0.0-20250917042121-58359945654d
+# github.com/psyb0t/gorpitx v0.0.0-20250920020726-821a0ae1c05d
 ## explicit; go 1.24.6
 github.com/psyb0t/gorpitx
 # github.com/psyb0t/logrus-configurator v1.1.0

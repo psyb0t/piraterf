@@ -40,6 +40,12 @@ class PIrateRFController {
         pictureFile: "",
         excursion: "50000",
       },
+
+      pichirp: {
+        frequency: "431000000",
+        bandwidth: "1000000",
+        time: "5.0",
+      },
     };
 
     this.initializeElements();
@@ -109,6 +115,7 @@ class PIrateRFController {
     this.pifmrdsForm = document.getElementById("pifmrdsForm");
     this.morseForm = document.getElementById("morseForm");
     this.tuneForm = document.getElementById("tuneForm");
+    this.pichirpForm = document.getElementById("pichirpForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -141,6 +148,11 @@ class PIrateRFController {
     this.spectrumpaintFreqInput = document.getElementById("spectrumpaintFreq");
     this.pictureFileInput = document.getElementById("pictureFile");
     this.excursionInput = document.getElementById("excursion");
+
+    // PICHIRP form inputs
+    this.pichirpFreqInput = document.getElementById("pichirpFreq");
+    this.pichirpBandwidthInput = document.getElementById("pichirpBandwidth");
+    this.pichirpTimeInput = document.getElementById("pichirpTime");
     this.refreshImageBtn = document.getElementById("refreshImageBtn");
     this.editImageBtn = document.getElementById("editImageBtn");
     this.imageSelectBtn = document.getElementById("imageSelectBtn");
@@ -394,12 +406,14 @@ class PIrateRFController {
       .addEventListener("input", () => this.saveState());
 
     // SPECTRUMPAINT module form events
-    this.spectrumpaintFreqInput.addEventListener("input", () =>
-      this.saveState()
-    );
+    this.spectrumpaintFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
     this.pictureFileInput.addEventListener("change", () => {
       this.onImageFileChange();
       this.saveState();
+      this.validateForm();
     });
     this.excursionInput.addEventListener("input", () => this.saveState());
 
@@ -409,6 +423,20 @@ class PIrateRFController {
       this.openImageEditModal()
     );
     this.imageSelectBtn.addEventListener("click", () => this.imageFile.click());
+
+    // PICHIRP module form events
+    this.pichirpFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pichirpBandwidthInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pichirpTimeInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
   }
 
   connect() {
@@ -561,6 +589,7 @@ class PIrateRFController {
     this.morseForm.classList.add("hidden");
     this.tuneForm.classList.add("hidden");
     this.spectrumpaintForm.classList.add("hidden");
+    this.pichirpForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -577,6 +606,9 @@ class PIrateRFController {
       case "spectrumpaint":
         this.spectrumpaintForm.classList.remove("hidden");
         this.loadImageFiles(false);
+        break;
+      case "pichirp":
+        this.pichirpForm.classList.remove("hidden");
         break;
     }
 
@@ -742,6 +774,13 @@ class PIrateRFController {
           this.spectrumpaintFreqInput.value &&
           this.pictureFileInput.value;
         break;
+      case "pichirp":
+        isValid =
+          module &&
+          this.pichirpFreqInput.value &&
+          this.pichirpBandwidthInput.value &&
+          this.pichirpTimeInput.value;
+        break;
       default:
         isValid = false;
     }
@@ -815,6 +854,15 @@ class PIrateRFController {
           args.excursion = parseFloat(this.excursionInput.value);
         }
         timeout = 0; // No timeout for spectrumpaint by default
+        break;
+
+      case "pichirp":
+        args = {
+          frequency: parseFloat(this.pichirpFreqInput.value),
+          bandwidth: parseFloat(this.pichirpBandwidthInput.value),
+          time: parseFloat(this.pichirpTimeInput.value),
+        };
+        timeout = 0; // No timeout for pichirp by default
         break;
     }
 
@@ -2269,6 +2317,7 @@ class PIrateRFController {
     if (!this.state.morse) this.state.morse = {};
     if (!this.state.tune) this.state.tune = {};
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
+    if (!this.state.pichirp) this.state.pichirp = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2305,6 +2354,11 @@ class PIrateRFController {
     this.state.spectrumpaint.pictureFile = this.pictureFileInput?.value || "";
     this.state.spectrumpaint.excursion = this.excursionInput?.value || "";
 
+    // Update PICHIRP state
+    this.state.pichirp.frequency = this.pichirpFreqInput?.value || "";
+    this.state.pichirp.bandwidth = this.pichirpBandwidthInput?.value || "";
+    this.state.pichirp.time = this.pichirpTimeInput?.value || "";
+
     try {
       localStorage.setItem("piraterf_state", JSON.stringify(this.state));
     } catch (e) {
@@ -2329,6 +2383,7 @@ class PIrateRFController {
             ...this.state.spectrumpaint,
             ...parsedState.spectrumpaint,
           },
+          pichirp: { ...this.state.pichirp, ...parsedState.pichirp },
         };
       }
 
@@ -2346,6 +2401,7 @@ class PIrateRFController {
     if (!this.state.morse) this.state.morse = {};
     if (!this.state.tune) this.state.tune = {};
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
+    if (!this.state.pichirp) this.state.pichirp = {};
 
     // Sync module selection
     if (this.state.modulename) this.moduleSelect.value = this.state.modulename;
@@ -2412,6 +2468,14 @@ class PIrateRFController {
       this.pictureFileInput.value = this.state.spectrumpaint.pictureFile;
     if (this.state.spectrumpaint.excursion && this.excursionInput)
       this.excursionInput.value = this.state.spectrumpaint.excursion;
+
+    // Sync PICHIRP form inputs
+    if (this.state.pichirp.frequency && this.pichirpFreqInput)
+      this.pichirpFreqInput.value = this.state.pichirp.frequency;
+    if (this.state.pichirp.bandwidth && this.pichirpBandwidthInput)
+      this.pichirpBandwidthInput.value = this.state.pichirp.bandwidth;
+    if (this.state.pichirp.time && this.pichirpTimeInput)
+      this.pichirpTimeInput.value = this.state.pichirp.time;
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 

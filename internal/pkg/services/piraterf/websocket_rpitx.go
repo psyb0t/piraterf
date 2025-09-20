@@ -127,6 +127,8 @@ func (s *PIrateRF) processModuleExecution(
 		return s.handlePIFMRDSExecution(msg, finalTimeout, client, logger)
 	case gorpitx.ModuleNameSPECTRUMPAINT:
 		return s.handleSPECTRUMPAINTExecution(msg, finalTimeout, client, logger)
+	case gorpitx.ModuleNamePICHIRP:
+		return s.handlePICHIRPExecution(msg, finalTimeout, client, logger)
 	default:
 		return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, finalTimeout, client, nil)
 	}
@@ -164,6 +166,17 @@ func (s *PIrateRF) handleSPECTRUMPAINTExecution(
 	}
 
 	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, modifiedArgs, finalTimeout, client, nil)
+}
+
+func (s *PIrateRF) handlePICHIRPExecution(
+	msg *rpitxExecutionStartMessage,
+	finalTimeout int,
+	client *websocket.Client,
+	logger *logrus.Entry,
+) error {
+	logger.Debug("Processing PICHIRP execution request")
+
+	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil)
 }
 
 func (s *PIrateRF) createCleanupCallback(cleanupPath string, logger *logrus.Entry) func() error {

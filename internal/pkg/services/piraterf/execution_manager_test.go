@@ -267,6 +267,15 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			expectError:   false,
 			expectedState: executionStateIdle, // Returns to idle after validation failure
 		},
+		{
+			name:          "start PICHIRP execution",
+			initialState:  executionStateIdle,
+			moduleName:    gorpitx.ModuleNamePICHIRP,
+			args:          json.RawMessage(`{"frequency": 100000000, "bandwidth": 1000000, "time": 5.0}`),
+			timeout:       10,
+			expectError:   false,
+			expectedState: executionStateExecuting,
+		},
 	}
 
 	for _, tt := range tests {

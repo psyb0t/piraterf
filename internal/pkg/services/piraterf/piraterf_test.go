@@ -522,6 +522,11 @@ func TestValidateModuleInDev(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "supported module PICHIRP",
+			module:      gorpitx.ModuleNamePICHIRP,
+			expectError: false,
+		},
+		{
 			name:        "invalid module",
 			module:      gorpitx.ModuleName("INVALID"),
 			expectError: true,

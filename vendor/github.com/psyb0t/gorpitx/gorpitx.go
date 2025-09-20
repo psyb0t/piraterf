@@ -60,6 +60,7 @@ func newRPITX() *RPITX {
 			ModuleNameTUNE:          &TUNE{},
 			ModuleNameMORSE:         &MORSE{},
 			ModuleNameSPECTRUMPAINT: &SPECTRUMPAINT{},
+			ModuleNamePICHIRP:       &PICHIRP{},
 		},
 	}
 }

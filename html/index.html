@@ -4,36 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🏴‍☠️ PIrateRF 🏴‍☠️</title>
-    
+
     <!-- Favicon for browsers -->
-    <link rel="icon" type="image/png" sizes="32x32" 
-          href="/static/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" 
-          href="/static/images/favicon-16x16.png">
-    
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/images/favicon-16x16.png"
+    />
+
     <!-- Apple touch icon for iOS home screen -->
-    <link rel="apple-touch-icon" sizes="180x180" 
-          href="/static/images/apple-touch-icon.png">
-    
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/images/apple-touch-icon.png"
+    />
+
     <!-- Android Chrome icons -->
-    <link rel="icon" type="image/png" sizes="192x192" 
-          href="/static/images/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="270x270" 
-          href="/static/images/android-chrome-270x270.png">
-    
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/static/images/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="270x270"
+      href="/static/images/android-chrome-270x270.png"
+    />
+
     <!-- Web app manifest for mobile -->
-    <link rel="manifest" href="/static/site.webmanifest">
-    <meta name="theme-color" content="#000000">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="PIrateRF">
-    
+    <link rel="manifest" href="/static/site.webmanifest" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="PIrateRF" />
+
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <!-- Loading screen overlay -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-overlay" id="loadingOverlay" style="display: none">
       <div class="loading-content">
         <div class="loading-spinner">🏴‍☠️</div>
         <div class="loading-text">Loading...</div>
@@ -41,14 +60,17 @@
     </div>
 
     <!-- Error notification popup -->
-    <div class="error-notification" id="errorNotification" 
-         style="display: none;">
+    <div
+      class="error-notification"
+      id="errorNotification"
+      style="display: none"
+    >
       <div class="error-content">
         <span class="error-message" id="errorMessage"></span>
         <button class="error-close" id="errorClose">✕</button>
       </div>
     </div>
-    
+
     <div class="container">
       <div class="header">
         <div class="title-container">
@@ -69,6 +91,7 @@
             <option value="pifmrds" selected>pifmrds</option>
             <option value="morse">morse</option>
             <option value="tune">tune</option>
+            <option value="pichirp">pichirp</option>
             <option value="spectrumpaint">spectrumpaint</option>
           </select>
         </div>
@@ -77,58 +100,147 @@
         <div id="pifmrdsForm" class="module-form">
           <div class="form-group">
             <label for="freq" class="required">Frequency</label>
-            <input type="number" id="freq" step="0.1" placeholder="431" 
-                   value="431" data-module-name="pifmrds" data-field-name="freq" />
+            <input
+              type="number"
+              id="freq"
+              step="0.1"
+              placeholder="431"
+              value="431"
+              data-module-name="pifmrds"
+              data-field-name="freq"
+            />
           </div>
 
           <div class="form-group audio-form-group">
             <label for="audio" class="required">Audio File</label>
             <div class="audio-controls">
-              <select id="audio" data-module-name="pifmrds" data-field-name="audio">
+              <select
+                id="audio"
+                data-module-name="pifmrds"
+                data-field-name="audio"
+              >
                 <option value="">Select audio file...</option>
               </select>
-              <button type="button" class="play-btn" id="playAudioBtn" 
-                      disabled title="Play selected audio">▶️</button>
-              <button type="button" class="refresh-btn" id="refreshAudioBtn" 
-                      title="Refresh audio files">🔄</button>
+              <button
+                type="button"
+                class="play-btn"
+                id="playAudioBtn"
+                disabled
+                title="Play selected audio"
+              >
+                ▶️
+              </button>
+              <button
+                type="button"
+                class="refresh-btn"
+                id="refreshAudioBtn"
+                title="Refresh audio files"
+              >
+                🔄
+              </button>
             </div>
-            
+
             <!-- All other audio control buttons -->
             <div class="audio-method-selector">
-              <input type="file" id="audioFile" style="display: none;" />
-              <button type="button" class="play-mode-toggle play-once" 
-                      id="playModeToggle" title="Play once">⏭️</button>
-              <button type="button" class="file-upload-btn" id="fileSelectBtn" title="Upload audio file">📁</button>
-              <button type="button" class="record-btn" id="recordBtn" title="Record audio">🎤</button>
-              <button class="playlist-btn" id="playlistBtn" title="Create playlist">🎼</button>
-              <button type="button" class="edit-btn" id="editAudioBtn" disabled title="Edit selected audio file">✏️</button>
-              <button type="button" class="intro-outro-toggle" id="introOutroToggle" title="Toggle intro/outro">🎬</button>
+              <input type="file" id="audioFile" style="display: none" />
+              <button
+                type="button"
+                class="play-mode-toggle play-once"
+                id="playModeToggle"
+                title="Play once"
+              >
+                ⏭️
+              </button>
+              <button
+                type="button"
+                class="file-upload-btn"
+                id="fileSelectBtn"
+                title="Upload audio file"
+              >
+                📁
+              </button>
+              <button
+                type="button"
+                class="record-btn"
+                id="recordBtn"
+                title="Record audio"
+              >
+                🎤
+              </button>
+              <button
+                class="playlist-btn"
+                id="playlistBtn"
+                title="Create playlist"
+              >
+                🎼
+              </button>
+              <button
+                type="button"
+                class="edit-btn"
+                id="editAudioBtn"
+                disabled
+                title="Edit selected audio file"
+              >
+                ✏️
+              </button>
+              <button
+                type="button"
+                class="intro-outro-toggle"
+                id="introOutroToggle"
+                title="Toggle intro/outro"
+              >
+                🎬
+              </button>
             </div>
-            
+
             <!-- Intro/Outro controls (hidden initially) -->
             <div class="intro-outro-controls hidden" id="introOutroControls">
               <div class="intro-outro-columns">
                 <div class="intro-column">
                   <label for="introSelect">Intro</label>
                   <div class="select-with-play">
-                    <select id="introSelect" data-module-name="pifmrds" data-field-name="introSelect">
+                    <select
+                      id="introSelect"
+                      data-module-name="pifmrds"
+                      data-field-name="introSelect"
+                    >
                       <option value="">No intro</option>
                     </select>
-                    <button type="button" class="play-intro-btn" id="playIntroBtn" disabled title="Play intro">▶️</button>
+                    <button
+                      type="button"
+                      class="play-intro-btn"
+                      id="playIntroBtn"
+                      disabled
+                      title="Play intro"
+                    >
+                      ▶️
+                    </button>
                   </div>
                 </div>
                 <div class="outro-column">
                   <label for="outroSelect">Outro</label>
                   <div class="select-with-play">
-                    <select id="outroSelect" data-module-name="pifmrds" data-field-name="outroSelect">
+                    <select
+                      id="outroSelect"
+                      data-module-name="pifmrds"
+                      data-field-name="outroSelect"
+                    >
                       <option value="">No outro</option>
                     </select>
-                    <button type="button" class="play-outro-btn" id="playOutroBtn" disabled title="Play outro">▶️</button>
+                    <button
+                      type="button"
+                      class="play-outro-btn"
+                      id="playOutroBtn"
+                      disabled
+                      title="Play outro"
+                    >
+                      ▶️
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Status displays -->
             <div class="upload-status" id="uploadStatus"></div>
             <div class="record-status" id="recordStatus"></div>
@@ -137,7 +249,14 @@
           <div class="form-group">
             <label for="pi">PI Code (4 hex digits)</label>
             <div class="input-with-button">
-              <input type="text" id="pi" placeholder="FFFF" maxlength="4" data-module-name="pifmrds" data-field-name="pi" />
+              <input
+                type="text"
+                id="pi"
+                placeholder="FFFF"
+                maxlength="4"
+                data-module-name="pifmrds"
+                data-field-name="pi"
+              />
               <button type="button" class="random-btn" id="randomPi">🎲</button>
             </div>
           </div>
@@ -145,7 +264,14 @@
           <div class="form-group">
             <label for="ps">Station Name (max 8 chars)</label>
             <div class="input-with-button">
-              <input type="text" id="ps" placeholder="RASP-PI" maxlength="8" data-module-name="pifmrds" data-field-name="ps" />
+              <input
+                type="text"
+                id="ps"
+                placeholder="RASP-PI"
+                maxlength="8"
+                data-module-name="pifmrds"
+                data-field-name="ps"
+              />
               <button type="button" class="random-btn" id="randomPs">🎲</button>
             </div>
           </div>
@@ -153,14 +279,28 @@
           <div class="form-group">
             <label for="rt">Radio Text (max 64 chars)</label>
             <div class="input-with-button">
-              <input type="text" id="rt" placeholder="Hello from PIrateRF!" maxlength="64" data-module-name="pifmrds" data-field-name="rt" />
+              <input
+                type="text"
+                id="rt"
+                placeholder="Hello from PIrateRF!"
+                maxlength="64"
+                data-module-name="pifmrds"
+                data-field-name="rt"
+              />
               <button type="button" class="random-btn" id="randomRt">🎲</button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="ppm">PPM Clock Correction (optional)</label>
-            <input type="number" id="ppm" step="0.1" placeholder="0" data-module-name="pifmrds" data-field-name="ppm" />
+            <input
+              type="number"
+              id="ppm"
+              step="0.1"
+              placeholder="0"
+              data-module-name="pifmrds"
+              data-field-name="ppm"
+            />
           </div>
 
           <div class="form-group">
@@ -171,7 +311,8 @@
               placeholder="30"
               min="0"
               value="0"
-              data-module-name="pifmrds" data-field-name="timeout"
+              data-module-name="pifmrds"
+              data-field-name="timeout"
             />
           </div>
         </div>
@@ -180,17 +321,43 @@
         <div id="morseForm" class="module-form hidden">
           <div class="form-group">
             <label for="morseFreq" class="required">Frequency (Hz)</label>
-            <input type="number" id="morseFreq" step="1" placeholder="431000000" value="431000000" data-module-name="morse" data-field-name="freq" />
+            <input
+              type="number"
+              id="morseFreq"
+              step="1"
+              placeholder="431000000"
+              value="431000000"
+              data-module-name="morse"
+              data-field-name="freq"
+            />
           </div>
 
           <div class="form-group">
-            <label for="morseRate" class="required">Rate (dits per minute)</label>
-            <input type="number" id="morseRate" min="1" placeholder="20" value="20" data-module-name="morse" data-field-name="rate" />
+            <label for="morseRate" class="required"
+              >Rate (dits per minute)</label
+            >
+            <input
+              type="number"
+              id="morseRate"
+              min="1"
+              placeholder="20"
+              value="20"
+              data-module-name="morse"
+              data-field-name="rate"
+            />
           </div>
 
           <div class="form-group">
             <label for="morseMessage" class="required">Message</label>
-            <textarea id="morseMessage" placeholder="HACK THE PLANET" rows="3" data-module-name="morse" data-field-name="message">HACK THE PLANET</textarea>
+            <textarea
+              id="morseMessage"
+              placeholder="HACK THE PLANET"
+              rows="3"
+              data-module-name="morse"
+              data-field-name="message"
+            >
+HACK THE PLANET</textarea
+            >
           </div>
         </div>
 
@@ -198,42 +365,105 @@
         <div id="tuneForm" class="module-form hidden">
           <div class="form-group">
             <label for="tuneFreq" class="required">Frequency (Hz)</label>
-            <input type="number" id="tuneFreq" step="1" placeholder="431000000" value="431000000" data-module-name="tune" data-field-name="freq" />
+            <input
+              type="number"
+              id="tuneFreq"
+              step="1"
+              placeholder="431000000"
+              value="431000000"
+              data-module-name="tune"
+              data-field-name="freq"
+            />
           </div>
 
           <div class="form-group">
             <label for="tuneExitImmediate">Exit Immediate</label>
-            <input type="checkbox" id="tuneExitImmediate" data-module-name="tune" data-field-name="exitImmediate" />
-            <span class="checkbox-label">Exit immediately without killing carrier</span>
+            <input
+              type="checkbox"
+              id="tuneExitImmediate"
+              data-module-name="tune"
+              data-field-name="exitImmediate"
+            />
+            <span class="checkbox-label"
+              >Exit immediately without killing carrier</span
+            >
           </div>
 
           <div class="form-group">
             <label for="tunePPM">PPM Clock Correction (optional)</label>
-            <input type="number" id="tunePPM" step="0.1" placeholder="0" data-module-name="tune" data-field-name="ppm" />
+            <input
+              type="number"
+              id="tunePPM"
+              step="0.1"
+              placeholder="0"
+              data-module-name="tune"
+              data-field-name="ppm"
+            />
           </div>
         </div>
 
         <!-- SPECTRUMPAINT Module Form -->
         <div id="spectrumpaintForm" class="module-form hidden">
           <div class="form-group">
-            <label for="spectrumpaintFreq" class="required">Frequency (Hz)</label>
-            <input type="number" id="spectrumpaintFreq" step="1" placeholder="434000000" value="434000000" data-module-name="spectrumpaint" data-field-name="frequency" />
+            <label for="spectrumpaintFreq" class="required"
+              >Frequency (Hz)</label
+            >
+            <input
+              type="number"
+              id="spectrumpaintFreq"
+              step="1"
+              placeholder="431000000"
+              value="431000000"
+              data-module-name="spectrumpaint"
+              data-field-name="frequency"
+            />
           </div>
 
           <div class="form-group image-form-group">
             <label for="pictureFile" class="required">Picture File</label>
             <div class="image-controls">
-              <select id="pictureFile" data-module-name="spectrumpaint" data-field-name="pictureFile">
+              <select
+                id="pictureFile"
+                data-module-name="spectrumpaint"
+                data-field-name="pictureFile"
+              >
                 <option value="">Select image file...</option>
               </select>
-              <button type="button" class="refresh-btn" id="refreshImageBtn" title="Refresh image files">🔄</button>
+              <button
+                type="button"
+                class="refresh-btn"
+                id="refreshImageBtn"
+                title="Refresh image files"
+              >
+                🔄
+              </button>
             </div>
 
             <!-- Image control buttons -->
             <div class="image-method-selector">
-              <input type="file" id="imageFile" style="display: none;" accept="image/*" />
-              <button type="button" class="file-upload-btn" id="imageSelectBtn" title="Upload image file">📁</button>
-              <button type="button" class="edit-btn" id="editImageBtn" disabled title="Edit selected image file">✏️</button>
+              <input
+                type="file"
+                id="imageFile"
+                style="display: none"
+                accept="image/*"
+              />
+              <button
+                type="button"
+                class="file-upload-btn"
+                id="imageSelectBtn"
+                title="Upload image file"
+              >
+                📁
+              </button>
+              <button
+                type="button"
+                class="edit-btn"
+                id="editImageBtn"
+                disabled
+                title="Edit selected image file"
+              >
+                ✏️
+              </button>
             </div>
 
             <!-- Status displays -->
@@ -242,18 +472,70 @@
 
           <div class="form-group">
             <label for="excursion">Excursion (Hz, optional)</label>
-            <input type="number" id="excursion" step="1" placeholder="100000" data-module-name="spectrumpaint" data-field-name="excursion" />
+            <input
+              type="number"
+              id="excursion"
+              step="1"
+              placeholder="100000"
+              data-module-name="spectrumpaint"
+              data-field-name="excursion"
+            />
+          </div>
+        </div>
+
+        <!-- PICHIRP Module Form -->
+        <div id="pichirpForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="pichirpFreq" class="required"
+              >Center Frequency (Hz)</label
+            >
+            <input
+              type="number"
+              id="pichirpFreq"
+              step="1"
+              placeholder="431000000"
+              value="431000000"
+              data-module-name="pichirp"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pichirpBandwidth" class="required"
+              >Bandwidth (Hz)</label
+            >
+            <input
+              type="number"
+              id="pichirpBandwidth"
+              step="1"
+              placeholder="1000000"
+              value="1000000"
+              data-module-name="pichirp"
+              data-field-name="bandwidth"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pichirpTime" class="required"
+              >Sweep Duration (seconds)</label
+            >
+            <input
+              type="number"
+              id="pichirpTime"
+              step="0.1"
+              placeholder="5.0"
+              value="5.0"
+              data-module-name="pichirp"
+              data-field-name="time"
+            />
           </div>
         </div>
 
         <div class="button-group">
-          <button class="start-btn" id="startBtn" disabled>
-            📡 Transmit
-          </button>
+          <button class="start-btn" id="startBtn" disabled>📡 Transmit</button>
           <button class="stop-btn hidden" id="stopBtn">🛑 Stop</button>
         </div>
       </div>
-
 
       <!-- System Output -->
       <div class="system-output" id="systemOutput">
@@ -262,11 +544,13 @@
     </div>
 
     <!-- File Edit Modal -->
-    <div class="modal-overlay" id="fileEditModal" style="display: none;">
+    <div class="modal-overlay" id="fileEditModal" style="display: none">
       <div class="modal">
         <div class="modal-header">
           <h3>Edit Audio File</h3>
-          <button type="button" class="modal-close" id="modalCloseBtn">✕</button>
+          <button type="button" class="modal-close" id="modalCloseBtn">
+            ✕
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -275,19 +559,25 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="cancel-btn" id="modalCancelBtn">❌</button>
-          <button type="button" class="delete-btn" id="deleteFileBtn">🗑️</button>
+          <button type="button" class="cancel-btn" id="modalCancelBtn">
+            ❌
+          </button>
+          <button type="button" class="delete-btn" id="deleteFileBtn">
+            🗑️
+          </button>
           <button type="button" class="save-btn" id="renameFileBtn">💾</button>
         </div>
       </div>
     </div>
 
     <!-- Image Edit Modal -->
-    <div class="modal-overlay" id="imageEditModal" style="display: none;">
+    <div class="modal-overlay" id="imageEditModal" style="display: none">
       <div class="modal">
         <div class="modal-header">
           <h3>Edit Image File</h3>
-          <button type="button" class="modal-close" id="imageModalCloseBtn">✕</button>
+          <button type="button" class="modal-close" id="imageModalCloseBtn">
+            ✕
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -296,19 +586,25 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="cancel-btn" id="imageModalCancelBtn">❌</button>
-          <button type="button" class="delete-btn" id="deleteImageBtn">🗑️</button>
+          <button type="button" class="cancel-btn" id="imageModalCancelBtn">
+            ❌
+          </button>
+          <button type="button" class="delete-btn" id="deleteImageBtn">
+            🗑️
+          </button>
           <button type="button" class="save-btn" id="renameImageBtn">💾</button>
         </div>
       </div>
     </div>
 
     <!-- Playlist Modal -->
-    <div class="modal-overlay" id="playlistModal" style="display: none;">
+    <div class="modal-overlay" id="playlistModal" style="display: none">
       <div class="modal playlist-modal">
         <div class="modal-header">
           <h3>Create Audio Playlist</h3>
-          <button type="button" class="modal-close" id="playlistModalCloseBtn">✕</button>
+          <button type="button" class="modal-close" id="playlistModalCloseBtn">
+            ✕
+          </button>
         </div>
         <div class="modal-body">
           <div class="playlist-container">
@@ -317,9 +613,13 @@
               <!-- Playlist name input -->
               <div class="playlist-name-section">
                 <label for="playlistName">Playlist Name:</label>
-                <input type="text" id="playlistName" placeholder="playlist_name.wav" />
+                <input
+                  type="text"
+                  id="playlistName"
+                  placeholder="playlist_name.wav"
+                />
               </div>
-              
+
               <h4>Available Files</h4>
               <div class="file-categories">
                 <div class="file-category">
@@ -332,17 +632,27 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Playlist section -->
             <div class="playlist-section">
               <h4>Playlist</h4>
               <div class="playlist-items" id="playlistItems">
-                <div class="empty-playlist">Click "Add" next to files to build your playlist</div>
+                <div class="empty-playlist">
+                  Click "Add" next to files to build your playlist
+                </div>
               </div>
-              <div class="playlist-error" id="playlistError" style="display: none;"></div>
+              <div
+                class="playlist-error"
+                id="playlistError"
+                style="display: none"
+              ></div>
               <div class="playlist-controls">
-                <button type="button" class="clear-btn" id="clearPlaylistBtn">🗑️ Clear</button>
-                <button type="button" class="create-btn" id="createPlaylistBtn">🎵 Create</button>
+                <button type="button" class="clear-btn" id="clearPlaylistBtn">
+                  🗑️ Clear
+                </button>
+                <button type="button" class="create-btn" id="createPlaylistBtn">
+                  🎵 Create
+                </button>
               </div>
             </div>
           </div>
