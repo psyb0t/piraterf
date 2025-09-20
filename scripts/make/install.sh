@@ -25,6 +25,9 @@ fi
 
 # Execute install
 info "🔧 Running installation script on this bastard..."
-$SSH_CMD "$PI_TARGET" "cd $DEPLOY_DIR && chmod +x install.sh && ./install.sh"
+if ! $SSH_CMD "$PI_TARGET" "cd $DEPLOY_DIR && chmod +x install.sh && ./install.sh"; then
+    error "❌ Installation failed on the Pi"
+    exit 1
+fi
 
 success "📡 Installation fucking complete! System fucking compromised and running!"

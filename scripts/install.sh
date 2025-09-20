@@ -12,17 +12,20 @@ if [ "$EUID" -ne 0 ]; then
     exec sudo "$0" "$@"
 fi
 
+# Check if already installed (now as root)
+if [ -f /etc/systemd/system/piraterf.service ]; then
+    echo "❌ PIrateRF service already fucking installed!"
+    echo "🗑️  Run 'make uninstall' first to remove the existing installation"
+    exit 1
+fi
+
 echo "🚀 Starting PIrateRF installation..."
 
 # Deployment already handled by make install dependency
 
-# Stop existing service if running
-echo "⏹️  Stopping existing PIrateRF service..."
-systemctl stop piraterf 2>/dev/null || true
-
 # Install systemd service
 echo "⚙️  Installing systemd service..."
-cat > /etc/systemd/system/piraterf.service << 'EOF'
+cat > /etc/systemd/system/piraterf.service << EOF
 [Unit]
 Description=PIrateRF
 After=network.target

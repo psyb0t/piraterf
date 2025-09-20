@@ -49,12 +49,18 @@ chmod +x install.sh
 chmod +x uninstall.sh
 
 echo "🧹 Cleaning up temp files..."
-rm -f /tmp/deploy.sh
+rm -f /tmp/deploy.sh /tmp/pi_config.sh
 
-echo "🔄 Restarting piraterf service..."
-if sudo systemctl restart piraterf; then
-    echo "✅ PIrateRF deployment and restart fucking complete!"
+echo "🔄 Checking for piraterf service..."
+if sudo systemctl is-enabled piraterf >/dev/null 2>&1; then
+    echo "🔄 Restarting piraterf service..."
+    if sudo systemctl restart piraterf; then
+        echo "✅ PIrateRF deployment and restart fucking complete!"
+    else
+        echo "⚠️  Service restart failed, but deployment completed"
+        exit 1
+    fi
 else
-    echo "⚠️  Service restart failed, but deployment completed"
-    exit 1
+    echo "ℹ️  PIrateRF service not installed yet, skipping restart"
+    echo "✅ PIrateRF deployment fucking complete!"
 fi

@@ -10,8 +10,8 @@ source "$SCRIPT_DIR/common.sh"
 section "📦 Deploying PIrateRF files to the bastard Pi"
 
 info "📦 Copying files to Pi..."
-# Copy build tar file and deployment script to Pi
-$SCP_CMD build/piraterf.tar.gz scripts/deploy.sh $PI_TARGET:/tmp/
+# Copy build tar file, deployment script, and config to Pi
+$SCP_CMD build/piraterf.tar.gz scripts/deploy.sh scripts/pi_config.sh $PI_TARGET:/tmp/
 
 info "📦 Running deployment script on the bastard..."
 # Execute the deployment script on the Pi (handles cleanup and restart)
