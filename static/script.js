@@ -46,15 +46,32 @@ class PIrateRFController {
         bandwidth: "1000000",
         time: "5.0",
       },
+
+      pocsag: {
+        frequency: "431000000",
+        baudRate: "1200",
+        functionBits: "3",
+        numericMode: false,
+        repeatCount: "4",
+        invertPolarity: false,
+        debug: false,
+        messages: [
+          {
+            address: "123456",
+            message: "TEST MESSAGE",
+            functionBits: "",
+          },
+        ],
+      },
     };
 
     this.initializeElements();
     this.isDebugMode = this.checkDebugMode();
     this.bindEvents();
-    this.onModuleChange(); // Initialize form visibility for default selected
-    // module
+    // Restore module selection immediately to show correct form
+    this.restoreModuleSelection();
     this.loadAudioFiles(false).then(() => {
-      // Restore state after audio files are loaded
+      // Restore full state after audio files are loaded
       this.restoreState();
     });
     this.connect();
@@ -116,6 +133,7 @@ class PIrateRFController {
     this.morseForm = document.getElementById("morseForm");
     this.tuneForm = document.getElementById("tuneForm");
     this.pichirpForm = document.getElementById("pichirpForm");
+    this.pocsagForm = document.getElementById("pocsagForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -153,6 +171,20 @@ class PIrateRFController {
     this.pichirpFreqInput = document.getElementById("pichirpFreq");
     this.pichirpBandwidthInput = document.getElementById("pichirpBandwidth");
     this.pichirpTimeInput = document.getElementById("pichirpTime");
+
+    // POCSAG form inputs
+    this.pocsagFreqInput = document.getElementById("pocsagFreq");
+    this.pocsagBaudRateInput = document.getElementById("pocsagBaudRate");
+    this.pocsagFunctionBitsInput =
+      document.getElementById("pocsagFunctionBits");
+    this.pocsagRepeatCountInput = document.getElementById("pocsagRepeatCount");
+    this.pocsagNumericModeInput = document.getElementById("pocsagNumericMode");
+    this.pocsagInvertPolarityInput = document.getElementById(
+      "pocsagInvertPolarity"
+    );
+    this.pocsagDebugInput = document.getElementById("pocsagDebug");
+    this.pocsagMessagesContainer = document.getElementById("pocsagMessages");
+    this.addMessageBtn = document.getElementById("addMessageBtn");
     this.refreshImageBtn = document.getElementById("refreshImageBtn");
     this.editImageBtn = document.getElementById("editImageBtn");
     this.imageSelectBtn = document.getElementById("imageSelectBtn");
@@ -437,6 +469,43 @@ class PIrateRFController {
       this.saveState();
       this.validateForm();
     });
+
+    // POCSAG module form events
+    this.pocsagFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagBaudRateInput.addEventListener("change", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagFunctionBitsInput.addEventListener("change", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagRepeatCountInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagNumericModeInput.addEventListener("click", () => {
+      this.togglePOCSAGOption(this.pocsagNumericModeInput);
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagInvertPolarityInput.addEventListener("click", () => {
+      this.togglePOCSAGOption(this.pocsagInvertPolarityInput);
+      this.saveState();
+      this.validateForm();
+    });
+    this.pocsagDebugInput.addEventListener("click", () => {
+      this.togglePOCSAGOption(this.pocsagDebugInput);
+      this.saveState();
+      this.validateForm();
+    });
+
+    // POCSAG messages management
+    this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
+    this.bindPOCSAGMessageEvents();
   }
 
   connect() {
@@ -590,6 +659,7 @@ class PIrateRFController {
     this.tuneForm.classList.add("hidden");
     this.spectrumpaintForm.classList.add("hidden");
     this.pichirpForm.classList.add("hidden");
+    this.pocsagForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -609,6 +679,9 @@ class PIrateRFController {
         break;
       case "pichirp":
         this.pichirpForm.classList.remove("hidden");
+        break;
+      case "pocsag":
+        this.pocsagForm.classList.remove("hidden");
         break;
     }
 
@@ -781,11 +854,251 @@ class PIrateRFController {
           this.pichirpBandwidthInput.value &&
           this.pichirpTimeInput.value;
         break;
+      case "pocsag":
+        isValid = module && this.pocsagFreqInput.value && this.validatePOCSAGMessages();
+        break;
       default:
         isValid = false;
     }
 
     this.startBtn.disabled = !isValid || this.isExecuting;
+  }
+
+  validatePOCSAGMessages() {
+    const messageElements =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message");
+    if (messageElements.length === 0) {
+      return false;
+    }
+
+    for (const messageElement of messageElements) {
+      const addressInput = messageElement.querySelector(
+        '[data-message-field="address"]'
+      );
+      const messageInput = messageElement.querySelector(
+        '[data-message-field="message"]'
+      );
+
+      if (!addressInput || !messageInput) {
+        return false;
+      }
+
+      if (!addressInput.value.trim() || !messageInput.value.trim()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  togglePOCSAGOption(button) {
+    button.classList.toggle('active');
+  }
+
+  buildPOCSAGArgs() {
+    const args = {};
+
+    // Add optional frequency
+    if (this.pocsagFreqInput.value.trim()) {
+      args.frequency = parseFloat(this.pocsagFreqInput.value);
+    }
+
+    // Add optional baud rate
+    if (this.pocsagBaudRateInput.value.trim()) {
+      args.baudRate = parseInt(this.pocsagBaudRateInput.value);
+    }
+
+    // Add optional function bits
+    if (this.pocsagFunctionBitsInput.value.trim()) {
+      args.functionBits = parseInt(this.pocsagFunctionBitsInput.value);
+    }
+
+    // Add optional repeat count
+    if (this.pocsagRepeatCountInput.value.trim()) {
+      args.repeatCount = parseInt(this.pocsagRepeatCountInput.value);
+    }
+
+    // Add optional boolean flags
+    if (this.pocsagNumericModeInput.classList.contains('active')) {
+      args.numericMode = true;
+    }
+
+    if (this.pocsagInvertPolarityInput.classList.contains('active')) {
+      args.invertPolarity = true;
+    }
+
+    if (this.pocsagDebugInput.classList.contains('active')) {
+      args.debug = true;
+    }
+
+    // Build messages array
+    args.messages = [];
+    const messageElements =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message");
+
+    for (const messageElement of messageElements) {
+      const addressInput = messageElement.querySelector(
+        '[data-message-field="address"]'
+      );
+      const messageInput = messageElement.querySelector(
+        '[data-message-field="message"]'
+      );
+      const functionBitsInput = messageElement.querySelector(
+        '[data-message-field="functionBits"]'
+      );
+
+      const message = {
+        address: parseInt(addressInput.value),
+        message: messageInput.value.trim(),
+      };
+
+      // Add per-message function bits if specified
+      if (functionBitsInput && functionBitsInput.value.trim()) {
+        message.functionBits = parseInt(functionBitsInput.value);
+      }
+
+      args.messages.push(message);
+    }
+
+    return args;
+  }
+
+  addPOCSAGMessage() {
+    const messageCount =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message").length;
+    const messageIndex = messageCount;
+
+    const messageHtml = `
+      <div class="pocsag-message" data-message-index="${messageIndex}">
+        <div class="message-header">
+          <span>#${messageIndex + 1}</span>
+          <button type="button" class="remove-message-btn" title="Remove message">❌</button>
+        </div>
+        <div class="message-fields">
+          <div class="form-group">
+            <label for="pocsagAddress${messageIndex}" class="required">Address</label>
+            <input
+              type="number"
+              id="pocsagAddress${messageIndex}"
+              min="0"
+              placeholder="123456"
+              data-message-field="address"
+            />
+          </div>
+          <div class="form-group">
+            <label for="pocsagMessage${messageIndex}" class="required">Message</label>
+            <textarea
+              id="pocsagMessage${messageIndex}"
+              placeholder="MESSAGE TEXT"
+              rows="2"
+              data-message-field="message"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="pocsagMessageFunctionBits${messageIndex}">Function Bits (optional)</label>
+            <select id="pocsagMessageFunctionBits${messageIndex}" data-message-field="functionBits">
+              <option value="">Use global setting</option>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.pocsagMessagesContainer.insertAdjacentHTML("beforeend", messageHtml);
+    this.bindPOCSAGMessageEvents();
+    this.saveState();
+    this.validateForm();
+  }
+
+  bindPOCSAGMessageEvents() {
+    // Bind events for all message fields
+    const messageElements =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message");
+
+    messageElements.forEach((messageElement) => {
+      // Bind input events for validation and state saving
+      const inputs = messageElement.querySelectorAll("input, textarea, select");
+      inputs.forEach((input) => {
+        input.removeEventListener("input", this.onPOCSAGMessageChange);
+        input.removeEventListener("change", this.onPOCSAGMessageChange);
+        input.addEventListener("input", this.onPOCSAGMessageChange);
+        input.addEventListener("change", this.onPOCSAGMessageChange);
+      });
+
+      // Bind remove button events
+      const removeBtn = messageElement.querySelector(".remove-message-btn");
+      if (removeBtn) {
+        removeBtn.removeEventListener("click", this.onRemovePOCSAGMessage);
+        removeBtn.addEventListener("click", this.onRemovePOCSAGMessage);
+      }
+    });
+  }
+
+  onPOCSAGMessageChange = () => {
+    this.saveState();
+    this.validateForm();
+  };
+
+  onRemovePOCSAGMessage = (event) => {
+    const messageElement = event.target.closest(".pocsag-message");
+    const messageElements =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message");
+
+    // Don't allow removing the last message
+    if (messageElements.length <= 1) {
+      return;
+    }
+
+    messageElement.remove();
+    this.renumberPOCSAGMessages();
+    this.saveState();
+    this.validateForm();
+  };
+
+  renumberPOCSAGMessages() {
+    const messageElements =
+      this.pocsagMessagesContainer.querySelectorAll(".pocsag-message");
+
+    messageElements.forEach((messageElement, index) => {
+      messageElement.setAttribute("data-message-index", index);
+      messageElement.querySelector("span").textContent = `#${index + 1}`;
+
+      // Update input IDs and labels
+      const addressInput = messageElement.querySelector(
+        '[data-message-field="address"]'
+      );
+      const messageInput = messageElement.querySelector(
+        '[data-message-field="message"]'
+      );
+      const functionBitsInput = messageElement.querySelector(
+        '[data-message-field="functionBits"]'
+      );
+
+      if (addressInput) {
+        addressInput.id = `pocsagAddress${index}`;
+        messageElement
+          .querySelector(`label[for^="pocsagAddress"]`)
+          .setAttribute("for", `pocsagAddress${index}`);
+      }
+
+      if (messageInput) {
+        messageInput.id = `pocsagMessage${index}`;
+        messageElement
+          .querySelector(`label[for^="pocsagMessage"]`)
+          .setAttribute("for", `pocsagMessage${index}`);
+      }
+
+      if (functionBitsInput) {
+        functionBitsInput.id = `pocsagMessageFunctionBits${index}`;
+        messageElement
+          .querySelector(`label[for^="pocsagMessageFunctionBits"]`)
+          .setAttribute("for", `pocsagMessageFunctionBits${index}`);
+      }
+    });
   }
 
   startExecution() {
@@ -863,6 +1176,11 @@ class PIrateRFController {
           time: parseFloat(this.pichirpTimeInput.value),
         };
         timeout = 0; // No timeout for pichirp by default
+        break;
+
+      case "pocsag":
+        args = this.buildPOCSAGArgs();
+        timeout = 0; // No timeout for pocsag by default
         break;
     }
 
@@ -2318,6 +2636,7 @@ class PIrateRFController {
     if (!this.state.tune) this.state.tune = {};
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
     if (!this.state.pichirp) this.state.pichirp = {};
+    if (!this.state.pocsag) this.state.pocsag = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2359,10 +2678,59 @@ class PIrateRFController {
     this.state.pichirp.bandwidth = this.pichirpBandwidthInput?.value || "";
     this.state.pichirp.time = this.pichirpTimeInput?.value || "";
 
+    // Update POCSAG state
+    this.state.pocsag.frequency =
+      document.getElementById("pocsagFreq")?.value || "";
+    this.state.pocsag.baudRate =
+      document.getElementById("pocsagBaudRate")?.value || "";
+    this.state.pocsag.functionBits =
+      document.getElementById("pocsagFunctionBits")?.value || "";
+    this.state.pocsag.repeatCount =
+      document.getElementById("pocsagRepeatCount")?.value || "";
+    this.state.pocsag.numericMode =
+      document.getElementById("pocsagNumericMode")?.classList.contains('active') || false;
+    this.state.pocsag.invertPolarity =
+      document.getElementById("pocsagInvertPolarity")?.classList.contains('active') || false;
+    this.state.pocsag.debug =
+      document.getElementById("pocsagDebug")?.classList.contains('active') || false;
+
+    // Collect messages state
+    this.state.pocsag.messages = [];
+    const messageElements = document.querySelectorAll(".pocsag-message");
+    messageElements.forEach((messageEl) => {
+      const address = messageEl.querySelector('[data-message-field="address"]')?.value || "";
+      const message = messageEl.querySelector('[data-message-field="message"]')?.value || "";
+      const functionBits = messageEl.querySelector('[data-message-field="functionBits"]')?.value || "";
+
+      if (address || message) {
+        this.state.pocsag.messages.push({
+          address: address,
+          message: message,
+          functionBits: functionBits,
+        });
+      }
+    });
+
     try {
       localStorage.setItem("piraterf_state", JSON.stringify(this.state));
     } catch (e) {
       console.warn("Failed to save state to localStorage:", e);
+    }
+  }
+
+  // Restore just the module selection immediately to show correct form
+  restoreModuleSelection() {
+    try {
+      const savedState = localStorage.getItem("piraterf_state");
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        if (parsedState.modulename) {
+          this.moduleSelect.value = parsedState.modulename;
+          this.onModuleChange();
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to restore module selection from localStorage:", e);
     }
   }
 
@@ -2384,6 +2752,7 @@ class PIrateRFController {
             ...parsedState.spectrumpaint,
           },
           pichirp: { ...this.state.pichirp, ...parsedState.pichirp },
+          pocsag: { ...this.state.pocsag, ...parsedState.pocsag },
         };
       }
 
@@ -2402,6 +2771,7 @@ class PIrateRFController {
     if (!this.state.tune) this.state.tune = {};
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
     if (!this.state.pichirp) this.state.pichirp = {};
+    if (!this.state.pocsag) this.state.pocsag = {};
 
     // Sync module selection
     if (this.state.modulename) this.moduleSelect.value = this.state.modulename;
@@ -2413,8 +2783,10 @@ class PIrateRFController {
     if (this.state.pifmrds.pi) this.piInput.value = this.state.pifmrds.pi;
     if (this.state.pifmrds.ps) this.psInput.value = this.state.pifmrds.ps;
     if (this.state.pifmrds.rt) this.rtInput.value = this.state.pifmrds.rt;
-    if (this.state.pifmrds.timeout)
-      document.getElementById("timeout").value = this.state.pifmrds.timeout;
+    if (this.state.pifmrds.timeout) {
+      const timeoutEl = document.getElementById("timeout");
+      if (timeoutEl) timeoutEl.value = this.state.pifmrds.timeout;
+    }
 
     // Sync play mode toggle (PIFMRDS only)
     if (this.state.pifmrds.playOnce !== undefined) {
@@ -2445,21 +2817,32 @@ class PIrateRFController {
     }
 
     // Sync MORSE form inputs
-    if (this.state.morse.freq)
-      document.getElementById("morseFreq").value = this.state.morse.freq;
-    if (this.state.morse.rate)
-      document.getElementById("morseRate").value = this.state.morse.rate;
-    if (this.state.morse.message)
-      document.getElementById("morseMessage").value = this.state.morse.message;
+    if (this.state.morse.freq) {
+      const morseFreqEl = document.getElementById("morseFreq");
+      if (morseFreqEl) morseFreqEl.value = this.state.morse.freq;
+    }
+    if (this.state.morse.rate) {
+      const morseRateEl = document.getElementById("morseRate");
+      if (morseRateEl) morseRateEl.value = this.state.morse.rate;
+    }
+    if (this.state.morse.message) {
+      const morseMessageEl = document.getElementById("morseMessage");
+      if (morseMessageEl) morseMessageEl.value = this.state.morse.message;
+    }
 
     // Sync TUNE form inputs
-    if (this.state.tune.freq)
-      document.getElementById("tuneFreq").value = this.state.tune.freq;
-    if (this.state.tune.exitImmediate !== undefined)
-      document.getElementById("tuneExitImmediate").checked =
-        this.state.tune.exitImmediate;
-    if (this.state.tune.ppm)
-      document.getElementById("tunePPM").value = this.state.tune.ppm;
+    if (this.state.tune.freq) {
+      const tuneFreqEl = document.getElementById("tuneFreq");
+      if (tuneFreqEl) tuneFreqEl.value = this.state.tune.freq;
+    }
+    if (this.state.tune.exitImmediate !== undefined) {
+      const tuneExitImmediateEl = document.getElementById("tuneExitImmediate");
+      if (tuneExitImmediateEl) tuneExitImmediateEl.checked = this.state.tune.exitImmediate;
+    }
+    if (this.state.tune.ppm) {
+      const tunePPMEl = document.getElementById("tunePPM");
+      if (tunePPMEl) tunePPMEl.value = this.state.tune.ppm;
+    }
 
     // Sync SPECTRUMPAINT form inputs
     if (this.state.spectrumpaint.frequency && this.spectrumpaintFreqInput)
@@ -2476,6 +2859,83 @@ class PIrateRFController {
       this.pichirpBandwidthInput.value = this.state.pichirp.bandwidth;
     if (this.state.pichirp.time && this.pichirpTimeInput)
       this.pichirpTimeInput.value = this.state.pichirp.time;
+
+    // Sync POCSAG form inputs
+    if (this.state.pocsag.frequency) {
+      const freqEl = document.getElementById("pocsagFreq");
+      if (freqEl) freqEl.value = this.state.pocsag.frequency;
+    }
+    if (this.state.pocsag.baudRate) {
+      const baudRateEl = document.getElementById("pocsagBaudRate");
+      if (baudRateEl) baudRateEl.value = this.state.pocsag.baudRate;
+    }
+    if (this.state.pocsag.functionBits) {
+      const functionBitsEl = document.getElementById("pocsagFunctionBits");
+      if (functionBitsEl) functionBitsEl.value = this.state.pocsag.functionBits;
+    }
+    if (this.state.pocsag.repeatCount) {
+      const repeatCountEl = document.getElementById("pocsagRepeatCount");
+      if (repeatCountEl) repeatCountEl.value = this.state.pocsag.repeatCount;
+    }
+    if (this.state.pocsag.numericMode !== undefined) {
+      const numericModeEl = document.getElementById("pocsagNumericMode");
+      if (numericModeEl) {
+        if (this.state.pocsag.numericMode) {
+          numericModeEl.classList.add('active');
+        } else {
+          numericModeEl.classList.remove('active');
+        }
+      }
+    }
+    if (this.state.pocsag.invertPolarity !== undefined) {
+      const invertPolarityEl = document.getElementById("pocsagInvertPolarity");
+      if (invertPolarityEl) {
+        if (this.state.pocsag.invertPolarity) {
+          invertPolarityEl.classList.add('active');
+        } else {
+          invertPolarityEl.classList.remove('active');
+        }
+      }
+    }
+    if (this.state.pocsag.debug !== undefined) {
+      const debugEl = document.getElementById("pocsagDebug");
+      if (debugEl) {
+        if (this.state.pocsag.debug) {
+          debugEl.classList.add('active');
+        } else {
+          debugEl.classList.remove('active');
+        }
+      }
+    }
+
+    // Restore POCSAG messages
+    if (this.state.pocsag.messages && this.state.pocsag.messages.length > 0) {
+      // Clear existing messages first (keep one empty message)
+      const messagesContainer = document.getElementById("pocsagMessages");
+      messagesContainer.innerHTML = "";
+
+      // Add all saved messages
+      this.state.pocsag.messages.forEach((msg, index) => {
+        this.addPOCSAGMessage();
+        const messageEl = messagesContainer.querySelector(
+          `[data-message-index="${index}"]`
+        );
+        if (messageEl) {
+          const addressInput = messageEl.querySelector('[data-message-field="address"]');
+          const messageInput = messageEl.querySelector('[data-message-field="message"]');
+          const functionBitsInput = messageEl.querySelector('[data-message-field="functionBits"]');
+
+          if (addressInput) addressInput.value = msg.address || "";
+          if (messageInput) messageInput.value = msg.message || "";
+          if (functionBitsInput) functionBitsInput.value = msg.functionBits || "";
+        }
+      });
+
+      // If no messages were restored, ensure we have at least one empty message
+      if (messagesContainer.children.length === 0) {
+        this.addPOCSAGMessage();
+      }
+    }
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 

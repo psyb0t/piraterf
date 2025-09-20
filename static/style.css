@@ -504,6 +504,126 @@ body.executing .system-output {
   background: rgba(0, 255, 0, 0.2);
 }
 
+/* POCSAG Toggle Buttons */
+.pocsag-toggles {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+.pocsag-toggle {
+  padding: 8px 12px;
+  background: #000;
+  color: #666;
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: fit-content;
+}
+
+.pocsag-toggle:hover {
+  background: rgba(102, 102, 102, 0.1);
+  color: #999;
+  border-color: #999;
+}
+
+.pocsag-toggle.active {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.pocsag-toggle.active:hover {
+  background: rgba(0, 255, 0, 0.3);
+}
+
+/* POCSAG Message Remove Button */
+.remove-message-btn {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff0000;
+  border: 1px solid #ff0000;
+  padding: 2px;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex: none !important;
+}
+
+.remove-message-btn:hover {
+  background: rgba(255, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+/* POCSAG Message Container */
+.pocsag-message {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.pocsag-message:last-child {
+  margin-bottom: 0;
+}
+
+.pocsag-message .message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.pocsag-message .message-header span {
+  flex: 1;
+}
+
+.pocsag-message .message-fields {
+  padding-left: 8px;
+}
+
+/* POCSAG Add Message Button */
+.add-message-btn {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex: none !important;
+}
+
+.add-message-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
+}
+
 .intro-outro-controls {
   margin-bottom: 10px;
 }

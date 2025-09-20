@@ -14,6 +14,7 @@ Executes rpitx modules through Go without the usual clusterfuck of manual proces
 - **tune**: Simple carrier wave generation (frequency in Hz)
 - **pichirp**: Carrier wave sweep generator (frequency in Hz)
 - **morse**: Morse code transmission (frequency in Hz)
+- **pocsag**: Pager protocol transmission (frequency in Hz)
 - **spectrumpaint**: Spectrum painting transmission (frequency in Hz)
 
 **Architecture Highlights:**
@@ -116,7 +117,7 @@ type PIFMRDS struct {
 
 ```go
 type TUNE struct {
-    Frequency     *float64 // Hz, required, 50kHz-1500MHz
+    Frequency     float64  // Hz, required, 50kHz-1500MHz
     ExitImmediate *bool    // Exit without killing carrier (optional)
     PPM           *float64 // Clock correction ppm > 0 (optional)
 }
@@ -139,7 +140,7 @@ import (
 )
 
 args := gorpitx.TUNE{
-    Frequency:     floatPtr(434000000), // 434 MHz in Hz
+    Frequency:     434000000.0,         // 434 MHz in Hz
     ExitImmediate: boolPtr(true),       // Exit without killing carrier
     PPM:           floatPtr(2.5),       // Clock correction
 }
@@ -239,6 +240,105 @@ err := rpitx.Exec(ctx, gorpitx.ModuleNameMORSE, argsJSON, 0) // No timeout
 if err != nil {
     panic(err)
 }
+```
+
+## 📟 POCSAG Module Configuration
+
+```go
+type POCSAG struct {
+    Frequency float64 `json:"frequency"` // Hz, required, 50kHz-1500MHz
+    BaudRate *int `json:"baudRate,omitempty"` // Optional, 512/1200/2400, default 1200
+    FunctionBits *int `json:"functionBits,omitempty"` // Optional, 0-3, default 3
+    NumericMode *bool `json:"numericMode,omitempty"` // Optional, default false
+    RepeatCount *int `json:"repeatCount,omitempty"` // Optional, default 4
+    InvertPolarity *bool `json:"invertPolarity,omitempty"` // Optional, default false
+    Debug *bool `json:"debug,omitempty"` // Optional, default false
+    Messages []POCSAGMessage `json:"messages"` // Required, address:message pairs
+}
+
+type POCSAGMessage struct {
+    Address int `json:"address"` // Required, pager address
+    Message string `json:"message"` // Required, message text
+    FunctionBits *int `json:"functionBits,omitempty"` // Optional override
+}
+```
+
+**POCSAG Stdin Implementation:**
+
+POCSAG uses **stdin for message data** (like the native rpitx binary), not command arguments. Messages are automatically formatted as `address:message` pairs separated by newlines and sent via stdin to the rpitx POCSAG binary.
+
+**Validation Rules:**
+
+- `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
+- `BaudRate`: Optional, must be 512, 1200, or 2400
+- `FunctionBits`: Optional, must be 0-3
+- `NumericMode`: Optional boolean flag for numeric mode
+- `RepeatCount`: Optional, must be positive
+- `InvertPolarity`: Optional boolean flag to invert polarity
+- `Debug`: Optional boolean flag for debug mode
+- `Messages`: Required slice with at least one message
+
+**Note**: Optional parameters use rpitx defaults if not specified (1200 baud, function bits 3, repeat count 4). Frequency is required at the gorpitx level for validation.
+
+**How POCSAG Stdin Works:**
+
+The rpitx POCSAG binary expects message data via stdin in `address:message` format:
+
+```bash
+# Native rpitx usage:
+printf "123456:Emergency alert\n789012:Second message" | sudo ./pocsag -f 466230000 -r 1200
+```
+
+GoRPITX automatically handles this:
+
+1. Extracts messages from JSON configuration
+2. Formats as `address:message` pairs with newline separation
+3. Sends via stdin to the rpitx POCSAG binary
+4. Command arguments contain only flags (`-f`, `-r`, etc.)
+
+**Example Usage:**
+
+```go
+import (
+    "context"
+    "encoding/json"
+    "time"
+    "github.com/psyb0t/gorpitx"
+)
+
+args := gorpitx.POCSAG{
+    Frequency:      466230000.0,           // 466.230 MHz (pager frequency)
+    BaudRate:       intPtr(1200),          // 1200 baud
+    FunctionBits:   intPtr(3),             // Function 3
+    NumericMode:    boolPtr(false),        // Text mode
+    RepeatCount:    intPtr(4),             // Repeat 4 times
+    InvertPolarity: boolPtr(false),        // Normal polarity
+    Debug:          boolPtr(false),        // No debug
+    Messages: []gorpitx.POCSAGMessage{
+        {
+            Address: 123456,
+            Message: "Emergency alert test message",
+        },
+        {
+            Address: 789012,
+            Message: "Second pager message",
+        },
+    },
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+// Execute POCSAG transmission
+// Equivalent to: printf "123456:Emergency alert test message\n789012:Second pager message" | sudo ./pocsag -f 466230000 -r 1200 -b 3 -t 4
+err := rpitx.Exec(ctx, gorpitx.ModuleNamePOCSAG, argsJSON, 0) // No timeout
+if err != nil {
+    panic(err)
+}
+
+func floatPtr(f float64) *float64 { return &f }
+func intPtr(i int) *int { return &i }
+func boolPtr(b bool) *bool { return &b }
 ```
 
 ## 🎨 SPECTRUMPAINT Module Configuration
@@ -412,7 +512,7 @@ Executes actual rpitx binaries with proper RF transmission.
 
 ```go
 type Module interface {
-    ParseArgs(json.RawMessage) ([]string, error)
+    ParseArgs(json.RawMessage) ([]string, io.Reader, error)
 }
 ```
 
@@ -421,6 +521,13 @@ New modules implement this interface with:
 1. JSON unmarshaling of configuration
 2. Parameter validation
 3. Command-line argument building
+4. Stdin data preparation (return `nil` if no stdin needed)
+
+**Stdin Usage:**
+
+- Most modules return `nil` for stdin (TUNE, MORSE, PIFMRDS, PICHIRP, SPECTRUMPAINT)
+- POCSAG returns `io.Reader` with message data in `address:message` format
+- Commander automatically pipes stdin data to the rpitx binary when provided
 
 ### Frequency Utilities
 
@@ -437,7 +544,7 @@ New modules implement this interface with:
 
 ## 📋 TODO: Remaining Modules Implementation (The Fun Stuff)
 
-Based on the easytest modules from rpitx, here are the **6 badass modules** we still need to implement (excluding that legacy rpitx garbage):
+Based on the easytest modules from rpitx, here are the **5 badass modules** we still need to implement (excluding that legacy rpitx garbage):
 
 - **SENDIQ** - IQ Data Transmission
 
@@ -482,32 +589,6 @@ Based on the easytest modules from rpitx, here are the **6 badass modules** we s
     }
     ```
   - **Validation**: File exists, frequency > 0
-
-- **POCSAG** - Pager Protocol
-
-  - **Command**: `pocsag [-f Frequency] [-r Rate] [-b FunctionBits] [-n] [-t RepeatCount] [-i] [-d]`
-  - **Go struct**:
-
-    ```go
-    type POCSAG struct {
-        Frequency *float64 `json:"frequency,omitempty"` // Hz, optional, 50kHz-1500MHz, default 466230000
-        BaudRate *int `json:"baudRate,omitempty"` // Optional, 512/1200/2400, default 1200
-        FunctionBits *int `json:"functionBits,omitempty"` // Optional, 0-3, default 3
-        NumericMode *bool `json:"numericMode,omitempty"` // Optional, default false
-        RepeatCount *int `json:"repeatCount,omitempty"` // Optional, default 4
-        InvertPolarity *bool `json:"invertPolarity,omitempty"` // Optional, default false
-        Debug *bool `json:"debug,omitempty"` // Optional, default false
-        Messages []POCSAGMessage `json:"messages"` // Required, address:message pairs
-    }
-
-    type POCSAGMessage struct {
-        Address int `json:"address"` // Required, pager address
-        Message string `json:"message"` // Required, message text
-        FunctionBits *int `json:"functionBits,omitempty"` // Optional override
-    }
-    ```
-
-  - **Validation**: Baud rate enum, function bits 0-3, at least one message
 
 - **PIOPERA** - OPERA Protocol
 

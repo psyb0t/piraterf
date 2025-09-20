@@ -28,6 +28,7 @@ PIrateRF transforms your Pi Zero into a **standalone RF transmission station** t
 - **📻 Morse Code Transmission**: Send CW (continuous wave) Morse code signals
 - **🎛️ Carrier Wave Generation**: Simple carrier frequency generation for testing and tuning
 - **🌊 Frequency Sweep**: Generate carrier frequency sweeps for RF testing and analysis or just for teh lulz
+- **📟 POCSAG Paging**: Transmit POCSAG pager messages with configurable baud rates, function bits, and multi-message support
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
 - **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
@@ -248,15 +249,22 @@ make uninstall          # Remove PIrateRF from Pi
 - **Text to Morse**: Automatic conversion with configurable WPM (words per minute)
 - **CW Transmission**: Continuous wave RF transmission
 
+### Tune Mode
+
+- **Carrier Wave**: Simple carrier wave generation for testing and verification
+
 ### Frequency Sweep (CHIRP)
 
 - **Configurable Sweeps**: Generate carrier wave sweeps with customizable center frequency, bandwidth, and duration
 - **RF Testing**: Perfect for antenna analysis, filter characterization, and RF circuit testing
 - **Wide Range Support**: Supports frequencies from 50 kHz to 1500 MHz with variable bandwidth
 
-### Tune Mode
+### POCSAG Paging
 
-- **Carrier Wave**: Simple carrier wave generation for testing and verification
+- **Message Transmission**: Send pager messages with configurable addresses and text content
+- **Multiple Messages**: Support for multiple messages in a single transmission
+- **Configurable Parameters**: Adjust baud rate (512, 1200, 2400 bps), function bits, and transmission options
+- **Flexible Options**: Numeric mode, polarity inversion, and debug mode with toggle controls
 
 ### Spectrum Painting
 

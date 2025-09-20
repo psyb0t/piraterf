@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +28,7 @@ const (
 )
 
 type Module interface {
-	ParseArgs(json.RawMessage) ([]string, error)
+	ParseArgs(json.RawMessage) ([]string, io.Reader, error)
 }
 
 type ModuleName = string
@@ -61,6 +62,7 @@ func newRPITX() *RPITX {
 			ModuleNameMORSE:         &MORSE{},
 			ModuleNameSPECTRUMPAINT: &SPECTRUMPAINT{},
 			ModuleNamePICHIRP:       &PICHIRP{},
+			ModuleNamePOCSAG:        &POCSAG{},
 		},
 	}
 }
@@ -108,12 +110,12 @@ func (r *RPITX) Exec(
 	logrus.Debugf("executing module %s with args %s", name, args)
 	defer logrus.Debugf("finished executing module %s", name)
 
-	cmdName, cmdArgs, err := r.prepareCommand(name, args)
+	cmdName, cmdArgs, stdin, err := r.prepareCommand(name, args)
 	if err != nil {
 		return err
 	}
 
-	if err := r.startProcess(ctx, cmdName, cmdArgs); err != nil {
+	if err := r.startProcess(ctx, cmdName, cmdArgs, stdin); err != nil {
 		return err
 	}
 
@@ -148,16 +150,16 @@ func (r *RPITX) cleanupExecution(ctx context.Context) {
 func (r *RPITX) prepareCommand(
 	name ModuleName,
 	args []byte,
-) (string, []string, error) {
+) (string, []string, io.Reader, error) {
 	if !r.IsSupportedModule(name) {
-		return "", nil, ctxerrors.Wrap(ErrUnknownModule, name)
+		return "", nil, nil, ctxerrors.Wrap(ErrUnknownModule, name)
 	}
 
 	module := r.modules[name]
 
-	parsedArgs, err := module.ParseArgs(args)
+	parsedArgs, stdin, err := module.ParseArgs(args)
 	if err != nil {
-		return "", nil, ctxerrors.Wrap(err, "failed to parse args")
+		return "", nil, nil, ctxerrors.Wrap(err, "failed to parse args")
 	}
 
 	var (
@@ -168,7 +170,7 @@ func (r *RPITX) prepareCommand(
 	if env.IsDev() {
 		cmdName, cmdArgs = r.getMockExecCmd(name, parsedArgs)
 
-		return cmdName, cmdArgs, nil
+		return cmdName, cmdArgs, stdin, nil
 	}
 
 	binaryPath := filepath.Join(r.config.Path, name)
@@ -180,19 +182,27 @@ func (r *RPITX) prepareCommand(
 
 	logrus.Debugf("production command prepared: %s %v", cmdName, cmdArgs)
 
-	return cmdName, cmdArgs, nil
+	return cmdName, cmdArgs, stdin, nil
 }
 
 func (r *RPITX) startProcess(
 	ctx context.Context,
 	cmdName string,
 	cmdArgs []string,
+	stdin io.Reader,
 ) error {
 	r.processMu.Lock()
+
+	var opts []commander.Option
+	if stdin != nil {
+		opts = append(opts, commander.WithStdin(stdin))
+	}
+
 	process, err := r.commander.Start(
 		ctx,
 		cmdName,
 		cmdArgs,
+		opts...,
 	)
 	r.process = process
 	r.processMu.Unlock()

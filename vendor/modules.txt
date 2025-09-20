@@ -709,10 +709,10 @@ github.com/psyb0t/ctxerrors
 # github.com/psyb0t/gofindimpl v1.0.0
 ## explicit; go 1.24.6
 github.com/psyb0t/gofindimpl
-# github.com/psyb0t/gonfiguration v1.3.0
+# github.com/psyb0t/gonfiguration v1.3.1
 ## explicit; go 1.24.5
 github.com/psyb0t/gonfiguration
-# github.com/psyb0t/gorpitx v0.0.0-20250920020726-821a0ae1c05d
+# github.com/psyb0t/gorpitx v0.0.0-20250920041940-0bddb0f33e9a
 ## explicit; go 1.24.6
 github.com/psyb0t/gorpitx
 # github.com/psyb0t/logrus-configurator v1.1.0

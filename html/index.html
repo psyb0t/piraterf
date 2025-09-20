@@ -93,6 +93,7 @@
             <option value="tune">tune</option>
             <option value="pichirp">pichirp</option>
             <option value="spectrumpaint">spectrumpaint</option>
+            <option value="pocsag">pocsag</option>
           </select>
         </div>
 
@@ -528,6 +529,164 @@ HACK THE PLANET</textarea
               data-module-name="pichirp"
               data-field-name="time"
             />
+          </div>
+        </div>
+
+        <!-- POCSAG Module Form -->
+        <div id="pocsagForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="pocsagFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="pocsagFreq"
+              step="1"
+              placeholder="431000000"
+              value="431000000"
+              required
+              data-module-name="pocsag"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pocsagBaudRate">Baud Rate (optional)</label>
+            <select
+              id="pocsagBaudRate"
+              data-module-name="pocsag"
+              data-field-name="baudRate"
+            >
+              <option value="">Default (1200)</option>
+              <option value="512">512</option>
+              <option value="1200" selected>1200</option>
+              <option value="2400">2400</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pocsagFunctionBits"
+              >Function Bits (0-3, optional)</label
+            >
+            <select
+              id="pocsagFunctionBits"
+              data-module-name="pocsag"
+              data-field-name="functionBits"
+            >
+              <option value="">Default (3)</option>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pocsagRepeatCount">Repeat Count (optional)</label>
+            <input
+              type="number"
+              id="pocsagRepeatCount"
+              min="1"
+              placeholder="4"
+              value="4"
+              data-module-name="pocsag"
+              data-field-name="repeatCount"
+            />
+          </div>
+
+          <div class="form-group">
+            <div class="pocsag-toggles">
+              <button
+                type="button"
+                class="pocsag-toggle"
+                id="pocsagNumericMode"
+                data-module-name="pocsag"
+                data-field-name="numericMode"
+                title="Toggle numeric mode"
+              >
+                📊 Numeric Mode
+              </button>
+              <button
+                type="button"
+                class="pocsag-toggle"
+                id="pocsagInvertPolarity"
+                data-module-name="pocsag"
+                data-field-name="invertPolarity"
+                title="Toggle polarity inversion"
+              >
+                🔄 Invert Polarity
+              </button>
+              <button
+                type="button"
+                class="pocsag-toggle"
+                id="pocsagDebug"
+                data-module-name="pocsag"
+                data-field-name="debug"
+                title="Toggle debug mode"
+              >
+                🐛 Debug Mode
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="required">Messages</label>
+            <div class="pocsag-messages" id="pocsagMessages">
+              <div class="pocsag-message" data-message-index="0">
+                <div class="message-header">
+                  <span>#1</span>
+                  <button
+                    type="button"
+                    class="remove-message-btn"
+                    title="Remove message"
+                  >
+                    ❌
+                  </button>
+                </div>
+                <div class="message-fields">
+                  <div class="form-group">
+                    <label for="pocsagAddress0" class="required">Address</label>
+                    <input
+                      type="number"
+                      id="pocsagAddress0"
+                      min="0"
+                      placeholder="123456"
+                      value="123456"
+                      data-message-field="address"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="pocsagMessage0" class="required">Message</label>
+                    <textarea
+                      id="pocsagMessage0"
+                      placeholder="TEST MESSAGE"
+                      rows="2"
+                      data-message-field="message"
+                    >
+TEST MESSAGE</textarea
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="pocsagMessageFunctionBits0"
+                      >Function Bits (optional)</label
+                    >
+                    <select
+                      id="pocsagMessageFunctionBits0"
+                      data-message-field="functionBits"
+                    >
+                      <option value="">Use global setting</option>
+                      <option value="0">0</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; margin-top: 10px;">
+              <button type="button" class="add-message-btn" id="addMessageBtn">
+                ➕
+              </button>
+            </div>
           </div>
         </div>
 

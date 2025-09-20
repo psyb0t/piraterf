@@ -129,6 +129,8 @@ func (s *PIrateRF) processModuleExecution(
 		return s.handleSPECTRUMPAINTExecution(msg, finalTimeout, client, logger)
 	case gorpitx.ModuleNamePICHIRP:
 		return s.handlePICHIRPExecution(msg, finalTimeout, client, logger)
+	case gorpitx.ModuleNamePOCSAG:
+		return s.handlePOCSAGExecution(msg, finalTimeout, client, logger)
 	default:
 		return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, finalTimeout, client, nil)
 	}
@@ -175,6 +177,17 @@ func (s *PIrateRF) handlePICHIRPExecution(
 	logger *logrus.Entry,
 ) error {
 	logger.Debug("Processing PICHIRP execution request")
+
+	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil)
+}
+
+func (s *PIrateRF) handlePOCSAGExecution(
+	msg *rpitxExecutionStartMessage,
+	finalTimeout int,
+	client *websocket.Client,
+	logger *logrus.Entry,
+) error {
+	logger.Debug("Processing POCSAG execution request")
 
 	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil)
 }

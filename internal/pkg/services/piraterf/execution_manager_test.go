@@ -276,6 +276,15 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			expectError:   false,
 			expectedState: executionStateExecuting,
 		},
+		{
+			name:          "start POCSAG execution",
+			initialState:  executionStateIdle,
+			moduleName:    gorpitx.ModuleNamePOCSAG,
+			args:          json.RawMessage(`{"frequency": 431000000, "baudRate": 1200, "messages": [{"address": 123456, "message": "TEST MESSAGE"}]}`),
+			timeout:       10,
+			expectError:   false,
+			expectedState: executionStateExecuting,
+		},
 	}
 
 	for _, tt := range tests {

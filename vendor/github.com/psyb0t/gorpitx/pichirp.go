@@ -2,6 +2,7 @@ package gorpitx
 
 import (
 	"encoding/json"
+	"io"
 	"strconv"
 
 	commonerrors "github.com/psyb0t/common-go/errors"
@@ -26,16 +27,16 @@ type PICHIRP struct {
 	Time float64 `json:"time"`
 }
 
-func (m *PICHIRP) ParseArgs(args json.RawMessage) ([]string, error) {
+func (m *PICHIRP) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	if err := json.Unmarshal(args, m); err != nil {
-		return nil, ctxerrors.Wrap(err, "failed to unmarshal args")
+		return nil, nil, ctxerrors.Wrap(err, "failed to unmarshal args")
 	}
 
 	if err := m.validate(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return m.buildArgs(), nil
+	return m.buildArgs(), nil, nil
 }
 
 // buildArgs converts the struct fields into command-line arguments for pichirp binary.

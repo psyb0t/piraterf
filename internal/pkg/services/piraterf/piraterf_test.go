@@ -527,6 +527,11 @@ func TestValidateModuleInDev(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "supported module POCSAG",
+			module:      gorpitx.ModuleNamePOCSAG,
+			expectError: false,
+		},
+		{
 			name:        "invalid module",
 			module:      gorpitx.ModuleName("INVALID"),
 			expectError: true,

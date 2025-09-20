@@ -2,6 +2,7 @@ package gorpitx
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"strconv"
 
@@ -27,16 +28,16 @@ type SPECTRUMPAINT struct {
 	Excursion *float64 `json:"excursion,omitempty"`
 }
 
-func (s *SPECTRUMPAINT) ParseArgs(args json.RawMessage) ([]string, error) {
+func (s *SPECTRUMPAINT) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	if err := json.Unmarshal(args, s); err != nil {
-		return nil, ctxerrors.Wrap(err, "failed to unmarshal args")
+		return nil, nil, ctxerrors.Wrap(err, "failed to unmarshal args")
 	}
 
 	if err := s.validate(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return s.buildArgs(), nil
+	return s.buildArgs(), nil, nil
 }
 
 // buildArgs converts the struct fields into command-line arguments for spectrumpaint binary.
