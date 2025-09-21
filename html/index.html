@@ -95,6 +95,7 @@
             <option value="spectrumpaint">spectrumpaint</option>
             <option value="pocsag">pocsag</option>
             <option value="pift8">pift8</option>
+            <option value="pisstv">pisstv</option>
           </select>
         </div>
 
@@ -767,6 +768,64 @@ TEST MESSAGE</textarea
             >
               🔁 Repeat Mode
             </button>
+          </div>
+        </div>
+
+        <!-- PISSTV Module Form -->
+        <div id="pisstvForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="pisstvFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="pisstvFreq"
+              step="1"
+              placeholder="434000000"
+              value="434000000"
+              data-module-name="pisstv"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pisstvPictureFile" class="required">Picture File</label>
+            <div class="image-controls">
+              <select
+                id="pisstvPictureFile"
+                data-module-name="pisstv"
+                data-field-name="pictureFile"
+              >
+                <option value="">Select a picture file...</option>
+              </select>
+              <button
+                type="button"
+                class="refresh-btn"
+                id="refreshPisstvImageBtn"
+                title="Refresh image list"
+              >
+                🔄
+              </button>
+            </div>
+
+            <!-- PISSTV control buttons -->
+            <div class="image-method-selector">
+              <button
+                type="button"
+                class="file-upload-btn"
+                id="pisstvImageSelectBtn"
+                title="Upload image file"
+              >
+                📁
+              </button>
+              <button
+                type="button"
+                class="edit-btn"
+                id="editPisstvImageBtn"
+                disabled
+                title="Edit selected image file"
+              >
+                ✏️
+              </button>
+            </div>
           </div>
         </div>
 

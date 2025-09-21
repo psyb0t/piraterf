@@ -494,8 +494,8 @@ github.com/psyb0t/gofindimpl v1.0.0 h1:XKbrpeqoRbFwaFtmBrbBd14KmHWyOQyuexFyGy8NM
 github.com/psyb0t/gofindimpl v1.0.0/go.mod h1:PLf52u0l4lSP+jX9LoZP/UuhQascr2STEyI1Ua9Gy9Y=
 github.com/psyb0t/gonfiguration v1.3.1 h1:rGK52laVinSYicwcn6CbVKEKCHVye7wHhmES8QxiPJI=
 github.com/psyb0t/gonfiguration v1.3.1/go.mod h1:+Dlb577KoOGMSKAh1fkbjdIPBv3p1gTF98yL2enuQko=
-github.com/psyb0t/gorpitx v0.0.0-20250921021845-ee670dbf7664 h1:A4PxMm7DeDad3mPbMOdDKknNlek0N6qht4oMFLP6FC4=
-github.com/psyb0t/gorpitx v0.0.0-20250921021845-ee670dbf7664/go.mod h1:0HlaCO00zFP3XknNiVDk83jQlfI4Kk2xKh/nes3Y3uo=
+github.com/psyb0t/gorpitx v0.0.0-20250921125010-329fe633a5f2 h1:+iUGyC5VOyIXB5lesO4a6d+YwZEQbY885U1hqvHmEzY=
+github.com/psyb0t/gorpitx v0.0.0-20250921125010-329fe633a5f2/go.mod h1:0HlaCO00zFP3XknNiVDk83jQlfI4Kk2xKh/nes3Y3uo=
 github.com/psyb0t/logrus-configurator v1.1.0 h1:JzDcutqREaCwZ1A38NerjsJ5H3TQ9l54U/agOj1zMB0=
 github.com/psyb0t/logrus-configurator v1.1.0/go.mod h1:jXfZx0yXWgvR4TFJItrlor6VpPw3VmVYloOTvFA42u0=
 github.com/quasilyte/go-ruleguard v0.4.4 h1:53DncefIeLX3qEpjzlS1lyUmQoUEeOWPFWqaTJq9eAQ=

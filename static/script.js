@@ -72,6 +72,11 @@ class PIrateRFController {
         slot: "0",
         repeat: false,
       },
+
+      pisstv: {
+        frequency: "434000000",
+        pictureFile: "",
+      },
     };
 
     this.initializeElements();
@@ -150,6 +155,7 @@ class PIrateRFController {
     this.pichirpForm = document.getElementById("pichirpForm");
     this.pocsagForm = document.getElementById("pocsagForm");
     this.pift8Form = document.getElementById("pift8Form");
+    this.pisstvForm = document.getElementById("pisstvForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -209,6 +215,15 @@ class PIrateRFController {
     this.ft8OffsetInput = document.getElementById("ft8Offset");
     this.ft8SlotInput = document.getElementById("ft8Slot");
     this.ft8RepeatInput = document.getElementById("ft8Repeat");
+
+    // PISSTV form inputs
+    this.pisstvFreqInput = document.getElementById("pisstvFreq");
+    this.pisstvPictureFileInput = document.getElementById("pisstvPictureFile");
+
+    // PISSTV image control buttons
+    this.refreshPisstvImageBtn = document.getElementById("refreshPisstvImageBtn");
+    this.editPisstvImageBtn = document.getElementById("editPisstvImageBtn");
+    this.pisstvImageSelectBtn = document.getElementById("pisstvImageSelectBtn");
 
     this.refreshImageBtn = document.getElementById("refreshImageBtn");
     this.editImageBtn = document.getElementById("editImageBtn");
@@ -564,6 +579,24 @@ class PIrateRFController {
       this.validateForm();
     });
 
+    // PISSTV module form events
+    this.pisstvFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pisstvPictureFileInput.addEventListener("change", () => {
+      this.onPisstvImageFileChange();
+      this.saveState();
+      this.validateForm();
+    });
+
+    // PISSTV image control buttons
+    this.refreshPisstvImageBtn.addEventListener("click", () => this.loadImageFiles());
+    this.editPisstvImageBtn.addEventListener("click", () =>
+      this.openImageEditModal()
+    );
+    this.pisstvImageSelectBtn.addEventListener("click", () => this.imageFile.click());
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -723,6 +756,7 @@ class PIrateRFController {
     this.pichirpForm.classList.add("hidden");
     this.pocsagForm.classList.add("hidden");
     this.pift8Form.classList.add("hidden");
+    this.pisstvForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -748,6 +782,10 @@ class PIrateRFController {
         break;
       case "pift8":
         this.pift8Form.classList.remove("hidden");
+        break;
+      case "pisstv":
+        this.pisstvForm.classList.remove("hidden");
+        this.loadImageFiles(false);
         break;
     }
 
@@ -927,6 +965,9 @@ class PIrateRFController {
       case "pift8":
         isValid = module && this.ft8FreqInput.value && this.ft8MessageInput.value;
         this.debug("🔍 FT8 validation - module:", module, "freq:", this.ft8FreqInput.value, "msg:", this.ft8MessageInput.value, "isValid:", isValid);
+        break;
+      case "pisstv":
+        isValid = module && this.pisstvFreqInput.value && this.pisstvPictureFileInput.value;
         break;
       default:
         isValid = false;
@@ -1276,6 +1317,14 @@ class PIrateRFController {
           args.repeat = true;
         }
         timeout = 0; // No timeout for ft8 by default
+        break;
+
+      case "pisstv":
+        args = {
+          frequency: parseFloat(this.pisstvFreqInput.value),
+          pictureFile: this.pisstvPictureFileInput.value,
+        };
+        timeout = 0; // No timeout for pisstv by default
         break;
     }
 
@@ -1854,39 +1903,64 @@ class PIrateRFController {
 
       // Clear existing options
       this.pictureFileInput.innerHTML = "";
+      this.pisstvPictureFileInput.innerHTML = "";
 
-      // Filter image files (.Y files)
-      const imageFiles = files.filter(
+      // Filter image files (.Y files for spectrum paint, .rgb files for PISSTV)
+      const yFiles = files.filter(
         (file) => !file.isDir && file.name.endsWith(".Y")
       );
+      const rgbFiles = files.filter(
+        (file) => !file.isDir && file.name.endsWith(".rgb")
+      );
 
-      if (imageFiles.length === 0) {
-        // No image files found
+      // Populate spectrum paint dropdown (.Y files)
+      if (yFiles.length === 0) {
         const option = document.createElement("option");
         option.value = "";
-        option.textContent = "No image files";
+        option.textContent = "No .Y image files";
         option.disabled = true;
         this.pictureFileInput.appendChild(option);
       } else {
-        // Add file options
-        imageFiles.forEach((file) => {
+        yFiles.forEach((file) => {
           const option = document.createElement("option");
-          option.value = this.buildFilePath(file.name, "imageUploads", true); // Server path for backend
+          option.value = this.buildFilePath(file.name, "imageUploads", true);
           option.textContent = file.name;
           this.pictureFileInput.appendChild(option);
         });
 
-        // Try to restore saved image file selection, otherwise select first (newest) file
         if (selectLatest) {
           this.pictureFileInput.selectedIndex = 0;
         } else {
           this.selectSavedOrFirstImageFile();
         }
+      }
+
+      // Populate PISSTV dropdown (.rgb files)
+      if (rgbFiles.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No .rgb image files";
+        option.disabled = true;
+        this.pisstvPictureFileInput.appendChild(option);
+      } else {
+        rgbFiles.forEach((file) => {
+          const option = document.createElement("option");
+          option.value = this.buildFilePath(file.name, "imageUploads", true);
+          option.textContent = file.name;
+          this.pisstvPictureFileInput.appendChild(option);
+        });
+
+        if (selectLatest) {
+          this.pisstvPictureFileInput.selectedIndex = 0;
+        } else {
+          this.selectSavedOrFirstPISSTVFile();
+        }
         this.validateForm();
       }
 
-      // Enable/disable edit button based on selection
+      // Enable/disable edit buttons based on selection
       this.onImageFileChange();
+      this.onPisstvImageFileChange();
     } catch (error) {
       this.log(`❌ Failed to load image files: ${error.message}`, "system");
     }
@@ -1898,12 +1972,19 @@ class PIrateRFController {
     this.editImageBtn.disabled = !hasSelection;
   }
 
+  onPisstvImageFileChange() {
+    const hasSelection =
+      this.pisstvPictureFileInput.value && this.pisstvPictureFileInput.value !== "";
+    this.editPisstvImageBtn.disabled = !hasSelection;
+  }
+
   selectSavedOrFirstImageFile() {
     if (this.state.spectrumpaint && this.state.spectrumpaint.pictureFile) {
       const savedValue = this.state.spectrumpaint.pictureFile;
       for (let i = 0; i < this.pictureFileInput.options.length; i++) {
         if (this.pictureFileInput.options[i].value === savedValue) {
           this.pictureFileInput.selectedIndex = i;
+          this.onImageFileChange();
           return;
         }
       }
@@ -1913,6 +1994,27 @@ class PIrateRFController {
       !this.pictureFileInput.options[0].disabled
     ) {
       this.pictureFileInput.selectedIndex = 0;
+      this.onImageFileChange();
+    }
+  }
+
+  selectSavedOrFirstPISSTVFile() {
+    if (this.state.pisstv && this.state.pisstv.pictureFile) {
+      const savedValue = this.state.pisstv.pictureFile;
+      for (let i = 0; i < this.pisstvPictureFileInput.options.length; i++) {
+        if (this.pisstvPictureFileInput.options[i].value === savedValue) {
+          this.pisstvPictureFileInput.selectedIndex = i;
+          this.onPisstvImageFileChange();
+          return;
+        }
+      }
+    }
+    if (
+      this.pisstvPictureFileInput.options.length > 0 &&
+      !this.pisstvPictureFileInput.options[0].disabled
+    ) {
+      this.pisstvPictureFileInput.selectedIndex = 0;
+      this.onPisstvImageFileChange();
     }
   }
 
@@ -2059,7 +2161,10 @@ class PIrateRFController {
 
   // Image file modal functionality
   async openImageEditModal() {
-    const selectedValue = this.pictureFileInput.value;
+    // Use the appropriate dropdown based on current module
+    const selectedValue = this.state.modulename === "pisstv"
+      ? this.pisstvPictureFileInput.value
+      : this.pictureFileInput.value;
     if (!selectedValue || selectedValue === "") {
       return;
     }
@@ -2142,7 +2247,9 @@ class PIrateRFController {
     const message = {
       type: "file.delete",
       data: {
-        filePath: this.pictureFileInput.value, // Full path to file (same as audio pattern)
+        filePath: this.state.modulename === "pisstv"
+          ? this.pisstvPictureFileInput.value
+          : this.pictureFileInput.value, // Full path to file (same as audio pattern)
       },
     };
 
@@ -2732,6 +2839,7 @@ class PIrateRFController {
     if (!this.state.pichirp) this.state.pichirp = {};
     if (!this.state.pocsag) this.state.pocsag = {};
     if (!this.state.pift8) this.state.pift8 = {};
+    if (!this.state.pisstv) this.state.pisstv = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2814,6 +2922,10 @@ class PIrateRFController {
     this.state.pift8.slot = this.ft8SlotInput.value;
     this.state.pift8.repeat = this.ft8RepeatInput.classList.contains("active");
 
+    // Update PISSTV state
+    this.state.pisstv.frequency = this.pisstvFreqInput.value;
+    this.state.pisstv.pictureFile = this.pisstvPictureFileInput.value;
+
     this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
     if (this.isDebugMode) {
       console.trace("📍 saveState() called from:");
@@ -2869,6 +2981,7 @@ class PIrateRFController {
           pichirp: { ...this.state.pichirp, ...parsedState.pichirp },
           pocsag: { ...this.state.pocsag, ...parsedState.pocsag },
           pift8: { ...this.state.pift8, ...parsedState.pift8 },
+          pisstv: { ...this.state.pisstv, ...parsedState.pisstv },
         };
       }
 
@@ -2892,6 +3005,7 @@ class PIrateRFController {
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
     if (!this.state.pichirp) this.state.pichirp = {};
     if (!this.state.pocsag) this.state.pocsag = {};
+    if (!this.state.pisstv) this.state.pisstv = {};
 
     // Sync module selection
     if (this.state.modulename) this.moduleSelect.value = this.state.modulename;
@@ -3075,6 +3189,12 @@ class PIrateRFController {
         this.ft8RepeatInput.classList.remove("active");
       }
     }
+
+    // Sync PISSTV form inputs
+    if (this.state.pisstv.frequency && this.pisstvFreqInput)
+      this.pisstvFreqInput.value = this.state.pisstv.frequency;
+    if (this.state.pisstv.pictureFile && this.pisstvPictureFileInput)
+      this.pisstvPictureFileInput.value = this.state.pisstv.pictureFile;
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 

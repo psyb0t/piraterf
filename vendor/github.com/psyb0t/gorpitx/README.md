@@ -17,6 +17,7 @@ Executes rpitx modules through Go without the usual clusterfuck of manual proces
 - **pocsag**: Pager protocol transmission (frequency in Hz)
 - **spectrumpaint**: Spectrum painting transmission (frequency in Hz)
 - **pift8**: FT8 digital mode transmission (frequency in Hz)
+- **pisstv**: Slow Scan Television (SSTV) transmission (frequency in Hz)
 
 **Architecture Highlights:**
 
@@ -420,13 +421,14 @@ type FT8 struct {
 - `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
 - `Message`: Required, cannot be empty/whitespace
 - `PPM`: Optional, clock correction value (positive, negative, or zero)
-- `Offset`: Optional, frequency offset 0-2500 Hz (default: 1240 Hz if not specified)
+- `Offset`: Optional, frequency offset 0-2500 Hz (pift8 binary default: 1240 Hz)
 - `Slot`: Optional, time slot: 0 (first 15s), 1 (second 15s), 2 (always/every 15s)
 - `Repeat`: Optional, enables repeat mode (transmit every 15 seconds)
 
 **FT8 Protocol Details:**
 
 FT8 is a weak-signal digital mode designed for amateur radio communication. Key characteristics:
+
 - 15-second transmission periods with precise timing
 - Uses 8-FSK modulation with 6.25 Hz tone spacing
 - Default frequency offset of 1240 Hz within the FT8 sub-band
@@ -498,11 +500,115 @@ func boolPtr(b bool) *bool { return &b }
 6. QSO complete: `W1AW K0HAM 73` (final acknowledgment)
 
 **Other Valid Formats:**
+
 - Contest exchanges: `W1AW K0HAM 599 CA` (RST + state/province)
 - DX calls: `CQ DX K0HAM EM69`
 - Directed CQ: `CQ NA W1AW FN31` (North America only)
 
 **Note**: All FT8 operations should follow amateur radio band plans and regulations. Use appropriate power levels and ensure proper station identification.
+
+## 📺 PISSTV Module Configuration
+
+```go
+type PISSTV struct {
+    PictureFile string  `json:"pictureFile"` // Required, path to .rgb picture file
+    Frequency   float64 `json:"frequency"`   // Hz, required, carrier frequency
+}
+```
+
+**Validation Rules:**
+
+- `PictureFile`: Required, file must exist (expects .rgb format, exactly 320 pixels wide)
+- `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
+
+**SSTV Implementation Details:**
+
+PISSTV implements Slow Scan Television (SSTV) transmission using the Martin 1 protocol. SSTV is used in amateur radio to transmit still images over radio frequencies using audio frequency modulation.
+
+**RGB Input File Format:**
+
+The PISSTV module requires images in raw RGB binary format:
+
+- **File Extension**: `.rgb`
+- **Format**: Raw binary RGB data (3 bytes per pixel: R, G, B)
+- **Width**: Exactly 320 pixels (required)
+- **Height**: Variable (Martin 1 standard is 256 pixels, but rpitx doesn't enforce this)
+- **File Size**: width × height × 3 bytes
+
+**Creating RGB Files:**
+
+Convert images to the required format using ImageMagick:
+
+```bash
+# Convert any image to 320x256 RGB format
+convert input_image.jpg -resize 320x256! -depth 8 output.rgb
+
+# Convert preserving aspect ratio (may add padding)
+convert input_image.jpg -resize 320x256 -depth 8 output.rgb
+
+# For Raspberry Pi camera capture:
+raspistill -w 320 -h 256 -o picture.jpg -t 1
+convert -depth 8 picture.jpg picture.rgb
+```
+
+**SSTV Martin 1 Protocol:**
+
+- **VIS Header**: Automatic Martin 1 identification signal
+- **Horizontal Sync**: 1200 Hz for 4.862 ms
+- **Color Sequence**: Green → Blue → Red (GBR order)
+- **Line Timing**: 4.576 ms per color component
+- **Frequency Range**: 1500-2300 Hz (1500 Hz + pixel_value × 800/256)
+
+**Reception Software:**
+
+Compatible SSTV software for decoding transmissions:
+
+- **QSSTV** (Linux)
+- **MMSSTV** (Windows)
+- **Robot36** (Android)
+- **SSTV Slow Scan TV** (iOS)
+
+**Example Usage:**
+
+```go
+import (
+    "context"
+    "encoding/json"
+    "time"
+    "github.com/psyb0t/gorpitx"
+)
+
+args := gorpitx.PISSTV{
+    PictureFile: ".fixtures/martin1.rgb",  // 320x256 RGB file
+    Frequency:   144500000.0,              // 144.5 MHz (2m amateur band)
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+// Execute SSTV transmission
+err := rpitx.Exec(ctx, gorpitx.ModuleNamePISSSTV, argsJSON, 0) // No timeout
+if err != nil {
+    panic(err)
+}
+```
+
+**Common SSTV Frequencies:**
+
+Amateur radio frequencies commonly used for SSTV:
+
+- **2m band**: 144.500 MHz (144500000 Hz)
+- **70cm band**: 434.000 MHz (434000000 Hz)
+- **20m band**: 14.233 MHz (14233000 Hz)
+- **40m band**: 7.171 MHz (7171000 Hz)
+
+**Technical Notes:**
+
+- Transmission duration depends on image height (approximately 1 minute for 256 lines)
+- Martin 1 standard specifies 256 lines, but gorpitx accepts any height (may be non-standard)
+- Recommended: Use 256-pixel height for compatibility with standard SSTV software
+- Proper amateur radio licensing required for transmission
+- Consider RF filtering to prevent harmonics
 
 ## 🎛️ Process Control
 
@@ -647,7 +753,7 @@ New modules implement this interface with:
 
 ## 📋 TODO: Remaining Modules Implementation (The Fun Stuff)
 
-Based on the easytest modules from rpitx, here are the **5 badass modules** we still need to implement (excluding that legacy rpitx garbage):
+Based on the easytest modules from rpitx, here are the **4 badass modules** we still need to implement (excluding that legacy rpitx garbage):
 
 - **SENDIQ** - IQ Data Transmission
 
@@ -680,18 +786,6 @@ Based on the easytest modules from rpitx, here are the **5 badass modules** we s
     }
     ```
   - **Validation**: File exists, frequency > 0, sample rate > 0 if provided
-
-- **PISSTV** - Slow Scan TV
-
-  - **Command**: `pisstv picture.rgb frequency(Hz)`
-  - **Go struct**:
-    ```go
-    type PISSTV struct {
-        PictureFile string `json:"pictureFile"` // Required, 320x256 .rgb file
-        Frequency float64 `json:"frequency"` // Hz, required
-    }
-    ```
-  - **Validation**: File exists, frequency > 0
 
 - **PIOPERA** - OPERA Protocol
 

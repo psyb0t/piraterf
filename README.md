@@ -30,6 +30,7 @@ PIrateRF transforms your Pi Zero into a **standalone RF transmission station** t
 - **🌊 Frequency Sweep**: Generate carrier frequency sweeps for RF testing and analysis or just for teh lulz
 - **📟 POCSAG Paging**: Transmit POCSAG pager messages with configurable baud rates, function bits, and multi-message support
 - **📡 FT8 Digital Mode**: Extreme long-range digital amateur radio protocol capable of intercontinental communication with minimal power
+- **📺 PISSTV (SSTV)**: Slow Scan Television transmission using Martin 1 protocol for sending images over amateur radio frequencies
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
 - **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
@@ -278,6 +279,15 @@ make uninstall          # Remove PIrateRF from Pi
 - **Common Frequencies**: 20m (14.074), 40m (7.074), 80m (3.573), 15m (21.074), 10m (28.074) MHz
 - **Message Format**: Standard FT8 exchange formats (CQ calls, signal reports, grid squares, contest exchanges)
 
+### PISSTV (Slow Scan Television)
+
+- **Amateur Radio Image Transmission**: Send dick pics over radio using audio frequency modulation
+- **Martin 1 Protocol**: Industry-standard SSTV protocol with automatic VIS header identification
+- **RGB Image Support**: Upload images that are automatically converted to 320x256 RGB format
+- **Compatible Reception**: Works with QSSTV (Linux), MMSSTV (Windows), Robot36 (Android), and other SSTV software
+- **Common SSTV Frequencies**: 2m band (144.500 MHz), 70cm band (434.000 MHz), and other amateur allocations
+- **Format Support**: JPEG, PNG, GIF with automatic RGB conversion for transmission
+
 ### Spectrum Painting
 
 - **Image Upload**: Convert images to RF spectrum patterns
@@ -377,14 +387,16 @@ PIrateRF automatically processes uploaded audio through a sophisticated pipeline
 4. **Storage**: Organizes files in `/files/audio/uploads/` and `/files/audio/sfx/`
 5. **Playlist Support**: Create playlists with intro/outro and repeat modes
 
-## 🖼️ Image Processing for Spectrum Painting
+## 🖼️ Image Processing for Spectrum Painting & SSTV
 
-Images are processed for RF spectrum transmission:
+Images are processed for RF transmission in both Spectrum Painting and PISSTV modes:
 
 1. **Format Support**: JPEG, PNG, GIF automatically detected
-2. **Conversion**: Converted to YUV format for RF transmission
-3. **Optimization**: Resized and optimized for spectrum display
-4. **Storage**: Organized in `/files/images/uploads/`
+2. **Dual Conversion**:
+   - **YUV format (.Y files)**: For Spectrum Painting RF transmission
+   - **RGB format (.rgb files)**: For PISSTV/SSTV transmission (320x256 resolution)
+3. **Optimization**: Automatically resized and optimized for each transmission mode
+4. **Storage**: Organized in `/files/images/uploads/` with both .Y and .rgb versions created
 
 ## 🏴‍☠️ Legal and Safety Notice
 

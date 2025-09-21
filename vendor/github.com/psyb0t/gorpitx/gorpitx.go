@@ -64,6 +64,7 @@ func newRPITX() *RPITX {
 			ModuleNamePICHIRP:       &PICHIRP{},
 			ModuleNamePOCSAG:        &POCSAG{},
 			ModuleNameFT8:           &FT8{},
+			ModuleNamePISSSTV:       &PISSTV{},
 		},
 	}
 }

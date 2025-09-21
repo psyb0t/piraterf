@@ -38,8 +38,8 @@ func (s *PIrateRF) imageConversionPostprocessor(
 		return response, nil
 	}
 
-	// Convert the image file
-	convertedPath, err := s.convertImageToYUV(
+	// Convert the image file to both YUV and RGB formats
+	convertedPath, rgbPath, err := s.convertImageToFormats(
 		filePath,
 		logrus.WithField("file", filePath),
 	)
@@ -66,11 +66,39 @@ func (s *PIrateRF) imageConversionPostprocessor(
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"original":  filePath,
-		"converted": convertedPath,
-	}).Info("Image file converted successfully to YUV format")
+		"original":    filePath,
+		"converted_y": convertedPath,
+		"converted_rgb": rgbPath,
+	}).Info("Image file converted successfully to YUV and RGB formats")
 
 	return newResponse, nil
+}
+
+// convertImageToFormats converts uploaded image files to both YUV and RGB formats
+// using ImageMagick convert command.
+// Returns: yuvPath, rgbPath, error.
+func (s *PIrateRF) convertImageToFormats(
+	inputPath string,
+	logger *logrus.Entry,
+) (string, string, error) {
+	// Create a copy of the input file for RGB conversion since YUV will delete the original
+	tempInputPath := inputPath + ".temp"
+	if err := copyFileStream(inputPath, tempInputPath); err != nil {
+		return "", "", ctxerrors.Wrapf(err, "failed to create temp copy")
+	}
+
+	yuvPath, err := s.convertImageToYUV(inputPath, logger)
+	if err != nil {
+		os.Remove(tempInputPath) // cleanup on error
+		return "", "", err
+	}
+
+	rgbPath, err := s.convertImageToRGBFormat(tempInputPath, s.getImageRGBOutputPath(inputPath), logger)
+	if err != nil {
+		return "", "", err
+	}
+
+	return yuvPath, rgbPath, nil
 }
 
 // convertImageToYUV converts uploaded image files to YUV format for SPECTRUMPAINT
@@ -95,11 +123,40 @@ func (s *PIrateRF) convertImageToYUV(
 	return s.convertImageToYFormat(inputPath, outputPath, logger)
 }
 
+// convertImageToRGB converts uploaded image files to RGB format for PISSTV
+// using ImageMagick convert command.
+// Returns: convertedPath, error.
+func (s *PIrateRF) convertImageToRGB(
+	inputPath string,
+	logger *logrus.Entry,
+) (string, error) {
+	if err := s.ensureFilesDirsExist(); err != nil {
+		return "", err
+	}
+
+	outputPath := s.getImageRGBOutputPath(inputPath)
+
+	// Handle .rgb files that may just need moving
+	if strings.HasSuffix(inputPath, ".rgb") {
+		return s.handleRGBFile(inputPath, outputPath)
+	}
+
+	// Convert regular image to .rgb format
+	return s.convertImageToRGBFormat(inputPath, outputPath, logger)
+}
+
 func (s *PIrateRF) getImageOutputPath(inputPath string) string {
 	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
 	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
 
 	return filepath.Join(imagesUploadsDir, baseFilename+".Y")
+}
+
+func (s *PIrateRF) getImageRGBOutputPath(inputPath string) string {
+	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
+	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+
+	return filepath.Join(imagesUploadsDir, baseFilename+".rgb")
 }
 
 func (s *PIrateRF) handleYFile(inputPath, outputPath string) (string, error) {
@@ -111,6 +168,20 @@ func (s *PIrateRF) handleYFile(inputPath, outputPath string) (string, error) {
 
 	if err := moveFile(inputPath, outputPath); err != nil {
 		return "", ctxerrors.Wrapf(err, "failed to move .Y file")
+	}
+
+	return outputPath, nil
+}
+
+func (s *PIrateRF) handleRGBFile(inputPath, outputPath string) (string, error) {
+	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
+
+	if filepath.Dir(inputPath) == imagesUploadsDir {
+		return inputPath, nil
+	}
+
+	if err := moveFile(inputPath, outputPath); err != nil {
+		return "", ctxerrors.Wrapf(err, "failed to move .rgb file")
 	}
 
 	return outputPath, nil
@@ -133,6 +204,34 @@ func (s *PIrateRF) convertImageToYFormat(inputPath, outputPath string, logger *l
 
 	s.cleanupOriginalFile(inputPath, logger)
 	s.logConversionSuccess(inputPath, outputPath, logger)
+
+	return outputPath, nil
+}
+
+func (s *PIrateRF) convertImageToRGBFormat(inputPath, outputPath string, logger *logrus.Entry) (string, error) {
+	ctx, cancel := context.WithTimeout(s.serviceCtx, audioConversionTimeout)
+	defer cancel()
+
+	// Convert image to 320x256 RGB format for PISSTV
+	process, err := s.commander.Start(ctx, "convert", []string{
+		inputPath,
+		"-resize", "320x256!",  // Force exact 320x256 dimensions
+		"-depth", "8",          // 8 bits per channel
+		"rgb:" + outputPath,    // Output as raw RGB format
+	})
+	if err != nil {
+		return "", ctxerrors.Wrapf(err, "failed to start convert command for RGB")
+	}
+
+	if err := process.Wait(); err != nil {
+		return "", ctxerrors.Wrapf(err, "convert command failed for RGB")
+	}
+
+	s.cleanupOriginalFile(inputPath, logger)
+	logger.WithFields(logrus.Fields{
+		"original":  inputPath,
+		"converted": outputPath,
+	}).Info("Image converted to RGB format for PISSTV")
 
 	return outputPath, nil
 }

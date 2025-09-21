@@ -42,7 +42,7 @@ echo "🔄 Updating this fucking system..."
 sudo apt-get update
 
 echo "📦 Installing the fucking dependencies..."
-sudo apt-get install -y git sox libsox-fmt-all ffmpeg openssl
+sudo apt-get install -y git sox libsox-fmt-all ffmpeg openssl ### minimodem pulseaudio
 
 echo "📥 Cloning the fucking rpitx repository..."
 
