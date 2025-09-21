@@ -57,7 +57,8 @@ func (m *FT8) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pift8 binary.
+// buildArgs converts the struct fields into command-line arguments for pift8
+// binary.
 func (m *FT8) buildArgs() []string {
 	var args []string
 

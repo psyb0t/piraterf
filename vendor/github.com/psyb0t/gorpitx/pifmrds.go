@@ -24,39 +24,48 @@ type PIFMRDS struct {
 	// This is what frequency people tune to on their radios.
 	Freq float64 `json:"freq,omitempty"`
 
-	// `-audio` specifies an audio file to play as audio. The sample rate does not matter:
-	// Pi-FM-RDS will resample and filter it. If a stereo file is provided, Pi-FM-RDS will
-	// produce an FM-Stereo signal. Example: `-audio sound.wav`. The supported formats depend
-	// on `libsndfile`. This includes WAV and Ogg/Vorbis (among others) but not MP3.
-	// Specify `-` as the file name to read audio data on standard input.
+	// `-audio` specifies an audio file to play as audio. The sample rate does
+	// not matter: Pi-FM-RDS will resample and filter it. If a stereo file is
+	// provided, Pi-FM-RDS will produce an FM-Stereo signal. Example:
+	// `-audio sound.wav`. The supported formats depend on `libsndfile`. This
+	// includes WAV and Ogg/Vorbis (among others) but not MP3. Specify `-` as
+	// the file name to read audio data on standard input.
 	Audio string `json:"audio,omitempty"`
 
 	// `-pi` specifies the PI-code of the RDS broadcast. 4 hexadecimal digits.
-	// Example: `-pi FFFF`. This is the internal station ID that RDS radios use to identify your station.
+	// Example: `-pi FFFF`. This is the internal station ID that RDS radios use
+	// to identify your station.
 	PI string `json:"pi,omitempty"`
 
-	// `-ps` specifies the station name (Program Service name, PS) of the RDS broadcast.
-	// Limit: 8 characters. Example: `-ps RASP-PI`. This is the STATION NAME that appears on
-	// car radios and RDS displays. By default the PS changes back and forth between `Pi-FmRds`
-	// and a sequence number, starting at `00000000`. The PS changes around one time per second.
+	// `-ps` specifies the station name (Program Service name, PS) of the RDS
+	// broadcast. Limit: 8 characters. Example: `-ps RASP-PI`. This is the
+	// STATION NAME that appears on car radios and RDS displays. By default the
+	// PS changes back and forth between `Pi-FmRds` and a sequence number,
+	// starting at `00000000`. The PS changes around one time per second.
 	PS string `json:"ps,omitempty"`
 
-	// `-rt` specifies the radiotext (RT) to be transmitted. Limit: 64 characters.
-	// Example: `-rt 'Hello, world!'`. This is the scrolling text message shown on RDS displays.
+	// `-rt` specifies the radiotext (RT) to be transmitted. Limit: 64
+	// characters. Example: `-rt 'Hello, world!'`. This is the scrolling text
+	// message shown on RDS displays.
 	RT string `json:"rt,omitempty"`
 
-	// `-ppm` specifies your Raspberry Pi's oscillator error in parts per million (ppm).
+	// `-ppm` specifies your Raspberry Pi's oscillator error in parts per
+	// million (ppm).
 	// Compensates for Raspberry Pi clock inaccuracy (usually 0 is fine).
 	PPM *float64 `json:"ppm,omitempty"`
 
-	// `-ctl` specifies a named pipe (FIFO) to use as a control channel to change
-	// PS and RT at run-time. Create with "mkfifo /tmp/rds_ctl" then echo commands like "PS New Name".
+	// `-ctl` specifies a named pipe (FIFO) to use as a control channel to
+	// change PS and RT at run-time. Create with "mkfifo /tmp/rds_ctl" then
+	// echo commands like "PS New Name".
 	ControlPipe *string `json:"controlPipe,omitempty"`
 }
 
 func (m *PIFMRDS) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	if err := json.Unmarshal(args, m); err != nil {
-		return nil, nil, ctxerrors.Wrap(err, "failed to unmarshal args")
+		return nil, nil, ctxerrors.Wrap(
+			err,
+			"failed to unmarshal args",
+		)
 	}
 
 	if err := m.validate(); err != nil {
@@ -66,7 +75,8 @@ func (m *PIFMRDS) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pifmrds binary.
+// buildArgs converts the struct fields into command-line arguments for
+// pifmrds binary.
 func (m *PIFMRDS) buildArgs() []string {
 	var args []string
 
@@ -143,11 +153,18 @@ func (m *PIFMRDS) validate() error {
 func (m *PIFMRDS) validateFreq() error {
 	// Validate required frequency
 	if m.Freq == 0 {
-		return ctxerrors.Wrap(commonerrors.ErrRequiredFieldNotSet, "freq")
+		return ctxerrors.Wrap(
+			commonerrors.ErrRequiredFieldNotSet,
+			"freq",
+		)
 	}
 
 	if m.Freq < 0 {
-		return ctxerrors.Wrapf(commonerrors.ErrInvalidValue, "frequency must be positive, got: %f", m.Freq)
+		return ctxerrors.Wrapf(
+			commonerrors.ErrInvalidValue,
+			"frequency must be positive, got: %f",
+			m.Freq,
+		)
 	}
 
 	// RPiTX frequency range validation using utility functions
@@ -199,7 +216,10 @@ func (m *PIFMRDS) validatePI() error {
 		pi := strings.TrimSpace(m.PI)
 		if len(pi) != piCodeLength {
 			return ctxerrors.Wrapf(
-				commonerrors.ErrInvalidValue, "PI code must be exactly 4 characters, got: %s", pi)
+				commonerrors.ErrInvalidValue,
+				"PI code must be exactly 4 characters, got: %s",
+				pi,
+			)
 		}
 
 		if _, err := strconv.ParseUint(pi, 16, 16); err != nil {
@@ -217,11 +237,17 @@ func (m *PIFMRDS) validatePS() error {
 	if m.PS != "" {
 		if len(m.PS) > psMaxLength {
 			return ctxerrors.Wrapf(
-				ErrPSTooLong, "got: %d chars", len(m.PS))
+				ErrPSTooLong,
+				"got: %d chars",
+				len(m.PS),
+			)
 		}
 
 		if strings.TrimSpace(m.PS) == "" {
-			return ctxerrors.Wrap(commonerrors.ErrInvalidValue, "PS text cannot be empty when specified")
+			return ctxerrors.Wrap(
+				commonerrors.ErrInvalidValue,
+				"PS text cannot be empty when specified",
+			)
 		}
 	}
 
@@ -234,7 +260,10 @@ func (m *PIFMRDS) validateRT() error {
 	if m.RT != "" {
 		if len(m.RT) > rtMaxLength {
 			return ctxerrors.Wrapf(
-				commonerrors.ErrInvalidValue, "RT text must be 64 characters or less, got: %d chars", len(m.RT))
+				commonerrors.ErrInvalidValue,
+				"RT text must be 64 characters or less, got: %d chars",
+				len(m.RT),
+			)
 		}
 	}
 
@@ -254,8 +283,12 @@ func (m *PIFMRDS) validateControlPipe() error {
 	if m.ControlPipe != nil {
 		pipe := strings.TrimSpace(*m.ControlPipe)
 		if pipe == "" {
-			return ctxerrors.Wrap(commonerrors.ErrInvalidValue, "control pipe path cannot be empty when specified")
+			return ctxerrors.Wrap(
+				commonerrors.ErrInvalidValue,
+				"control pipe path cannot be empty when specified",
+			)
 		}
+
 		// Check if the control pipe exists (must be created with mkfifo first)
 		if _, err := os.Stat(pipe); os.IsNotExist(err) {
 			return ctxerrors.Wrapf(

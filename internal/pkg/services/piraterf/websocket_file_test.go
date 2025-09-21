@@ -81,7 +81,7 @@ func TestValidateFileRenameRequest(t *testing.T) {
 
 	// Create test file for this test
 	testFile := filepath.Join(tempDir, "test_2s.mp3")
-	err := os.WriteFile(testFile, []byte("fake mp3 content"), 0644)
+	err := os.WriteFile(testFile, []byte("fake mp3 content"), 0o644)
 	require.NoError(t, err)
 
 	service := &PIrateRF{
@@ -147,7 +147,7 @@ func TestHandleFileRename(t *testing.T) {
 			var originalFilePath string
 			if tt.setupFile && tt.fileName != "" {
 				originalFilePath = filepath.Join(tempDir, tt.fileName)
-				err := os.WriteFile(originalFilePath, []byte("test content"), 0644)
+				err := os.WriteFile(originalFilePath, []byte("test content"), 0o644)
 				require.NoError(t, err)
 
 				// Update event data with actual file path
@@ -229,7 +229,7 @@ func TestHandleFileDelete(t *testing.T) {
 			// Setup test file if needed
 			if tt.setupFile && tt.fileName != "" {
 				filePath := filepath.Join(tempDir, tt.fileName)
-				err := os.WriteFile(filePath, []byte("test content"), 0644)
+				err := os.WriteFile(filePath, []byte("test content"), 0o644)
 				require.NoError(t, err)
 
 				// Update event data with actual file path

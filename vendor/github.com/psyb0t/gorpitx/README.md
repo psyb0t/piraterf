@@ -19,6 +19,7 @@ Executes rpitx modules through Go without the usual clusterfuck of manual proces
 - **pift8**: FT8 digital mode transmission (frequency in Hz)
 - **pisstv**: Slow Scan Television (SSTV) transmission (frequency in Hz)
 - **pirtty**: RTTY (Radio Teletype) transmission (frequency in Hz)
+- **fsk**: FSK text transmission via minimodem/sox (frequency in Hz)
 
 **Architecture Highlights:**
 
@@ -84,6 +85,16 @@ git clone https://github.com/F5OEO/rpitx.git
 cd rpitx
 chmod +x install.sh
 sudo ./install.sh  # This might take a hot minute
+```
+
+### Install Additional Dependencies
+
+```bash
+# For FSK module (FSK transmission)
+sudo apt install minimodem sox pulseaudio
+
+# For other modules (if you want them all)
+# Most modules only need rpitx, but FSK needs these extras
 ```
 
 ### Configure Path (Optional But Smart)
@@ -629,7 +640,7 @@ type PIRTTY struct {
 
 **RTTY Implementation Details:**
 
-PIRTTY implements Radio Teletype (RTTY) transmission using Baudot code and frequency shift keying. RTTY is a legacy digital text mode used in amateur radio for character-based communication.
+PIRTTY implements Radio Teletype (RTTY) transmission using Baudot code and frequency shift keying. RTTY is a legacy digital text mode used in amateur radio for character-based communication. The transmitted signal can be demodulated using USB (Upper Side Band) mode on any HF transceiver.
 
 **RTTY Protocol Specifications:**
 
@@ -643,6 +654,7 @@ PIRTTY implements Radio Teletype (RTTY) transmission using Baudot code and frequ
 **Frequency Configuration:**
 
 The PIRTTY module uses two audio frequencies for mark and space:
+
 - **Space Frequency**: Specified by user (typically 1955 Hz)
 - **Mark Frequency**: Automatically calculated as space + 170 Hz (typically 2125 Hz)
 
@@ -651,6 +663,7 @@ This 170 Hz shift is the standard RTTY frequency shift used in amateur radio.
 **Baudot Character Encoding:**
 
 RTTY uses 5-bit Baudot code with automatic switching between:
+
 - **LTRS Mode**: Letters (A-Z) and basic punctuation
 - **FIGS Mode**: Numbers (0-9) and symbols
 
@@ -687,6 +700,7 @@ func intPtr(i int) *int { return &i }
 **Common RTTY Frequencies:**
 
 Amateur radio frequencies commonly used for RTTY:
+
 - **20m band**: 14.080-14.099 MHz
 - **40m band**: 7.035-7.045 MHz
 - **80m band**: 3.580-3.600 MHz
@@ -715,12 +729,143 @@ func intPtr(i int) *int { return &i }
 
 **Technical Notes:**
 
-- Transmission uses direct FM modulation with audio FSK tones
-- Mark and space frequencies are transmitted as audio tone deviations
+- Transmission uses audio FSK tones generated directly by rpitx
+- Mark and space frequencies are transmitted as discrete audio tones
 - Standard 170 Hz shift is widely supported by RTTY software
 - Message length is limited only by transmission time requirements
 - Supports alphanumeric characters and basic punctuation
 - Automatic Baudot LTRS/FIGS mode switching for mixed content
+
+## 📡 FSK Module Configuration
+
+```go
+type FSK struct {
+    InputType InputType `json:"inputType"`             // Required, "file" or "text"
+    File      string    `json:"file,omitempty"`        // Required when InputType is "file"
+    Text      string    `json:"text,omitempty"`        // Required when InputType is "text"
+    BaudRate  *int      `json:"baudRate,omitempty"`    // Optional, baud rate (default: 50)
+    Frequency float64   `json:"frequency"`             // Required, carrier frequency in Hz
+}
+```
+
+**Validation Rules:**
+
+- `InputType`: Required, must be either "file" or "text"
+- `File`: Required when InputType is "file", cannot be specified with text
+- `Text`: Required when InputType is "text", cannot be specified with file
+- `BaudRate`: Optional, positive integer (default: 50 baud - cleanest in testing)
+- `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
+
+**FSK Implementation Details:**
+
+FSK implements FSK (Frequency Shift Keying) text transmission using the minimodem utility and Sox audio processing. This module provides packet radio and digital mode capabilities for text data transmission. The transmitted signal can be demodulated using any narrow FM receiver tuned to the specified frequency.
+
+**FSK Protocol Specifications:**
+
+- **Modulation**: Audio FSK (Frequency Shift Keying)
+- **Baud Rate**: User-configurable (default: 50 baud for best performance)
+- **Audio Format**: 16-bit signed, 48kHz stereo via Sox
+- **Input Methods**: Direct text or file content
+- **Pipeline**: Text → minimodem → sox → rpitx sendiq
+
+**Dependencies:**
+
+FSK requires minimodem and sox (install via the Installation Requirements section above).
+
+**Baud Rate Selection:**
+
+The default 50 baud rate was chosen based on testing for optimal clarity:
+
+- **50 baud**: Cleanest transmission quality (recommended default)
+- **75 baud**: Good balance of speed and reliability
+- **110 baud**: Faster transmission, requires good signal conditions
+- **300 baud**: High speed, best for strong signals only
+
+**Example Usage:**
+
+```go
+import (
+    "context"
+    "encoding/json"
+    "github.com/psyb0t/gorpitx"
+)
+
+// Text input with default baud rate
+args := gorpitx.FSK{
+    InputType: gorpitx.InputTypeText,
+    Text:      "HELLO WORLD DE N0CALL",
+    Frequency: 144390000.0, // 144.390 MHz
+    // BaudRate defaults to 50 baud
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+// Execute FSK transmission
+err := rpitx.Exec(ctx, gorpitx.ModuleNameFSK, argsJSON, 0)
+if err != nil {
+    panic(err)
+}
+```
+
+**File Input Example:**
+
+```go
+// File input with custom baud rate
+args := gorpitx.FSK{
+    InputType: gorpitx.InputTypeFile,
+    File:      "/path/to/message.txt",
+    BaudRate:  intPtr(110),      // 110 baud
+    Frequency: 432100000.0,      // 432.100 MHz
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+err := rpitx.Exec(ctx, gorpitx.ModuleNameFSK, argsJSON, 0)
+if err != nil {
+    panic(err)
+}
+
+func intPtr(i int) *int { return &i }
+```
+
+**Common FSK Frequencies:**
+
+Amateur radio frequencies commonly used for digital modes:
+
+- **2m band**: 144.390 MHz (APRS frequency)
+- **70cm band**: 432.100-432.200 MHz
+- **10m band**: 28.120-28.189 MHz (digital modes)
+- **6m band**: 50.620 MHz (digital activity)
+- **HF Digital**: 14.070 MHz (PSK31/other digital modes nearby)
+
+**Technical Implementation:**
+
+The FSK module uses an embedded script that:
+
+1. Receives baud rate and frequency as command-line arguments
+2. Reads text/file content from stdin
+3. Converts text to audio FSK using minimodem
+4. Processes audio through sox (16-bit signed, 48kHz stereo)
+5. Transmits via rpitx sendiq with specified frequency
+
+**Audio Processing Pipeline:**
+
+```bash
+text_input | minimodem --tx <baud_rate> -f temp.wav
+sox temp.wav -t raw -e signed -b 16 -r 48000 -c 2 - | sendiq -i /dev/stdin -s 48000 -f <frequency> -t i16
+```
+
+
+**Technical Notes:**
+
+- Script-based module with embedded bash script
+- Automatic cleanup of temporary WAV files
+- Supports both text and file input methods
+- Uses stdbuf for unbuffered output streaming
+- Environment variable RPITX_PATH passed to script
+- Temporary files use process ID for uniqueness
 
 ## 🎛️ Process Control
 
@@ -912,7 +1057,6 @@ Based on the easytest modules from rpitx, here are the **3 badass modules** we s
     ```
   - **Validation**: Callsign format (3rd char numeric), mode enum, frequency > 0
 
-
 ### Common Validation Functions Needed
 
 ```go
@@ -932,7 +1076,7 @@ func ValidateRange(value, min, max float64) error
 
 **Absolutely NOT for**: Commercial broadcasting without authorization (the FCC will skull-fuck your wallet).
 
-## 📚 Dependencies
+## 📚 Package Dependencies
 
 - [`github.com/psyb0t/commander`](https://github.com/psyb0t/commander) - Process execution
 - [`github.com/psyb0t/common-go/env`](https://github.com/psyb0t/common-go) - Environment detection

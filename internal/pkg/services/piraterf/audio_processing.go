@@ -22,26 +22,6 @@ const (
 	audioArgsReservedCount = 6 // Reserved space for audio command arguments
 )
 
-// fileConversionPostprocessor handles both audio and image file conversions
-// based on file type.
-func (s *PIrateRF) fileConversionPostprocessor(
-	response map[string]any,
-) (map[string]any, error) {
-	// Try audio conversion first
-	audioResponse, err := s.audioConversionPostprocessor(response)
-	if err != nil {
-		return response, err
-	}
-
-	// If audio conversion happened, return that result
-	if converted, ok := audioResponse["converted"].(bool); ok && converted {
-		return audioResponse, nil
-	}
-
-	// Try image conversion
-	return s.imageConversionPostprocessor(response)
-}
-
 // audioConversionPostprocessor converts uploaded audio files to optimal format
 // using ffmpeg.
 func (s *PIrateRF) audioConversionPostprocessor(

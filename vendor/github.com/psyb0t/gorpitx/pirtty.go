@@ -44,7 +44,8 @@ func (m *PIRTTY) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pirtty binary.
+// buildArgs converts the struct fields into command-line arguments for pirtty
+// binary.
 func (m *PIRTTY) buildArgs() []string {
 	var args []string
 

@@ -24,26 +24,33 @@ const (
 	audioUploadsPath  = audioFilesDir + "/" + uploadsSubdir
 	imagesFilesDir    = "images"
 	imagesUploadsPath = imagesFilesDir + "/" + uploadsSubdir
+	dataFilesDir      = "data"
+	dataUploadsPath   = dataFilesDir + "/" + uploadsSubdir
 	envJSFilename     = "env.js"
 	envJSTemplate     = `window.PIrateRFConfig = {
   paths: {
     files: "/files",
     audioUploadFiles: "/files/` + audioFilesDir + `/` + uploadsSubdir + `",
     audioSFXFiles: "/files/` + audioFilesDir + `/` + audioSFXDir + `",
-    imageUploadFiles: "/files/` + imagesFilesDir + `/` + uploadsSubdir + `"
+    imageUploadFiles: "/files/` + imagesFilesDir + `/` + uploadsSubdir + `",
+    dataUploadFiles: "/files/` + dataFilesDir + `/` + uploadsSubdir + `"
   },
   directories: {
     audioFiles: "` + audioFilesDir + `",
     audioUploads: "` + audioFilesDir + `/` + uploadsSubdir + `",
     audioSFX: "` + audioFilesDir + `/` + audioSFXDir + `",
     imageFiles: "` + imagesFilesDir + `",
-    imageUploads: "` + imagesFilesDir + `/` + uploadsSubdir + `"
+    imageUploads: "` + imagesFilesDir + `/` + uploadsSubdir + `",
+    dataFiles: "` + dataFilesDir + `",
+    dataUploads: "` + dataFilesDir + `/` + uploadsSubdir + `"
   },
   serverPaths: {
     audioUploads: "{{.FilesDir}}/` + audioFilesDir + `/` +
 		uploadsSubdir + `",
     audioSFX: "{{.FilesDir}}/` + audioFilesDir + `/` + audioSFXDir + `",
     imageUploads: "{{.FilesDir}}/` + imagesFilesDir + `/` +
+		uploadsSubdir + `",
+    dataUploads: "{{.FilesDir}}/` + dataFilesDir + `/` +
 		uploadsSubdir + `"
   }
 };
@@ -224,6 +231,18 @@ func (s *PIrateRF) ensureFilesDirsExist() error {
 	)
 	if err := os.MkdirAll(imagesUploadsDir, dirPerms); err != nil {
 		return ctxerrors.Wrap(err, "failed to create images uploads directory")
+	}
+
+	// Create data directory
+	dataDir := path.Join(s.config.FilesDir, dataFilesDir)
+	if err := os.MkdirAll(dataDir, dirPerms); err != nil {
+		return ctxerrors.Wrap(err, "failed to create data directory")
+	}
+
+	// Create data uploads subdirectory
+	dataUploadsDir := path.Join(s.config.FilesDir, dataUploadsPath)
+	if err := os.MkdirAll(dataUploadsDir, dirPerms); err != nil {
+		return ctxerrors.Wrap(err, "failed to create data uploads directory")
 	}
 
 	return nil

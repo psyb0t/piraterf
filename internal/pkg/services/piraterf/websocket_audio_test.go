@@ -79,11 +79,11 @@ func TestValidatePlaylistRequest(t *testing.T) {
 
 			// Create test files for this test
 			testFile1 := filepath.Join(tempDir, "test_2s.mp3")
-			err := os.WriteFile(testFile1, []byte("fake mp3 content"), 0644)
+			err := os.WriteFile(testFile1, []byte("fake mp3 content"), 0o644)
 			require.NoError(t, err)
 
 			testFile2 := filepath.Join(tempDir, "test_3s.wav")
-			err = os.WriteFile(testFile2, []byte("fake wav content"), 0644)
+			err = os.WriteFile(testFile2, []byte("fake wav content"), 0o644)
 			require.NoError(t, err)
 
 			service := &PIrateRF{
@@ -92,10 +92,13 @@ func TestValidatePlaylistRequest(t *testing.T) {
 					FilesDir: tempDir,
 				},
 			}
+
 			var msg audioPlaylistCreateMessage
+
 			err = json.Unmarshal(tt.eventData, &msg)
 			if err != nil && tt.expectError {
 				assert.Error(t, err)
+
 				return
 			}
 

@@ -27,13 +27,13 @@ func TestNew(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0755))
+				require.NoError(t, os.MkdirAll("static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("static") })
 
-				require.NoError(t, os.MkdirAll("files", 0755))
+				require.NoError(t, os.MkdirAll("files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("files") })
 
-				require.NoError(t, os.MkdirAll("uploads", 0755))
+				require.NoError(t, os.MkdirAll("uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("uploads") })
 			},
 			expectError: false,
@@ -61,10 +61,12 @@ func TestNew(t *testing.T) {
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.Nil(t, service)
+
 				return
 			}
 
 			require.NoError(t, err)
+
 			if tt.validate != nil {
 				tt.validate(t, service)
 			}
@@ -98,13 +100,13 @@ func TestNewWithConfig(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories with custom paths
-				require.NoError(t, os.MkdirAll("test_static", 0755))
+				require.NoError(t, os.MkdirAll("test_static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("test_static") })
 
-				require.NoError(t, os.MkdirAll("test_files", 0755))
+				require.NoError(t, os.MkdirAll("test_files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("test_files") })
 
-				require.NoError(t, os.MkdirAll("test_uploads", 0755))
+				require.NoError(t, os.MkdirAll("test_uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("test_uploads") })
 			},
 			expectError: false,
@@ -129,10 +131,12 @@ func TestNewWithConfig(t *testing.T) {
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.Nil(t, service)
+
 				return
 			}
 
 			require.NoError(t, err)
+
 			if tt.validate != nil {
 				tt.validate(t, service)
 			}
@@ -177,7 +181,7 @@ func TestPIrateRF_ensureUploadDirExists(t *testing.T) {
 			},
 			setupFunc: func(t *testing.T) {
 				// Create directory first
-				require.NoError(t, os.MkdirAll("./existing_upload_dir", 0755))
+				require.NoError(t, os.MkdirAll("./existing_upload_dir", 0o755))
 				t.Cleanup(func() { os.RemoveAll("./existing_upload_dir") })
 			},
 			expectError: false,
@@ -195,6 +199,7 @@ func TestPIrateRF_ensureUploadDirExists(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				return
 			}
 
@@ -277,10 +282,12 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				return
 			}
 
 			assert.NoError(t, err)
+
 			if tt.validate != nil {
 				tt.validate(t, tt.config)
 			}
@@ -304,7 +311,7 @@ func TestPIrateRF_generateEnvJS(t *testing.T) {
 			},
 			setupFunc: func(t *testing.T) {
 				// Create static directory
-				require.NoError(t, os.MkdirAll("./test_static", 0755))
+				require.NoError(t, os.MkdirAll("./test_static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("./test_static") })
 			},
 			expectError: false,
@@ -336,10 +343,12 @@ func TestPIrateRF_generateEnvJS(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				return
 			}
 
 			assert.NoError(t, err)
+
 			if tt.validate != nil {
 				tt.validate(t, tt.config)
 			}
@@ -358,17 +367,18 @@ func TestPIrateRF_Stop(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0755))
+				require.NoError(t, os.MkdirAll("static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("static") })
 
-				require.NoError(t, os.MkdirAll("files", 0755))
+				require.NoError(t, os.MkdirAll("files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("files") })
 
-				require.NoError(t, os.MkdirAll("uploads", 0755))
+				require.NoError(t, os.MkdirAll("uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("uploads") })
 
 				service, err := New()
 				require.NoError(t, err)
+
 				return service
 			},
 		},
@@ -378,17 +388,18 @@ func TestPIrateRF_Stop(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0755))
+				require.NoError(t, os.MkdirAll("static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("static") })
 
-				require.NoError(t, os.MkdirAll("files", 0755))
+				require.NoError(t, os.MkdirAll("files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("files") })
 
-				require.NoError(t, os.MkdirAll("uploads", 0755))
+				require.NoError(t, os.MkdirAll("uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("uploads") })
 
 				service, err := New()
 				require.NoError(t, err)
+
 				return service
 			},
 		},
@@ -425,17 +436,18 @@ func TestPIrateRF_Run(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0755))
+				require.NoError(t, os.MkdirAll("static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("static") })
 
-				require.NoError(t, os.MkdirAll("files", 0755))
+				require.NoError(t, os.MkdirAll("files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("files") })
 
-				require.NoError(t, os.MkdirAll("uploads", 0755))
+				require.NoError(t, os.MkdirAll("uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("uploads") })
 
 				service, err := New()
 				require.NoError(t, err)
+
 				return service
 			},
 			runDuration: 50 * time.Millisecond,
@@ -447,17 +459,18 @@ func TestPIrateRF_Run(t *testing.T) {
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0755))
+				require.NoError(t, os.MkdirAll("static", 0o755))
 				t.Cleanup(func() { os.RemoveAll("static") })
 
-				require.NoError(t, os.MkdirAll("files", 0755))
+				require.NoError(t, os.MkdirAll("files", 0o755))
 				t.Cleanup(func() { os.RemoveAll("files") })
 
-				require.NoError(t, os.MkdirAll("uploads", 0755))
+				require.NoError(t, os.MkdirAll("uploads", 0o755))
 				t.Cleanup(func() { os.RemoveAll("uploads") })
 
 				service, err := New()
 				require.NoError(t, err)
+
 				return service
 			},
 			runDuration: 50 * time.Millisecond,
@@ -507,9 +520,9 @@ func TestValidateModuleInDev(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	tests := []struct {
-		name         string
-		module       gorpitx.ModuleName
-		expectError  bool
+		name        string
+		module      gorpitx.ModuleName
+		expectError bool
 	}{
 		{
 			name:        "supported module PIFMRDS",

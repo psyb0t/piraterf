@@ -83,6 +83,14 @@ class PIrateRFController {
         spaceFrequency: "",
         message: "",
       },
+
+      fsk: {
+        frequency: "144390000",
+        inputType: "text",
+        text: "",
+        file: "",
+        baudRate: "",
+      },
     };
 
     this.initializeElements();
@@ -120,6 +128,11 @@ class PIrateRFController {
         return `${window.PIrateRFConfig.serverPaths.imageUploads}/${justFilename}`;
       }
       return `${window.PIrateRFConfig.paths.files}/${window.PIrateRFConfig.directories.imageUploads}/${justFilename}`;
+    } else if (type === "data") {
+      if (forServer) {
+        return `${window.PIrateRFConfig.serverPaths.dataUploads}/${justFilename}`;
+      }
+      return `${window.PIrateRFConfig.paths.files}/${window.PIrateRFConfig.directories.dataUploads}/${justFilename}`;
     }
 
     // If no type specified, assume it's already a full path
@@ -163,6 +176,7 @@ class PIrateRFController {
     this.pift8Form = document.getElementById("pift8Form");
     this.pisstvForm = document.getElementById("pisstvForm");
     this.pirttyForm = document.getElementById("pirttyForm");
+    this.fskForm = document.getElementById("fskForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -232,6 +246,20 @@ class PIrateRFController {
     this.pirttySpaceFreqInput = document.getElementById("pirttySpaceFreq");
     this.pirttyMessageInput = document.getElementById("pirttyMessage");
 
+    // FSK form inputs
+    this.fskFreqInput = document.getElementById("fskFreq");
+    this.fskInputTypeText = document.getElementById("fskInputTypeText");
+    this.fskInputTypeFile = document.getElementById("fskInputTypeFile");
+    this.fskTextInput = document.getElementById("fskText");
+    this.fskFileInput = document.getElementById("fskFile");
+    this.fskBaudRateInput = document.getElementById("fskBaudRate");
+    this.fskTextGroup = document.getElementById("fskTextGroup");
+    this.fskFileGroup = document.getElementById("fskFileGroup");
+    this.refreshFskFileBtn = document.getElementById("refreshFskFileBtn");
+    this.fskFileSelectBtn = document.getElementById("fskFileSelectBtn");
+    this.editFskFileBtn = document.getElementById("editFskFileBtn");
+    this.fskDataFile = document.getElementById("fskDataFile");
+
     // PISSTV image control buttons
     this.refreshPisstvImageBtn = document.getElementById("refreshPisstvImageBtn");
     this.editPisstvImageBtn = document.getElementById("editPisstvImageBtn");
@@ -247,21 +275,14 @@ class PIrateRFController {
     this.refreshAudioBtn = document.getElementById("refreshAudioBtn");
     this.editAudioBtn = document.getElementById("editAudioBtn");
 
-    // Modal elements
+    // Modal elements (unified for all file types)
     this.fileEditModal = document.getElementById("fileEditModal");
+    this.fileEditModalTitle = document.getElementById("fileEditModalTitle");
     this.modalCloseBtn = document.getElementById("modalCloseBtn");
     this.modalCancelBtn = document.getElementById("modalCancelBtn");
     this.renameFileBtn = document.getElementById("renameFileBtn");
     this.editFileName = document.getElementById("editFileName");
     this.deleteFileBtn = document.getElementById("deleteFileBtn");
-
-    // Image modal elements
-    this.imageEditModal = document.getElementById("imageEditModal");
-    this.imageModalCloseBtn = document.getElementById("imageModalCloseBtn");
-    this.imageModalCancelBtn = document.getElementById("imageModalCancelBtn");
-    this.renameImageBtn = document.getElementById("renameImageBtn");
-    this.editImageName = document.getElementById("editImageName");
-    this.deleteImageBtn = document.getElementById("deleteImageBtn");
 
     // Playlist modal elements
     this.playlistBtn = document.getElementById("playlistBtn");
@@ -282,8 +303,8 @@ class PIrateRFController {
     this.playAudioBtn = document.getElementById("playAudioBtn");
 
     // Current file being edited
-    this.currentEditingFile = null;
-    this.currentEditingImageFile = null;
+    this.currentEditFile = null;
+    this.currentEditDirectory = null;
     this.imageUploadStatusTimeout = null;
 
     // Playlist functionality
@@ -367,7 +388,7 @@ class PIrateRFController {
 
     // Audio file dropdown events
     this.refreshAudioBtn.addEventListener("click", () => this.loadAudioFiles());
-    this.editAudioBtn.addEventListener("click", () => this.openEditModal());
+    this.editAudioBtn.addEventListener("click", () => this.openAudioEditModal());
     this.audioInput.addEventListener("change", () => {
       this.onAudioFileChange();
       this.saveState();
@@ -379,16 +400,6 @@ class PIrateRFController {
     this.modalCancelBtn.addEventListener("click", () => this.closeEditModal());
     this.renameFileBtn.addEventListener("click", () => this.renameFile());
     this.deleteFileBtn.addEventListener("click", () => this.deleteFile());
-
-    // Image modal events
-    this.imageModalCloseBtn.addEventListener("click", () =>
-      this.closeImageEditModal()
-    );
-    this.imageModalCancelBtn.addEventListener("click", () =>
-      this.closeImageEditModal()
-    );
-    this.renameImageBtn.addEventListener("click", () => this.renameImageFile());
-    this.deleteImageBtn.addEventListener("click", () => this.deleteImageFile());
 
     // Image upload handling
     this.imageFile.addEventListener("change", () => this.uploadImage());
@@ -623,6 +634,42 @@ class PIrateRFController {
       this.validateForm();
     });
 
+    // FSK module form events
+    this.fskFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.fskInputTypeText.addEventListener("click", () => {
+      this.setFskInputType("text");
+    });
+    this.fskInputTypeFile.addEventListener("click", () => {
+      this.setFskInputType("file");
+    });
+    this.fskTextInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.fskFileInput.addEventListener("change", () => {
+      this.onFskFileChange();
+      this.saveState();
+      this.validateForm();
+    });
+    this.fskBaudRateInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+
+    // FSK file control buttons
+    this.refreshFskFileBtn.addEventListener("click", () => this.loadDataFiles());
+    this.editFskFileBtn.addEventListener("click", () => this.openDataFileEditModal());
+    this.fskFileSelectBtn.addEventListener("click", () => this.fskDataFile.click());
+    this.fskDataFile.addEventListener("change", (event) => this.handleDataFileUpload(event));
+    this.fskFileInput.addEventListener("change", () => {
+      this.onFskFileChange();
+      this.saveState();
+      this.validateForm();
+    });
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -718,45 +765,70 @@ class PIrateRFController {
         this.onOutputLine(message.data);
         break;
       case "file.rename.success":
-        // Check if it's an image or audio file based on the file path
+        // Check file type based on the file path
         if (
           message.data.fileName &&
-          message.data.fileName.includes("/images/")
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.imageUploads}/`)
         ) {
           this.onImageFileRenameSuccess(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
+        ) {
+          this.onDataFileRenameSuccess(message.data);
         } else {
           this.onFileRenameSuccess(message.data);
         }
         break;
       case "file.rename.error":
-        // Check if it's an image or audio file based on the file path
+        // Check file type based on the file path
         if (
           message.data.fileName &&
-          message.data.fileName.includes("/images/")
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.imageUploads}/`)
         ) {
           this.onImageFileRenameError(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
+        ) {
+          this.onDataFileRenameError(message.data);
         } else {
           this.onFileRenameError(message.data);
         }
         break;
       case "file.delete.success":
-        // Check if it's an image or audio file based on the file path
+        this.debug(`File delete success: ${message.data.fileName}`);
+
+        // Check file type based on the file path
         if (
           message.data.fileName &&
-          message.data.fileName.includes("/images/")
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.imageUploads}/`)
         ) {
+          this.debug("Calling onImageFileDeleteSuccess");
           this.onImageFileDeleteSuccess(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
+        ) {
+          this.debug("Calling onDataFileDeleteSuccess");
+          this.onDataFileDeleteSuccess(message.data);
         } else {
+          this.debug("Calling onFileDeleteSuccess");
           this.onFileDeleteSuccess(message.data);
         }
         break;
       case "file.delete.error":
-        // Check if it's an image or audio file based on the file path
+        // Check file type based on the file path
         if (
           message.data.fileName &&
-          message.data.fileName.includes("/images/")
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.imageUploads}/`)
         ) {
           this.onImageFileDeleteError(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
+        ) {
+          this.onDataFileDeleteError(message.data);
         } else {
           this.onFileDeleteError(message.data);
         }
@@ -784,6 +856,7 @@ class PIrateRFController {
     this.pift8Form.classList.add("hidden");
     this.pisstvForm.classList.add("hidden");
     this.pirttyForm.classList.add("hidden");
+    this.fskForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -816,6 +889,10 @@ class PIrateRFController {
         break;
       case "pirtty":
         this.pirttyForm.classList.remove("hidden");
+        break;
+      case "fsk":
+        this.fskForm.classList.remove("hidden");
+        this.loadDataFiles(false);
         break;
     }
 
@@ -1002,6 +1079,12 @@ class PIrateRFController {
       case "pirtty":
         isValid = module && this.pirttyFreqInput.value && this.pirttyMessageInput.value.trim();
         break;
+      case "fsk":
+        const hasFreq = this.fskFreqInput.value;
+        const isText = this.fskInputTypeText.classList.contains('active') && this.fskTextInput.value.trim();
+        const isFile = this.fskInputTypeFile.classList.contains('active') && this.fskFileInput.value;
+        isValid = module && hasFreq && (isText || isFile);
+        break;
       default:
         isValid = false;
     }
@@ -1038,6 +1121,166 @@ class PIrateRFController {
 
   togglePOCSAGOption(button) {
     button.classList.toggle('active');
+  }
+
+  setFskInputType(type, skipSave = false) {
+    // Update toggle button states
+    this.fskInputTypeText.classList.toggle('active', type === 'text');
+    this.fskInputTypeFile.classList.toggle('active', type === 'file');
+
+    this.onFskInputTypeChange();
+    if (!skipSave) {
+      this.saveState();
+      this.validateForm();
+    }
+  }
+
+  onFskInputTypeChange() {
+    const isTextMode = this.fskInputTypeText.classList.contains('active');
+
+    // Show/hide text area vs file controls
+    const textContainer = this.fskTextInput.closest('.form-group');
+    const fileContainer = this.fskFileInput.closest('.form-group');
+    const fileControls = document.querySelector('.fsk-file-controls');
+
+    if (isTextMode) {
+      textContainer.classList.remove('hidden');
+      fileContainer.classList.add('hidden');
+      if (fileControls) fileControls.classList.add('hidden');
+    } else {
+      textContainer.classList.add('hidden');
+      fileContainer.classList.remove('hidden');
+      if (fileControls) fileControls.classList.remove('hidden');
+      // Load data files when switching to file mode
+      this.loadDataFiles();
+    }
+  }
+
+  onFskFileChange() {
+    const hasSelection = this.fskFileInput.value && this.fskFileInput.value !== "";
+    this.editFskFileBtn.disabled = !hasSelection;
+  }
+
+  async loadDataFiles(selectLatest = true) {
+    return this.loadFiles({
+      endpoint: window.PIrateRFConfig.paths.dataUploadFiles,
+      selectElement: this.fskFileInput,
+      fileTypes: [], // No filter, accept all files
+      selectLatest,
+      savedStateKey: 'fsk',
+      onChangeCallback: () => this.onFskFileChange(),
+      noFilesText: "No data files",
+      debugPrefix: "data files",
+      useServerPath: true,
+      pathType: "data"
+    });
+  }
+
+  async handleDataFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('module', 'fsk');
+
+    try {
+      const response = await this.customFetch('/upload', {
+        method: 'POST',
+        body: formData
+      }, "Uploading data file...");
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        this.log(`✅ Uploaded: ${result.original_filename}`, "system");
+
+        // Clear the file input after successful upload
+        event.target.value = "";
+
+        // Refresh dropdown to show new file and auto-select it (newest first)
+        await this.loadDataFiles();
+
+        this.saveState();
+        this.validateForm();
+      }
+    } catch (error) {
+      this.log(`❌ Upload error: ${error.message}`, "system");
+    }
+
+    // Clear the file input for next upload
+    event.target.value = '';
+  }
+
+  openFileEditModal(fileType, selectedFile, directory) {
+    if (!selectedFile) {
+      this.log("❌ No file selected", "system");
+      return;
+    }
+
+    // Set modal title and placeholder based on file type
+    const config = {
+      audio: { title: "Edit Audio File", placeholder: "filename.wav" },
+      image: { title: "Edit Image File", placeholder: "filename.Y" },
+      data: { title: "Edit Data File", placeholder: "filename.txt" }
+    };
+
+    const modalConfig = config[fileType] || { title: "Edit File", placeholder: "filename" };
+
+    this.fileEditModalTitle.textContent = modalConfig.title;
+    this.editFileName.placeholder = modalConfig.placeholder;
+    this.editFileName.value = selectedFile;
+
+    this.currentEditFile = selectedFile;
+    this.currentEditDirectory = directory;
+    this.fileEditModal.style.display = "flex";
+  }
+
+  openDataFileEditModal() {
+    const selectedFile = this.fskFileInput.value;
+    if (selectedFile) {
+      // Extract filename with extension preserved
+      const fileName = selectedFile.split('/').pop();
+      this.openFileEditModal("data", fileName, "data");
+    } else {
+      this.log("❌ No data file selected", "system");
+    }
+  }
+
+  openImageEditModal() {
+    // For spectrum paint images (pictureFileInput)
+    const selectedFile = this.pictureFileInput.value;
+    if (selectedFile) {
+      // Extract filename with extension preserved
+      const fileName = selectedFile.split('/').pop();
+      this.openFileEditModal("image", fileName, "imageUploads");
+      return;
+    }
+
+    // For PISSTV images (pisstvPictureFileInput)
+    const pisstvSelectedFile = this.pisstvPictureFileInput.value;
+    if (pisstvSelectedFile) {
+      // Extract filename with extension preserved
+      const fileName = pisstvSelectedFile.split('/').pop();
+      this.openFileEditModal("image", fileName, "imageUploads");
+      return;
+    }
+
+    this.log("❌ No image file selected", "system");
+  }
+
+  openAudioEditModal() {
+    const selectedFile = this.audioInput.value;
+    if (selectedFile) {
+      // Extract just the filename from the path
+      const fileName = selectedFile.split('/').pop();
+      this.openFileEditModal("audio", fileName, "audio");
+    } else {
+      this.log("❌ No audio file selected", "system");
+    }
   }
 
   buildPOCSAGArgs() {
@@ -1371,6 +1614,23 @@ class PIrateRFController {
         }
         timeout = 0; // No timeout for pirtty by default
         break;
+
+      case "fsk":
+        args = {
+          frequency: parseFloat(this.fskFreqInput.value),
+          inputType: this.fskInputTypeText.classList.contains('active') ? "text" : "file",
+        };
+        if (this.fskInputTypeText.classList.contains('active')) {
+          args.text = this.fskTextInput.value.trim();
+        } else {
+          args.file = this.fskFileInput.value;
+        }
+        // Add baudRate only if it has a value
+        if (this.fskBaudRateInput.value && this.fskBaudRateInput.value.trim() !== "") {
+          args.baudRate = parseInt(this.fskBaudRateInput.value);
+        }
+        timeout = 0; // No timeout for fsk by default
+        break;
     }
 
     const message = {
@@ -1516,6 +1776,7 @@ class PIrateRFController {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("module", "pifmrds");
 
     this.setUploadStatus("Uploading...", "uploading");
 
@@ -1598,6 +1859,7 @@ class PIrateRFController {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("module", this.moduleSelect.value);
 
     this.setImageUploadStatus("Uploading...", "uploading");
 
@@ -1824,6 +2086,7 @@ class PIrateRFController {
       // Create form data and upload
       const formData = new FormData();
       formData.append("file", audioBlob, filename);
+      formData.append("module", "pifmrds");
 
       this.setRecordStatus("Uploading recording...", "uploading");
 
@@ -1865,150 +2128,48 @@ class PIrateRFController {
   }
 
   async loadAudioFiles(selectLatest = true) {
-    try {
-      const response = await this.customFetch(
-        window.PIrateRFConfig.paths.audioUploadFiles,
-        {},
-        "Loading audio files..."
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to load audio files: ${response.status}`);
-      }
-
-      const files = await response.json();
-
-      if (this.isDebugMode) {
-        this.log(`🔄 Loaded ${files.length} audio files`, "system");
-      }
-
-      // Sort by modTime (newest first)
-      files.sort((a, b) => new Date(b.modTime) - new Date(a.modTime));
-
-      // Clear existing options
-      this.audioInput.innerHTML = "";
-
-      // Filter audio files
-      const audioFiles = files.filter(
-        (file) => !file.isDir && file.name.endsWith(".wav")
-      );
-
-      if (audioFiles.length === 0) {
-        // No audio files found
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "No audio files";
-        option.disabled = true;
-        this.audioInput.appendChild(option);
-      } else {
-        // Add file options
-        audioFiles.forEach((file) => {
-          const option = document.createElement("option");
-          option.value = this.buildFilePath(file.name, "uploads", true); // Server path for backend
-          option.textContent = file.name;
-          this.audioInput.appendChild(option);
-        });
-
-        // Try to restore saved audio file selection, otherwise select first (newest) file
-        if (selectLatest) {
-          // Select first (newest) file when selectLatest is true
-          this.audioInput.selectedIndex = 0;
-        } else {
-          // Try to restore saved selection only when selectLatest is false (page load)
-          this.selectSavedOrFirstAudioFile();
-        }
-        this.validateForm();
-      }
-
-      // Enable/disable edit button based on selection
-      this.onAudioFileChange();
-    } catch (error) {
-      this.log(`❌ Failed to load audio files: ${error.message}`, "system");
-    }
+    return this.loadFiles({
+      endpoint: window.PIrateRFConfig.paths.audioUploadFiles,
+      selectElement: this.audioInput,
+      fileTypes: ['.wav'],
+      selectLatest,
+      savedStateKey: 'audio',
+      onChangeCallback: () => this.onAudioFileChange(),
+      noFilesText: "No audio files",
+      debugPrefix: "audio files",
+      useServerPath: true,
+      pathType: "uploads"
+    });
   }
 
   async loadImageFiles(selectLatest = true) {
-    try {
-      const response = await this.customFetch(
-        window.PIrateRFConfig.paths.imageUploadFiles,
-        {},
-        "Loading image files..."
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to load image files: ${response.status}`);
-      }
+    // Load spectrum paint images (.Y files)
+    await this.loadFiles({
+      endpoint: window.PIrateRFConfig.paths.imageUploadFiles,
+      selectElement: this.pictureFileInput,
+      fileTypes: ['.Y'],
+      selectLatest,
+      savedStateKey: selectLatest ? null : 'spectrumpaint',
+      onChangeCallback: () => this.onImageFileChange(),
+      noFilesText: "No .Y image files",
+      debugPrefix: "spectrum paint images",
+      useServerPath: true,
+      pathType: "imageUploads"
+    });
 
-      const files = await response.json();
-
-      if (this.isDebugMode) {
-        this.log(`🔄 Loaded ${files.length} image files`, "system");
-      }
-
-      // Sort by modTime (newest first)
-      files.sort((a, b) => new Date(b.modTime) - new Date(a.modTime));
-
-      // Clear existing options
-      this.pictureFileInput.innerHTML = "";
-      this.pisstvPictureFileInput.innerHTML = "";
-
-      // Filter image files (.Y files for spectrum paint, .rgb files for PISSTV)
-      const yFiles = files.filter(
-        (file) => !file.isDir && file.name.endsWith(".Y")
-      );
-      const rgbFiles = files.filter(
-        (file) => !file.isDir && file.name.endsWith(".rgb")
-      );
-
-      // Populate spectrum paint dropdown (.Y files)
-      if (yFiles.length === 0) {
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "No .Y image files";
-        option.disabled = true;
-        this.pictureFileInput.appendChild(option);
-      } else {
-        yFiles.forEach((file) => {
-          const option = document.createElement("option");
-          option.value = this.buildFilePath(file.name, "imageUploads", true);
-          option.textContent = file.name;
-          this.pictureFileInput.appendChild(option);
-        });
-
-        if (selectLatest) {
-          this.pictureFileInput.selectedIndex = 0;
-        } else {
-          this.selectSavedOrFirstImageFile();
-        }
-      }
-
-      // Populate PISSTV dropdown (.rgb files)
-      if (rgbFiles.length === 0) {
-        const option = document.createElement("option");
-        option.value = "";
-        option.textContent = "No .rgb image files";
-        option.disabled = true;
-        this.pisstvPictureFileInput.appendChild(option);
-      } else {
-        rgbFiles.forEach((file) => {
-          const option = document.createElement("option");
-          option.value = this.buildFilePath(file.name, "imageUploads", true);
-          option.textContent = file.name;
-          this.pisstvPictureFileInput.appendChild(option);
-        });
-
-        if (selectLatest) {
-          this.pisstvPictureFileInput.selectedIndex = 0;
-        } else {
-          this.selectSavedOrFirstPISSTVFile();
-        }
-        this.validateForm();
-      }
-
-      // Enable/disable edit buttons based on selection
-      this.onImageFileChange();
-      this.onPisstvImageFileChange();
-    } catch (error) {
-      this.log(`❌ Failed to load image files: ${error.message}`, "system");
-    }
+    // Load PISSTV images (.rgb files)
+    await this.loadFiles({
+      endpoint: window.PIrateRFConfig.paths.imageUploadFiles,
+      selectElement: this.pisstvPictureFileInput,
+      fileTypes: ['.rgb'],
+      selectLatest,
+      savedStateKey: selectLatest ? null : 'pisstv',
+      onChangeCallback: () => this.onPisstvImageFileChange(),
+      noFilesText: "No .rgb image files",
+      debugPrefix: "PISSTV images",
+      useServerPath: true,
+      pathType: "imageUploads"
+    });
   }
 
   onImageFileChange() {
@@ -2023,45 +2184,6 @@ class PIrateRFController {
     this.editPisstvImageBtn.disabled = !hasSelection;
   }
 
-  selectSavedOrFirstImageFile() {
-    if (this.state.spectrumpaint && this.state.spectrumpaint.pictureFile) {
-      const savedValue = this.state.spectrumpaint.pictureFile;
-      for (let i = 0; i < this.pictureFileInput.options.length; i++) {
-        if (this.pictureFileInput.options[i].value === savedValue) {
-          this.pictureFileInput.selectedIndex = i;
-          this.onImageFileChange();
-          return;
-        }
-      }
-    }
-    if (
-      this.pictureFileInput.options.length > 0 &&
-      !this.pictureFileInput.options[0].disabled
-    ) {
-      this.pictureFileInput.selectedIndex = 0;
-      this.onImageFileChange();
-    }
-  }
-
-  selectSavedOrFirstPISSTVFile() {
-    if (this.state.pisstv && this.state.pisstv.pictureFile) {
-      const savedValue = this.state.pisstv.pictureFile;
-      for (let i = 0; i < this.pisstvPictureFileInput.options.length; i++) {
-        if (this.pisstvPictureFileInput.options[i].value === savedValue) {
-          this.pisstvPictureFileInput.selectedIndex = i;
-          this.onPisstvImageFileChange();
-          return;
-        }
-      }
-    }
-    if (
-      this.pisstvPictureFileInput.options.length > 0 &&
-      !this.pisstvPictureFileInput.options[0].disabled
-    ) {
-      this.pisstvPictureFileInput.selectedIndex = 0;
-      this.onPisstvImageFileChange();
-    }
-  }
 
   onAudioFileChange() {
     const hasSelection = this.audioInput.value && this.audioInput.value !== "";
@@ -2081,29 +2203,45 @@ class PIrateRFController {
       return;
     }
 
-    this.currentEditingFile = selectedValue.replace(`${serverAudioPath}/`, "");
+    this.currentEditFile = selectedValue.replace(`${serverAudioPath}/`, "");
 
     // Set the filename in the input
-    this.editFileName.value = this.currentEditingFile;
+    this.editFileName.value = this.currentEditFile;
 
     // Show the modal
     this.fileEditModal.style.display = "flex";
   }
 
+  closeModal(modalType) {
+    switch (modalType) {
+      case "audio":
+        this.fileEditModal.style.display = "none";
+        this.currentEditFile = null;
+        this.editFileName.value = "";
+        break;
+      case "image":
+        this.fileEditModal.style.display = "none";
+        this.currentEditFile = null;
+        this.editFileName.value = "";
+        break;
+      case "playlist":
+        this.playlistModal.style.display = "none";
+        break;
+    }
+  }
+
   closeEditModal() {
-    this.fileEditModal.style.display = "none";
-    this.currentEditingFile = null;
-    this.editFileName.value = "";
+    this.closeModal("audio");
   }
 
   renameFile() {
     const newFileName = this.editFileName.value.trim();
 
-    if (!newFileName || !this.currentEditingFile) {
+    if (!newFileName || !this.currentEditFile) {
       return;
     }
 
-    if (newFileName === this.currentEditingFile) {
+    if (newFileName === this.currentEditFile) {
       // No change, just close
       this.closeEditModal();
       return;
@@ -2116,10 +2254,20 @@ class PIrateRFController {
 
     this.showLoadingScreen("Renaming file...");
 
+    // Get the correct file path based on current edit directory
+    let filePath;
+    if (this.currentEditDirectory === "data") {
+      filePath = this.fskFileInput.value;
+    } else if (this.currentEditDirectory === "imageUploads") {
+      filePath = this.pictureFileInput.value || this.pisstvPictureFileInput.value;
+    } else {
+      filePath = this.audioInput.value;
+    }
+
     const message = {
       type: "file.rename",
       data: {
-        filePath: this.audioInput.value, // Full path to current file
+        filePath: filePath, // Full path to current file
         newName: newFileName, // Just the new filename
       },
       id: this.generateUUID(),
@@ -2134,12 +2282,12 @@ class PIrateRFController {
   }
 
   deleteFile() {
-    if (!this.currentEditingFile) {
+    if (!this.currentEditFile) {
       return;
     }
 
     if (
-      !confirm(`Are you sure you want to delete ${this.currentEditingFile}?`)
+      !confirm(`Are you sure you want to delete ${this.currentEditFile}?`)
     ) {
       return;
     }
@@ -2151,11 +2299,21 @@ class PIrateRFController {
 
     this.showLoadingScreen("Deleting file...");
 
+    // Get the correct file path based on current edit directory
+    let filePath;
+    if (this.currentEditDirectory === "data") {
+      filePath = this.fskFileInput.value;
+    } else if (this.currentEditDirectory === "imageUploads") {
+      filePath = this.pictureFileInput.value || this.pisstvPictureFileInput.value;
+    } else {
+      filePath = this.audioInput.value;
+    }
+
     // Send websocket message for file delete
     const message = {
       type: "file.delete",
       data: {
-        filePath: this.audioInput.value, // Full path to current file
+        filePath: filePath, // Full path to current file
       },
       id: this.generateUUID(),
     };
@@ -2188,6 +2346,7 @@ class PIrateRFController {
   onFileRenameError(data) {
     this.hideLoadingScreen();
     this.log(`❌ Failed to rename file: ${data.message}`, "system");
+    this.showErrorNotification(`Failed to rename file: ${data.message}`, "file-rename");
   }
 
   onFileDeleteSuccess(data) {
@@ -2202,51 +2361,65 @@ class PIrateRFController {
   onFileDeleteError(data) {
     this.hideLoadingScreen();
     this.log(`❌ Failed to delete file: ${data.message}`, "system");
+    this.closeEditModal();
+    // Refresh the dropdown to show current state
+    this.loadAudioFiles();
   }
 
-  // Image file modal functionality
-  async openImageEditModal() {
-    // Use the appropriate dropdown based on current module
-    const selectedValue = this.state.modulename === "pisstv"
-      ? this.pisstvPictureFileInput.value
-      : this.pictureFileInput.value;
-    if (!selectedValue || selectedValue === "") {
-      return;
-    }
-
-    // Extract filename from server path
-    const serverImagePath = window.PIrateRFConfig.serverPaths.imageUploads;
-    if (!selectedValue.startsWith(serverImagePath)) {
-      return;
-    }
-
-    // Store only the filename for display (same pattern as audio)
-    this.currentEditingImageFile = selectedValue.replace(
-      `${serverImagePath}/`,
-      ""
+  // Data file handlers
+  onDataFileRenameSuccess(data) {
+    this.hideLoadingScreen();
+    this.log(
+      `✅ Data file renamed from ${data.fileName} to ${data.newName}`,
+      "system"
     );
+    this.closeEditModal();
 
-    // Set the filename in the input
-    this.editImageName.value = this.currentEditingImageFile;
-
-    // Show the modal
-    this.imageEditModal.style.display = "flex";
+    // Refresh the dropdown and select the renamed file
+    this.loadDataFiles().then(() => {
+      const fileDir = data.fileName.split("/").slice(0, -1).join("/");
+      this.fskFileInput.value = `${fileDir}/${data.newName}`;
+      this.validateForm();
+      this.saveState();
+    });
   }
+
+  onDataFileRenameError(data) {
+    this.hideLoadingScreen();
+    this.log(`❌ Failed to rename data file: ${data.message}`, "system");
+  }
+
+  onDataFileDeleteSuccess(data) {
+    this.hideLoadingScreen();
+    this.log(`✅ Data file deleted: ${data.fileName}`, "system");
+    this.closeEditModal();
+
+    // Refresh the dropdown
+    this.loadDataFiles();
+  }
+
+  onDataFileDeleteError(data) {
+    this.hideLoadingScreen();
+    this.log(`❌ Failed to delete data file: ${data.message}`, "system");
+    this.closeEditModal();
+    // Refresh the dropdown to show current state
+    this.loadDataFiles();
+  }
+
+  // This function is defined earlier (line 1252) with unified modal support
 
   closeImageEditModal() {
-    this.imageEditModal.style.display = "none";
-    this.currentEditingImageFile = null;
-    this.editImageName.value = "";
+    this.closeModal("image");
   }
 
   renameImageFile() {
-    const newFileName = this.editImageName.value.trim();
+    const newFileName = this.editFileName.value.trim();
 
-    if (!newFileName || !this.currentEditingImageFile) {
+    if (!newFileName || !this.currentEditFile) {
       return;
     }
 
-    if (newFileName === this.currentEditingImageFile) {
+    if (newFileName === this.currentEditFile) {
       // No change, just close
       this.closeImageEditModal();
       return;
@@ -2272,13 +2445,13 @@ class PIrateRFController {
   }
 
   deleteImageFile() {
-    if (!this.currentEditingImageFile) {
+    if (!this.currentEditFile) {
       return;
     }
 
     if (
       !confirm(
-        `Are you sure you want to delete "${this.currentEditingImageFile}"?`
+        `Are you sure you want to delete "${this.currentEditFile}"?`
       )
     ) {
       return;
@@ -2327,6 +2500,7 @@ class PIrateRFController {
   }
 
   onImageFileDeleteSuccess(data) {
+    this.debug("onImageFileDeleteSuccess called");
     this.hideLoadingScreen();
     this.log(`✅ Image file deleted: ${data.fileName}`, "system");
     this.closeImageEditModal();
@@ -2336,6 +2510,9 @@ class PIrateRFController {
   onImageFileDeleteError(data) {
     this.hideLoadingScreen();
     this.log(`❌ Failed to delete image file: ${data.message}`, "system");
+    this.closeImageEditModal();
+    // Refresh the dropdown to show current state
+    this.loadImageFiles();
   }
 
   // Playlist functionality
@@ -2346,7 +2523,7 @@ class PIrateRFController {
   }
 
   closePlaylistModal() {
-    this.playlistModal.style.display = "none";
+    this.closeModal("playlist");
   }
 
   async loadPlaylistFiles() {
@@ -2814,30 +2991,114 @@ class PIrateRFController {
     }
   }
 
-  // Select saved audio file if it exists, otherwise select first file
-  selectSavedOrFirstAudioFile() {
+
+  // Unified file loading function for all file types
+  async loadFiles(config) {
+    const {
+      endpoint,
+      selectElement,
+      fileTypes = [],
+      selectLatest = true,
+      savedStateKey,
+      onChangeCallback,
+      noFilesText = "No files",
+      debugPrefix = "files",
+      useServerPath = false,
+      pathType = "uploads"
+    } = config;
+
     try {
-      const savedState = localStorage.getItem("piraterf_state");
-      if (savedState) {
-        const state = JSON.parse(savedState);
-        if (state.audio) {
-          // Check if the saved audio file still exists in the dropdown
-          const option = Array.from(this.audioInput.options).find(
-            (opt) => opt.value === state.audio
-          );
-          if (option) {
-            this.audioInput.value = state.audio;
-            return; // Found and selected saved file
-          }
+      const response = await this.customFetch(endpoint, {}, `Loading ${debugPrefix}...`);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${debugPrefix}: ${response.status}`);
+      }
+
+      const files = await response.json();
+
+      if (this.isDebugMode) {
+        this.log(`🔄 Loaded ${files.length} ${debugPrefix}`, "system");
+      }
+
+      // Sort by modTime (newest first)
+      files.sort((a, b) => new Date(b.modTime) - new Date(a.modTime));
+
+      // Clear existing options
+      selectElement.innerHTML = '';
+
+      // Filter files by type if specified
+      let filteredFiles = files.filter(file => !file.isDir);
+      if (fileTypes.length > 0) {
+        filteredFiles = filteredFiles.filter(file =>
+          fileTypes.some(ext => file.name.endsWith(ext))
+        );
+      }
+
+      if (filteredFiles.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = noFilesText;
+        option.disabled = true;
+        selectElement.appendChild(option);
+      } else {
+        // Add files to dropdown
+        filteredFiles.forEach(file => {
+          const option = document.createElement('option');
+          const fileName = typeof file === 'string' ? file : file.name;
+          option.value = useServerPath ? this.buildFilePath(fileName, pathType, true) : fileName;
+          option.textContent = fileName;
+          selectElement.appendChild(option);
+        });
+
+        // Handle selection
+        if (selectLatest) {
+          selectElement.selectedIndex = 0;
+        } else if (savedStateKey) {
+          this.selectSavedOrFirstFile(selectElement, savedStateKey, onChangeCallback);
         }
       }
-    } catch (e) {
-      console.warn("Failed to check saved audio file:", e);
+
+      // Trigger change callback if provided
+      if (onChangeCallback) {
+        onChangeCallback();
+      }
+
+      this.validateForm();
+    } catch (error) {
+      this.log(`❌ Failed to load ${debugPrefix}: ${error.message}`, "system");
+    }
+  }
+
+  // Unified function to select saved file or first file
+  selectSavedOrFirstFile(selectElement, savedStateKey, onChangeCallback) {
+    let savedValue = null;
+
+    // Handle nested state keys like 'spectrumpaint.pictureFile'
+    if (savedStateKey === 'spectrumpaint' && this.state.spectrumpaint) {
+      savedValue = this.state.spectrumpaint.pictureFile;
+    } else if (savedStateKey === 'pisstv' && this.state.pisstv) {
+      savedValue = this.state.pisstv.pictureFile;
+    } else if (savedStateKey === 'fsk' && this.state.fsk) {
+      savedValue = this.state.fsk.file;
+    } else if (savedStateKey === 'audio' && this.state.audio) {
+      savedValue = this.state.audio;
+    } else if (this.state[savedStateKey]) {
+      savedValue = this.state[savedStateKey];
+    }
+
+    if (savedValue) {
+      for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].value === savedValue) {
+          selectElement.selectedIndex = i;
+          if (onChangeCallback) onChangeCallback();
+          return;
+        }
+      }
     }
 
     // Fallback: select first (newest) file if no saved selection or saved file doesn't exist
-    if (this.audioInput.options.length > 0) {
-      this.audioInput.selectedIndex = 0;
+    if (selectElement.options.length > 0 && !selectElement.options[0].disabled) {
+      selectElement.selectedIndex = 0;
+      if (onChangeCallback) onChangeCallback();
     }
   }
 
@@ -2886,6 +3147,7 @@ class PIrateRFController {
     if (!this.state.pift8) this.state.pift8 = {};
     if (!this.state.pisstv) this.state.pisstv = {};
     if (!this.state.pirtty) this.state.pirtty = {};
+    if (!this.state.fsk) this.state.fsk = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2977,6 +3239,14 @@ class PIrateRFController {
     this.state.pirtty.spaceFrequency = this.pirttySpaceFreqInput.value;
     this.state.pirtty.message = this.pirttyMessageInput.value;
 
+    // Update FSK state
+    this.state.fsk.frequency = this.fskFreqInput.value;
+    this.state.fsk.inputType = this.fskInputTypeText.classList.contains('active') ? "text" : "file";
+    this.state.fsk.text = this.fskTextInput.value;
+    this.state.fsk.file = this.fskFileInput.value;
+    this.state.fsk.baudRate = this.fskBaudRateInput.value;
+
+    this.debug("💾 Saving FSK state:", this.state.fsk);
     this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
     if (this.isDebugMode) {
       console.trace("📍 saveState() called from:");
@@ -3034,6 +3304,7 @@ class PIrateRFController {
           pift8: { ...this.state.pift8, ...parsedState.pift8 },
           pisstv: { ...this.state.pisstv, ...parsedState.pisstv },
           pirtty: { ...this.state.pirtty, ...parsedState.pirtty },
+          fsk: { ...this.state.fsk, ...parsedState.fsk },
         };
       }
 
@@ -3058,6 +3329,8 @@ class PIrateRFController {
     if (!this.state.pichirp) this.state.pichirp = {};
     if (!this.state.pocsag) this.state.pocsag = {};
     if (!this.state.pisstv) this.state.pisstv = {};
+    if (!this.state.pirtty) this.state.pirtty = {};
+    if (!this.state.fsk) this.state.fsk = {};
 
     // Sync module selection
     if (this.state.modulename) this.moduleSelect.value = this.state.modulename;
@@ -3255,6 +3528,19 @@ class PIrateRFController {
       this.pirttySpaceFreqInput.value = this.state.pirtty.spaceFrequency;
     if (this.state.pirtty.message && this.pirttyMessageInput)
       this.pirttyMessageInput.value = this.state.pirtty.message;
+
+    // Restore FSK state
+    if (this.state.fsk.frequency && this.fskFreqInput)
+      this.fskFreqInput.value = this.state.fsk.frequency;
+    if (this.state.fsk.inputType !== undefined) {
+      this.setFskInputType(this.state.fsk.inputType, true); // Skip save during restoration
+    }
+    if (this.state.fsk.text !== undefined && this.fskTextInput)
+      this.fskTextInput.value = this.state.fsk.text;
+    if (this.state.fsk.file && this.fskFileInput)
+      this.fskFileInput.value = this.state.fsk.file;
+    if (this.state.fsk.baudRate && this.fskBaudRateInput)
+      this.fskBaudRateInput.value = this.state.fsk.baudRate;
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 

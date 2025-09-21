@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func TestProcessAudioModifications(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
 
@@ -58,7 +57,6 @@ func TestProcessAudioModifications(t *testing.T) {
 			Outro:    nil,
 		}
 
-
 		finalTimeout, tempPath, finalArgs, err := service.processAudioModifications(msg, 0, logger)
 
 		require.NoError(t, err)
@@ -68,6 +66,7 @@ func TestProcessAudioModifications(t *testing.T) {
 
 		// Verify the modified args contain the silence file path
 		var modifiedArgsMap map[string]any
+
 		err = json.Unmarshal(finalArgs, &modifiedArgsMap)
 		require.NoError(t, err)
 		assert.Contains(t, modifiedArgsMap["audio"].(string), "_with_silence", "Args should point to silence file")
@@ -82,14 +81,13 @@ func TestGetAudioDurationWithSox(t *testing.T) {
 
 	service := &PIrateRF{
 		serviceCtx: context.Background(),
-		commander: mockCmd,
+		commander:  mockCmd,
 	}
 
 	duration, err := service.getAudioDurationWithSox("test.wav")
 	assert.NoError(t, err)
 	assert.Equal(t, 3.5, duration)
 }
-
 
 func TestProcessIntroOutro(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
@@ -269,6 +267,7 @@ func TestUpdateArgsWithSilenceFile(t *testing.T) {
 
 				// Verify the audio path was updated
 				var resultMap map[string]any
+
 				err = json.Unmarshal(result, &resultMap)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedAudioPath, resultMap["audio"])
@@ -276,4 +275,3 @@ func TestUpdateArgsWithSilenceFile(t *testing.T) {
 		})
 	}
 }
-

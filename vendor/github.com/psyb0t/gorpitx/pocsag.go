@@ -71,7 +71,8 @@ func (m *POCSAG) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return cmdArgs, stdin, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pocsag binary.
+// buildArgs converts the struct fields into command-line arguments for pocsag
+// binary.
 func (m *POCSAG) buildArgs() []string {
 	args := make([]string, 0)
 

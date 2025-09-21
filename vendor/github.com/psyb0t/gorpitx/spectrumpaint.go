@@ -15,7 +15,8 @@ const (
 )
 
 type SPECTRUMPAINT struct {
-	// PictureFile specifies the path to the raw data file for spectrumpaint. Required parameter.
+	// PictureFile specifies the path to the raw data file for spectrumpaint.
+	// Required parameter.
 	// File must exist and be accessible. Should be raw data (320 bytes per row).
 	PictureFile string `json:"pictureFile"`
 
@@ -28,7 +29,9 @@ type SPECTRUMPAINT struct {
 	Excursion *float64 `json:"excursion,omitempty"`
 }
 
-func (s *SPECTRUMPAINT) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
+func (s *SPECTRUMPAINT) ParseArgs(
+	args json.RawMessage,
+) ([]string, io.Reader, error) {
 	if err := json.Unmarshal(args, s); err != nil {
 		return nil, nil, ctxerrors.Wrap(err, "failed to unmarshal args")
 	}
@@ -40,7 +43,8 @@ func (s *SPECTRUMPAINT) ParseArgs(args json.RawMessage) ([]string, io.Reader, er
 	return s.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for spectrumpaint binary.
+// buildArgs converts the struct fields into command-line arguments for
+// spectrumpaint binary.
 func (s *SPECTRUMPAINT) buildArgs() []string {
 	var args []string
 

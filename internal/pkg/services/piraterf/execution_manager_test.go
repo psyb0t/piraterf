@@ -323,8 +323,10 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			if tt.expectedState == executionStateExecuting && finalState != executionStateExecuting {
 				// If we expected executing but didn't get it, wait a bit longer for async operations
 				time.Sleep(100 * time.Millisecond)
+
 				finalState = executionState(em.state.Load())
 			}
+
 			assert.Equal(t, tt.expectedState, finalState, "Final state should match expected")
 
 			// Cleanup - stop any started execution
@@ -497,8 +499,10 @@ func TestExecutionManagerStreamOutput(t *testing.T) {
 
 	// Start streamOutput in goroutine
 	done := make(chan bool)
+
 	go func() {
 		em.streamOutput(ctx)
+
 		done <- true
 	}()
 
@@ -563,6 +567,7 @@ func TestProcessOutputChannels(t *testing.T) {
 			setupChannels: func() (chan string, chan string) {
 				stdoutCh := make(chan string, 1)
 				stderrCh := make(chan string, 1)
+
 				return stdoutCh, stderrCh
 			},
 			expectReturn: false,

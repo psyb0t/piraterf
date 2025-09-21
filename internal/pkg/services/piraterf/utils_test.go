@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-// copyFile is a helper function to copy files for testing
+// copyFile is a helper function to copy files for testing.
 func copyFile(src, dst string) error {
 	input, err := os.ReadFile(src)
 	if err != nil {

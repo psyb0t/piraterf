@@ -43,12 +43,14 @@ func isValidFreqHz(freqHz float64) bool {
 	return freqHz >= getMinFreqHz() && freqHz <= getMaxFreqHz()
 }
 
-// getMinFreqMHzDisplay returns the minimum supported frequency in MHz for display purposes.
+// getMinFreqMHzDisplay returns the minimum supported frequency in MHz for
+// display purposes.
 func getMinFreqMHzDisplay() float64 {
 	return kHzToMHz(float64(minFreqKHz))
 }
 
-// getMaxFreqMHzDisplay returns the maximum supported frequency in MHz for display purposes.
+// getMaxFreqMHzDisplay returns the maximum supported frequency in MHz for
+// display purposes.
 func getMaxFreqMHzDisplay() float64 {
 	return kHzToMHz(float64(maxFreqKHz))
 }
@@ -57,7 +59,8 @@ func getMaxFreqMHzDisplay() float64 {
 // pifmrds works best with 1 decimal place (0.1 MHz precision).
 func hasValidFreqPrecision(freqMHz float64) bool {
 	// Round to 1 decimal place and compare
-	rounded := float64(int(freqMHz*decimalPrecision+roundingOffset)) / decimalPrecision
+	rounded := float64(int(freqMHz*decimalPrecision+roundingOffset)) /
+		decimalPrecision
 
 	return freqMHz == rounded
 }

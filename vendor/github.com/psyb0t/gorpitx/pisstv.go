@@ -16,7 +16,8 @@ const (
 
 type PISSTV struct {
 	// PictureFile specifies the .rgb picture file to transmit. Required parameter.
-	// File must be exactly 320 pixels wide, any height, RGB format (3 bytes per pixel).
+	// File must be exactly 320 pixels wide, any height, RGB format
+	// (3 bytes per pixel).
 	PictureFile string `json:"pictureFile"`
 
 	// Frequency specifies the carrier frequency in Hz. Required parameter.
@@ -36,7 +37,8 @@ func (m *PISSTV) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pisstv binary.
+// buildArgs converts the struct fields into command-line arguments for pisstv
+// binary.
 func (m *PISSTV) buildArgs() []string {
 	var args []string
 

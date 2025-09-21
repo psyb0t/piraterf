@@ -4,12 +4,12 @@ go 1.24.6
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/psyb0t/aichteeteapee v0.0.0-20250908003054-7718e45d6336
+	github.com/psyb0t/aichteeteapee v0.0.0-20250921184625-920295467ce2
 	github.com/psyb0t/commander v0.4.1
 	github.com/psyb0t/common-go v0.0.0-20250914061813-a517b076b64a
 	github.com/psyb0t/ctxerrors v0.2.0
 	github.com/psyb0t/gonfiguration v1.3.1
-	github.com/psyb0t/gorpitx v0.0.0-20250921164118-37f1ced60977
+	github.com/psyb0t/gorpitx v0.0.0-20250921222425-38a03f26d180
 	github.com/psyb0t/logrus-configurator v1.1.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1

@@ -66,8 +66,8 @@ func (s *PIrateRF) imageConversionPostprocessor(
 	}
 
 	logrus.WithFields(logrus.Fields{
-		"original":    filePath,
-		"converted_y": convertedPath,
+		"original":      filePath,
+		"converted_y":   convertedPath,
 		"converted_rgb": rgbPath,
 	}).Info("Image file converted successfully to YUV and RGB formats")
 
@@ -83,13 +83,16 @@ func (s *PIrateRF) convertImageToFormats(
 ) (string, string, error) {
 	// Create a copy of the input file for RGB conversion since YUV will delete the original
 	tempInputPath := inputPath + ".temp"
-	if err := copyFileStream(inputPath, tempInputPath); err != nil {
+	if err := s.copyFileForTemp(inputPath, tempInputPath); err != nil {
 		return "", "", ctxerrors.Wrapf(err, "failed to create temp copy")
 	}
 
 	yuvPath, err := s.convertImageToYUV(inputPath, logger)
 	if err != nil {
-		os.Remove(tempInputPath) // cleanup on error
+		if removeErr := os.Remove(tempInputPath); removeErr != nil {
+			logger.WithError(removeErr).Warn("Failed to cleanup temp file")
+		}
+
 		return "", "", err
 	}
 
@@ -123,28 +126,6 @@ func (s *PIrateRF) convertImageToYUV(
 	return s.convertImageToYFormat(inputPath, outputPath, logger)
 }
 
-// convertImageToRGB converts uploaded image files to RGB format for PISSTV
-// using ImageMagick convert command.
-// Returns: convertedPath, error.
-func (s *PIrateRF) convertImageToRGB(
-	inputPath string,
-	logger *logrus.Entry,
-) (string, error) {
-	if err := s.ensureFilesDirsExist(); err != nil {
-		return "", err
-	}
-
-	outputPath := s.getImageRGBOutputPath(inputPath)
-
-	// Handle .rgb files that may just need moving
-	if strings.HasSuffix(inputPath, ".rgb") {
-		return s.handleRGBFile(inputPath, outputPath)
-	}
-
-	// Convert regular image to .rgb format
-	return s.convertImageToRGBFormat(inputPath, outputPath, logger)
-}
-
 func (s *PIrateRF) getImageOutputPath(inputPath string) string {
 	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
 	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
@@ -168,20 +149,6 @@ func (s *PIrateRF) handleYFile(inputPath, outputPath string) (string, error) {
 
 	if err := moveFile(inputPath, outputPath); err != nil {
 		return "", ctxerrors.Wrapf(err, "failed to move .Y file")
-	}
-
-	return outputPath, nil
-}
-
-func (s *PIrateRF) handleRGBFile(inputPath, outputPath string) (string, error) {
-	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
-
-	if filepath.Dir(inputPath) == imagesUploadsDir {
-		return inputPath, nil
-	}
-
-	if err := moveFile(inputPath, outputPath); err != nil {
-		return "", ctxerrors.Wrapf(err, "failed to move .rgb file")
 	}
 
 	return outputPath, nil
@@ -215,9 +182,9 @@ func (s *PIrateRF) convertImageToRGBFormat(inputPath, outputPath string, logger 
 	// Convert image to 320x256 RGB format for PISSTV
 	process, err := s.commander.Start(ctx, "convert", []string{
 		inputPath,
-		"-resize", "320x256!",  // Force exact 320x256 dimensions
-		"-depth", "8",          // 8 bits per channel
-		"rgb:" + outputPath,    // Output as raw RGB format
+		"-resize", "320x256!", // Force exact 320x256 dimensions
+		"-depth", "8", // 8 bits per channel
+		"rgb:" + outputPath, // Output as raw RGB format
 	})
 	if err != nil {
 		return "", ctxerrors.Wrapf(err, "failed to start convert command for RGB")
@@ -304,28 +271,8 @@ func (s *PIrateRF) logConversionSuccess(inputPath, outputPath string, logger *lo
 	}).Info("Image converted to YUV format for SPECTRUMPAINT")
 }
 
-// moveFile moves a file from src to dst, handling cross-device link errors.
-func moveFile(src, dst string) error {
-	// Try rename first (fastest if on same filesystem)
-	if err := os.Rename(src, dst); err == nil {
-		return nil
-	}
-
-	// If rename failed, try copy + delete
-	if err := copyFileStream(src, dst); err != nil {
-		return ctxerrors.Wrapf(err, "failed to copy file")
-	}
-
-	// Remove source file after successful copy
-	if err := os.Remove(src); err != nil {
-		return ctxerrors.Wrapf(err, "failed to remove source file after copy")
-	}
-
-	return nil
-}
-
-// copyFileStream copies a file from src to dst using io.Copy.
-func copyFileStream(src, dst string) error {
+// copyFileForTemp copies a file from src to dst using io.Copy for temporary file creation.
+func (s *PIrateRF) copyFileForTemp(src, dst string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {
 		return ctxerrors.Wrapf(err, "failed to open source file")

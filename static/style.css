@@ -507,6 +507,14 @@ body.executing .system-output {
   margin-top: 5px;
 }
 
+/* FSK toggles container */
+.fsk-toggles {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
 /* POCSAG toggle specific overrides */
 .pocsag-toggle {
   display: flex;
@@ -926,6 +934,38 @@ body.executing .log-output {
 }
 
 .image-controls .refresh-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
+}
+
+/* File controls container - same layout as audio/image controls */
+.file-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.file-controls select {
+  flex: 1;
+  margin-right: 0;
+}
+
+.file-controls .refresh-btn {
+  flex: none;
+  width: auto;
+  min-width: auto;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.file-controls .refresh-btn:hover {
   background: rgba(0, 255, 0, 0.3);
   transform: scale(1.05);
 }
@@ -1464,6 +1504,36 @@ body.executing .output-content::-webkit-scrollbar-thumb {
 }
 
 .radio-option:hover {
+  background: rgba(0, 255, 0, 0.1);
+  color: #00ff00;
+}
+
+.radio-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 400;
+  padding: 4px 8px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: #00ff00;
+  transform: scale(0.9);
+}
+
+.radio-label:hover {
   background: rgba(0, 255, 0, 0.1);
   color: #00ff00;
 }

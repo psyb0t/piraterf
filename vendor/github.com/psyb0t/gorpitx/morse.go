@@ -23,7 +23,8 @@ type MORSE struct {
 	// Must be positive integer value.
 	Rate int `json:"rate"`
 
-	// Message specifies the text message to transmit in Morse code. Required parameter.
+	// Message specifies the text message to transmit in Morse code. Required
+	// parameter.
 	// Cannot be empty or whitespace only.
 	Message string `json:"message"`
 }
@@ -40,7 +41,8 @@ func (m *MORSE) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for morse binary.
+// buildArgs converts the struct fields into command-line arguments for morse
+// binary.
 func (m *MORSE) buildArgs() []string {
 	var args []string
 

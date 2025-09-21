@@ -10,7 +10,7 @@ import (
 	"github.com/psyb0t/ctxerrors"
 )
 
-// Simple mock helpers for compatibility across test files
+// Simple mock helpers for compatibility across test files.
 func newMockCommander() *commander.MockCommander {
 	return commander.NewMock()
 }
@@ -18,11 +18,12 @@ func newMockCommander() *commander.MockCommander {
 func newMockProcess() commander.Process {
 	mock := commander.NewMock()
 	proc, _ := mock.Start(context.Background(), "test", []string{})
+
 	return proc
 }
 
 // fileCreatingMockCommander is a wrapper around MockCommander that creates
-// output files for ffmpeg and convert commands to simulate successful conversion
+// output files for ffmpeg and convert commands to simulate successful conversion.
 type fileCreatingMockCommander struct {
 	commander.MockCommander
 }
@@ -43,11 +44,11 @@ func (m *fileCreatingMockCommander) Start(
 	if name == "ffmpeg" && len(args) >= 10 {
 		outputPath := args[len(args)-1] // Last argument is output path
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 			return proc, err
 		}
 		// Create the output file to simulate ffmpeg success
-		if err := os.WriteFile(outputPath, []byte("fake wav content"), 0644); err != nil {
+		if err := os.WriteFile(outputPath, []byte("fake wav content"), 0o644); err != nil {
 			return proc, err
 		}
 	}
@@ -56,26 +57,27 @@ func (m *fileCreatingMockCommander) Start(
 	if name == "convert" && len(args) >= 11 {
 		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 			return proc, err
 		}
 
 		// For partition interlace, ImageMagick creates separate .Y, .U, .V files
 		// We need to create the .Y file that the code expects
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
+
 		yFilePath := basePath + ".Y"
-		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0644); err != nil {
+		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0o644); err != nil {
 			return proc, err
 		}
 
 		// Optionally create .U and .V files too for completeness
 		uFilePath := basePath + ".U"
-		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0644); err != nil {
+		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0o644); err != nil {
 			return proc, err
 		}
 
 		vFilePath := basePath + ".V"
-		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0644); err != nil {
+		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0o644); err != nil {
 			return proc, err
 		}
 	}
@@ -86,11 +88,11 @@ func (m *fileCreatingMockCommander) Start(
 		if len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
 			outputPath := args[1] // Second argument is output path
 			// Create the directory if it doesn't exist
-			if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 				return proc, err
 			}
 			// Create the output file to simulate sox success
-			if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0644); err != nil {
+			if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0o644); err != nil {
 				return proc, err
 			}
 		}
@@ -100,11 +102,11 @@ func (m *fileCreatingMockCommander) Start(
 			lastArg := args[len(args)-1]
 			if filepath.Ext(lastArg) == ".wav" || filepath.Ext(lastArg) == ".mp3" {
 				// Create the directory if it doesn't exist
-				if err := os.MkdirAll(filepath.Dir(lastArg), 0755); err != nil {
+				if err := os.MkdirAll(filepath.Dir(lastArg), 0o755); err != nil {
 					return proc, err
 				}
 				// Create the output file to simulate sox success
-				if err := os.WriteFile(lastArg, []byte("fake playlist audio"), 0644); err != nil {
+				if err := os.WriteFile(lastArg, []byte("fake playlist audio"), 0o644); err != nil {
 					return proc, err
 				}
 			}
@@ -114,7 +116,7 @@ func (m *fileCreatingMockCommander) Start(
 	return proc, err
 }
 
-// testMockCommander handles sox and convert commands directly for testing
+// testMockCommander handles sox and convert commands directly for testing.
 type testMockCommander struct {
 	tempDir string
 }
@@ -129,17 +131,18 @@ func (m *testMockCommander) Start(
 	if name == "sox" && len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
 		outputPath := args[1] // Second argument is output path
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 			return nil, err
 		}
 		// Create the output file to simulate sox success
-		if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0644); err != nil {
+		if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0o644); err != nil {
 			return nil, err
 		}
 		// Return a successful mock process
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
 		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+
 		return proc, nil
 	}
 
@@ -148,17 +151,18 @@ func (m *testMockCommander) Start(
 		// Find the output file (last argument)
 		outputPath := args[len(args)-1]
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 			return nil, err
 		}
 		// Create the output file to simulate sox success
-		if err := os.WriteFile(outputPath, []byte("fake playlist audio"), 0644); err != nil {
+		if err := os.WriteFile(outputPath, []byte("fake playlist audio"), 0o644); err != nil {
 			return nil, err
 		}
 		// Return a successful mock process
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
 		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+
 		return proc, nil
 	}
 
@@ -166,26 +170,27 @@ func (m *testMockCommander) Start(
 	if name == "convert" && len(args) >= 11 {
 		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 			return nil, err
 		}
 
 		// For partition interlace, ImageMagick creates separate .Y, .U, .V files
 		// We need to create the .Y file that the code expects
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
+
 		yFilePath := basePath + ".Y"
-		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0644); err != nil {
+		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0o644); err != nil {
 			return nil, err
 		}
 
 		// Optionally create .U and .V files too for completeness
 		uFilePath := basePath + ".U"
-		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0644); err != nil {
+		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0o644); err != nil {
 			return nil, err
 		}
 
 		vFilePath := basePath + ".V"
-		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0644); err != nil {
+		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0o644); err != nil {
 			return nil, err
 		}
 
@@ -193,6 +198,7 @@ func (m *testMockCommander) Start(
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
 		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+
 		return proc, nil
 	}
 
@@ -201,6 +207,7 @@ func (m *testMockCommander) Start(
 
 func (m *testMockCommander) Run(ctx context.Context, name string, args []string, opts ...commander.Option) error {
 	_, err := m.Start(ctx, name, args, opts...)
+
 	return err
 }
 
@@ -210,6 +217,7 @@ func (m *testMockCommander) Output(ctx context.Context, name string, args []stri
 		if args[2] == ".fixtures/test_3s.wav" {
 			return []byte("3.000000"), []byte(""), nil
 		}
+
 		if args[2] == "test.wav" {
 			return []byte("3.500000"), []byte(""), nil
 		}
@@ -222,5 +230,6 @@ func (m *testMockCommander) Output(ctx context.Context, name string, args []stri
 
 func (m *testMockCommander) CombinedOutput(ctx context.Context, name string, args []string, opts ...commander.Option) ([]byte, error) {
 	stdout, _, err := m.Output(ctx, name, args, opts...)
+
 	return stdout, err
 }

@@ -39,7 +39,8 @@ func (m *PICHIRP) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for pichirp binary.
+// buildArgs converts the struct fields into command-line arguments for pichirp
+// binary.
 func (m *PICHIRP) buildArgs() []string {
 	var args []string
 

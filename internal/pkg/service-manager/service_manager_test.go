@@ -233,8 +233,8 @@ func TestServiceManager_Stop(t *testing.T) {
 			stopTwice: true,
 		},
 		{
-			name: "stop service with error",
-			services: []Service{NewMockService("failing").WithStopError(errTestServiceStop)},
+			name:             "stop service with error",
+			services:         []Service{NewMockService("failing").WithStopError(errTestServiceStop)},
 			expectStopErrors: true,
 		},
 		{

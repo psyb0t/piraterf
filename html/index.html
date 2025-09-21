@@ -97,6 +97,7 @@
             <option value="pift8">pift8</option>
             <option value="pisstv">pisstv</option>
             <option value="pirtty">pirtty</option>
+            <option value="fsk">fsk</option>
           </select>
         </div>
 
@@ -795,7 +796,7 @@ TEST MESSAGE</textarea
                 data-module-name="pisstv"
                 data-field-name="pictureFile"
               >
-                <option value="">Select a picture file...</option>
+                <option value="">Select picture file...</option>
               </select>
               <button
                 type="button"
@@ -869,6 +870,120 @@ TEST MESSAGE</textarea
           </div>
         </div>
 
+        <!-- FSK Module Form -->
+        <div id="fskForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="fskFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="fskFreq"
+              step="1"
+              placeholder="144390000"
+              value="144390000"
+              data-module-name="fsk"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <div class="fsk-toggles">
+              <button
+                type="button"
+                class="fsk-toggle toggle-btn active"
+                id="fskInputTypeText"
+                data-module-name="fsk"
+                data-field-name="inputType"
+                data-value="text"
+                title="Text input mode"
+              >
+                📝 Text
+              </button>
+              <button
+                type="button"
+                class="fsk-toggle toggle-btn"
+                id="fskInputTypeFile"
+                data-module-name="fsk"
+                data-field-name="inputType"
+                data-value="file"
+                title="File input mode"
+              >
+                📁 File
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" id="fskTextGroup">
+            <label for="fskText" class="required">Text</label>
+            <textarea
+              id="fskText"
+              rows="4"
+              placeholder="HACK THE FUCKIN PLANET"
+              data-module-name="fsk"
+              data-field-name="text"
+            ></textarea>
+          </div>
+
+          <div class="form-group hidden" id="fskFileGroup">
+            <label for="fskFile" class="required">Data File</label>
+            <div class="file-controls">
+              <select
+                id="fskFile"
+                data-module-name="fsk"
+                data-field-name="file"
+              >
+                <option value="">Select data file...</option>
+              </select>
+              <button
+                type="button"
+                class="refresh-btn"
+                id="refreshFskFileBtn"
+                title="Refresh file list"
+              >
+                🔄
+              </button>
+            </div>
+
+            <!-- FSK file control buttons -->
+            <div class="file-method-selector">
+              <input
+                type="file"
+                id="fskDataFile"
+                style="display: none"
+                accept="*/*"
+              />
+              <button
+                type="button"
+                class="file-upload-btn"
+                id="fskFileSelectBtn"
+                title="Upload data file"
+              >
+                📁
+              </button>
+              <button
+                type="button"
+                class="edit-btn"
+                id="editFskFileBtn"
+                disabled
+                title="Edit selected data file"
+              >
+                ✏️
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fskBaudRate">Baud Rate (optional)</label>
+            <input
+              type="number"
+              id="fskBaudRate"
+              step="1"
+              placeholder="50"
+              data-module-name="fsk"
+              data-field-name="baudRate"
+            />
+          </div>
+        </div>
+
         <div class="button-group">
           <button class="start-btn" id="startBtn" disabled>📡 Transmit</button>
           <button class="stop-btn hidden" id="stopBtn">🛑 Stop</button>
@@ -881,11 +996,11 @@ TEST MESSAGE</textarea
       </div>
     </div>
 
-    <!-- File Edit Modal -->
+    <!-- File Edit Modal (Unified for all file types) -->
     <div class="modal-overlay" id="fileEditModal" style="display: none">
       <div class="modal">
         <div class="modal-header">
-          <h3>Edit Audio File</h3>
+          <h3 id="fileEditModalTitle">Edit File</h3>
           <button type="button" class="modal-close" id="modalCloseBtn">
             ✕
           </button>
@@ -893,7 +1008,7 @@ TEST MESSAGE</textarea
         <div class="modal-body">
           <div class="form-group">
             <label for="editFileName">File Name</label>
-            <input type="text" id="editFileName" placeholder="filename.wav" />
+            <input type="text" id="editFileName" placeholder="filename" />
           </div>
         </div>
         <div class="modal-footer">
@@ -904,33 +1019,6 @@ TEST MESSAGE</textarea
             🗑️
           </button>
           <button type="button" class="save-btn" id="renameFileBtn">💾</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Image Edit Modal -->
-    <div class="modal-overlay" id="imageEditModal" style="display: none">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Edit Image File</h3>
-          <button type="button" class="modal-close" id="imageModalCloseBtn">
-            ✕
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="editImageName">File Name</label>
-            <input type="text" id="editImageName" placeholder="filename.Y" />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="cancel-btn" id="imageModalCancelBtn">
-            ❌
-          </button>
-          <button type="button" class="delete-btn" id="deleteImageBtn">
-            🗑️
-          </button>
-          <button type="button" class="save-btn" id="renameImageBtn">💾</button>
         </div>
       </div>
     </div>

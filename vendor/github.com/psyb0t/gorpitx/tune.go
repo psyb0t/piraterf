@@ -39,7 +39,8 @@ func (m *TUNE) ParseArgs(args json.RawMessage) ([]string, io.Reader, error) {
 	return m.buildArgs(), nil, nil
 }
 
-// buildArgs converts the struct fields into command-line arguments for tune binary.
+// buildArgs converts the struct fields into command-line arguments for tune
+// binary.
 func (m *TUNE) buildArgs() []string {
 	var args []string
 

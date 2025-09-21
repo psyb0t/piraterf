@@ -37,6 +37,10 @@ mkdir -p "$PIRATERF_FILESDIR/audio/sfx" && chmod $DIR_PERMS "$PIRATERF_FILESDIR/
 mkdir -p "$PIRATERF_FILESDIR/images" && chmod $DIR_PERMS "$PIRATERF_FILESDIR/images"
 mkdir -p "$PIRATERF_FILESDIR/images/uploads" && chmod $DIR_PERMS "$PIRATERF_FILESDIR/images/uploads"
 
+# Data directories
+mkdir -p "$PIRATERF_FILESDIR/data" && chmod $DIR_PERMS "$PIRATERF_FILESDIR/data"
+mkdir -p "$PIRATERF_FILESDIR/data/uploads" && chmod $DIR_PERMS "$PIRATERF_FILESDIR/data/uploads"
+
 success "✅ All required directories fucking created"
 
 # Build dev image first

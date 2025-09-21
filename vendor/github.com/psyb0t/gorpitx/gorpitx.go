@@ -66,6 +66,7 @@ func newRPITX() *RPITX {
 			ModuleNameFT8:           &FT8{},
 			ModuleNamePISSSTV:       &PISSTV{},
 			ModuleNamePIRTTY:        &PIRTTY{},
+			ModuleNameFSK:           &FSK{},
 		},
 	}
 }
@@ -118,7 +119,7 @@ func (r *RPITX) Exec(
 		return err
 	}
 
-	if err := r.startProcess(ctx, cmdName, cmdArgs, stdin); err != nil {
+	if err := r.startProcess(ctx, name, cmdName, cmdArgs, stdin); err != nil {
 		return err
 	}
 
@@ -176,12 +177,29 @@ func (r *RPITX) prepareCommand(
 		return cmdName, cmdArgs, stdin, nil
 	}
 
-	binaryPath := filepath.Join(r.config.Path, name)
-
 	// Wrap with stdbuf for line buffering
 	cmdName = "stdbuf"
+	cmdArgs = []string{"-oL"}
 
-	cmdArgs = append([]string{"-oL", binaryPath}, parsedArgs...)
+	// Check if this is a script-based module
+	if IsScriptModule(name) {
+		// Ensure script exists on filesystem
+		if err := EnsureScriptExists(name); err != nil {
+			return "", nil, nil, ctxerrors.Wrap(err, "failed to ensure script exists")
+		}
+
+		scriptPath, _ := ModuleNameToScriptName(name)
+		cmdArgs = append(cmdArgs, scriptPath)
+		cmdArgs = append(cmdArgs, parsedArgs...)
+
+		logrus.Debugf("script command prepared: %s %v", cmdName, cmdArgs)
+
+		return cmdName, cmdArgs, stdin, nil
+	}
+
+	binaryPath := filepath.Join(r.config.Path, name)
+	cmdArgs = append(cmdArgs, binaryPath)
+	cmdArgs = append(cmdArgs, parsedArgs...)
 
 	logrus.Debugf("production command prepared: %s %v", cmdName, cmdArgs)
 
@@ -190,6 +208,7 @@ func (r *RPITX) prepareCommand(
 
 func (r *RPITX) startProcess(
 	ctx context.Context,
+	moduleName ModuleName,
 	cmdName string,
 	cmdArgs []string,
 	stdin io.Reader,
@@ -199,6 +218,14 @@ func (r *RPITX) startProcess(
 	var opts []commander.Option
 	if stdin != nil {
 		opts = append(opts, commander.WithStdin(stdin))
+	}
+
+	// Set environment variables for script modules
+	if IsScriptModule(moduleName) {
+		env := []string{
+			fmt.Sprintf("RPITX_PATH=%s", r.config.Path),
+		}
+		opts = append(opts, commander.WithEnv(env))
 	}
 
 	process, err := r.commander.Start(
@@ -237,9 +264,9 @@ func (r *RPITX) StreamOutputs(stdout, stderr chan<- string) {
 	logrus.Warn("no process to stream")
 }
 
-// StreamOutputsAsync starts streaming outputs for the currently executing process.
-// This is a convenience method that can be called before or during execution.
-// It will wait for execution to start and then begin streaming.
+// StreamOutputsAsync starts streaming outputs for the currently executing
+// process. This is a convenience method that can be called before or during
+// execution. It will wait for execution to start and then begin streaming.
 func (r *RPITX) StreamOutputsAsync(stdout, stderr chan<- string) {
 	go func() {
 		// Wait for execution to start

@@ -79,6 +79,12 @@ func (s *Server) EchoHandler(
 	)
 }
 
+// FileUploadPostprocessor defines the function signature for processing file upload responses
+type FileUploadPostprocessor func(
+	response map[string]any,
+	request *http.Request,
+) (map[string]any, error)
+
 type FilenamePrependType uint8
 
 const (
@@ -94,16 +100,16 @@ type FileUploadHandlerOption func(*FileUploadHandlerConfig)
 
 // FileUploadHandlerConfig holds the configuration for the file upload handler
 type FileUploadHandlerConfig struct {
-	postprocessor   func(map[string]any) (map[string]any, error)
+	postprocessor   FileUploadPostprocessor
 	filenamePrepend FilenamePrependType
 }
 
-// WithFileUploadHandlerPostprocessor sets a postprocessor function that modifies the response
+// WithFileUploadHandlerPostprocessor sets a postprocessor that modifies the response
 func WithFileUploadHandlerPostprocessor(
-	fn func(map[string]any) (map[string]any, error),
+	processor FileUploadPostprocessor,
 ) FileUploadHandlerOption {
 	return func(config *FileUploadHandlerConfig) {
-		config.postprocessor = fn
+		config.postprocessor = processor
 	}
 }
 
@@ -228,7 +234,7 @@ func (s *Server) handleFileUpload(
 
 	// Apply postprocessor if configured
 	if config.postprocessor != nil {
-		processedResponse, err := config.postprocessor(response)
+		processedResponse, err := config.postprocessor(response, r)
 		if err != nil {
 			s.logger.WithError(err).Error("Failed to postprocess response")
 			aichteeteapee.WriteJSON(

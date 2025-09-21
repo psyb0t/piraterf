@@ -88,6 +88,9 @@ linters:
     - zerologlint
 
   settings:
+    lll:
+      line-length: 80
+      tab-width: 1
     wsl_v5:
       allow-first-in-block: true
       allow-whole-block: false
@@ -112,10 +115,17 @@ linters:
       - comments
       - common-false-positives
     paths:
-      - _test\.go$
       - third_party$
       - builtin$
       - examples$
+    rules:
+      # Exclude cyclop, funlen, and gocognit linters from test files
+      - path: _test\.go
+        linters:
+          - cyclop
+          - funlen
+          - gocogni
+          - maintidx
 
 formatters:
   enable:
@@ -126,7 +136,6 @@ formatters:
   exclusions:
     generated: lax
     paths:
-      - _test\.go$
       - third_party$
       - builtin$
       - examples$

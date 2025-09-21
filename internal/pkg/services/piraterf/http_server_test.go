@@ -92,7 +92,7 @@ func TestRootHandler(t *testing.T) {
 			}
 
 			// Create HTTP request
-			req := httptest.NewRequest("GET", "http://localhost"+tt.requestPath, nil)
+			req := httptest.NewRequest(http.MethodGet, "http://localhost"+tt.requestPath, nil)
 			w := httptest.NewRecorder()
 
 			// Call the root handler
@@ -114,4 +114,3 @@ func TestRootHandler(t *testing.T) {
 		})
 	}
 }
-

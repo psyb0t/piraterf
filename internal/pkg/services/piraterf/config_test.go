@@ -67,10 +67,12 @@ func TestParseConfig(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+
 				return
 			}
 
 			assert.NoError(t, err)
+
 			if tt.validate != nil {
 				tt.validate(t, cfg)
 			}
