@@ -42,7 +42,14 @@ echo "🔄 Updating this fucking system..."
 sudo apt-get update
 
 echo "📦 Installing the fucking dependencies..."
-sudo apt-get install -y git sox libsox-fmt-all ffmpeg openssl ### minimodem pulseaudio
+sudo apt-get install -y \
+    git \
+    sox \
+    libsox-fmt-all \
+    ffmpeg \
+    openssl \
+    minimodem \
+    pulseaudio
 
 echo "📥 Cloning the fucking rpitx repository..."
 
@@ -54,7 +61,3 @@ echo "⚙️ Running the fucking rpitx installation..."
 
 echo ""
 echo -e "${GREEN}✅ Dependencies installation fucking complete!${NC}"
-echo -e "${GREEN}📡 rpitx: RF signal generation${NC}"
-echo -e "${GREEN}🔊 sox: Audio file manipulation${NC}"
-echo -e "${GREEN}🎬 ffmpeg: Audio/video conversion${NC}"
-echo -e "${GREEN}🔒 openssl: TLS certificate generation${NC}"

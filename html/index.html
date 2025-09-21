@@ -96,6 +96,7 @@
             <option value="pocsag">pocsag</option>
             <option value="pift8">pift8</option>
             <option value="pisstv">pisstv</option>
+            <option value="pirtty">pirtty</option>
           </select>
         </div>
 
@@ -826,6 +827,45 @@ TEST MESSAGE</textarea
                 ✏️
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- PIRTTY Module Form -->
+        <div id="pirttyForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="pirttyFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="pirttyFreq"
+              step="1"
+              placeholder="14080000"
+              value="14080000"
+              data-module-name="pirtty"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pirttySpaceFreq">Space Frequency (Hz, optional)</label>
+            <input
+              type="number"
+              id="pirttySpaceFreq"
+              step="1"
+              placeholder="170"
+              data-module-name="pirtty"
+              data-field-name="spaceFrequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="pirttyMessage" class="required">Message</label>
+            <input
+              type="text"
+              id="pirttyMessage"
+              placeholder="HACK THE FUCKIN PLANET"
+              data-module-name="pirtty"
+              data-field-name="message"
+            />
           </div>
         </div>
 

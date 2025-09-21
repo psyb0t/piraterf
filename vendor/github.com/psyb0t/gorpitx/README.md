@@ -18,6 +18,7 @@ Executes rpitx modules through Go without the usual clusterfuck of manual proces
 - **spectrumpaint**: Spectrum painting transmission (frequency in Hz)
 - **pift8**: FT8 digital mode transmission (frequency in Hz)
 - **pisstv**: Slow Scan Television (SSTV) transmission (frequency in Hz)
+- **pirtty**: RTTY (Radio Teletype) transmission (frequency in Hz)
 
 **Architecture Highlights:**
 
@@ -610,6 +611,117 @@ Amateur radio frequencies commonly used for SSTV:
 - Proper amateur radio licensing required for transmission
 - Consider RF filtering to prevent harmonics
 
+## 📠 PIRTTY Module Configuration
+
+```go
+type PIRTTY struct {
+    Frequency      float64 `json:"frequency"`                 // Hz, required, carrier frequency
+    SpaceFrequency *int    `json:"spaceFrequency,omitempty"`  // Hz, optional, space tone frequency (default: 170)
+    Message        string  `json:"message"`                   // Required, message text to transmit
+}
+```
+
+**Validation Rules:**
+
+- `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
+- `SpaceFrequency`: Optional, positive integer in Hz if specified (default: 170, mark frequency = space + 170)
+- `Message`: Required, cannot be empty or whitespace only
+
+**RTTY Implementation Details:**
+
+PIRTTY implements Radio Teletype (RTTY) transmission using Baudot code and frequency shift keying. RTTY is a legacy digital text mode used in amateur radio for character-based communication.
+
+**RTTY Protocol Specifications:**
+
+- **Modulation**: Frequency Shift Keying (FSK) with 170 Hz shift
+- **Baud Rate**: 45.45 baud (22ms per bit)
+- **Character Set**: Baudot code (5-bit encoding)
+- **Mark Frequency**: Space frequency + 170 Hz
+- **Space Frequency**: User-defined frequency in Hz
+- **Shift Characters**: Automatic LTRS/FIGS mode switching
+
+**Frequency Configuration:**
+
+The PIRTTY module uses two audio frequencies for mark and space:
+- **Space Frequency**: Specified by user (typically 1955 Hz)
+- **Mark Frequency**: Automatically calculated as space + 170 Hz (typically 2125 Hz)
+
+This 170 Hz shift is the standard RTTY frequency shift used in amateur radio.
+
+**Baudot Character Encoding:**
+
+RTTY uses 5-bit Baudot code with automatic switching between:
+- **LTRS Mode**: Letters (A-Z) and basic punctuation
+- **FIGS Mode**: Numbers (0-9) and symbols
+
+The module automatically handles mode switching when transmitting mixed text.
+
+**Example Usage:**
+
+```go
+import (
+    "context"
+    "encoding/json"
+    "time"
+    "github.com/psyb0t/gorpitx"
+)
+
+args := gorpitx.PIRTTY{
+    Frequency:      14070000.0,      // 14.070 MHz (popular RTTY frequency)
+    SpaceFrequency: intPtr(1955),    // Space tone at 1955 Hz (mark = 2125 Hz)
+    Message:        "CQ CQ DE N0CALL K",
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+// Execute RTTY transmission
+err := rpitx.Exec(ctx, gorpitx.ModuleNamePIRTTY, argsJSON, 0) // No timeout
+if err != nil {
+    panic(err)
+}
+
+func intPtr(i int) *int { return &i }
+```
+
+**Common RTTY Frequencies:**
+
+Amateur radio frequencies commonly used for RTTY:
+- **20m band**: 14.080-14.099 MHz
+- **40m band**: 7.035-7.045 MHz
+- **80m band**: 3.580-3.600 MHz
+- **15m band**: 21.080-21.100 MHz
+- **10m band**: 28.080-28.120 MHz
+
+**RTTY Settings Examples:**
+
+```go
+// Default space frequency (170 Hz default)
+args := gorpitx.PIRTTY{
+    Frequency: 14080000.0, // 14.080 MHz
+    Message:   "RTTY DE N0CALL",
+    // SpaceFrequency defaults to 170 Hz (mark = 340 Hz)
+}
+
+// Custom space frequency
+args := gorpitx.PIRTTY{
+    Frequency:      7040000.0,        // 7.040 MHz
+    SpaceFrequency: intPtr(1955),     // Custom space 1955 Hz (mark = 2125 Hz)
+    Message:        "HELLO WORLD 123",
+}
+
+func intPtr(i int) *int { return &i }
+```
+
+**Technical Notes:**
+
+- Transmission uses direct FM modulation with audio FSK tones
+- Mark and space frequencies are transmitted as audio tone deviations
+- Standard 170 Hz shift is widely supported by RTTY software
+- Message length is limited only by transmission time requirements
+- Supports alphanumeric characters and basic punctuation
+- Automatic Baudot LTRS/FIGS mode switching for mixed content
+
 ## 🎛️ Process Control
 
 ### Stream Output
@@ -753,7 +865,7 @@ New modules implement this interface with:
 
 ## 📋 TODO: Remaining Modules Implementation (The Fun Stuff)
 
-Based on the easytest modules from rpitx, here are the **4 badass modules** we still need to implement (excluding that legacy rpitx garbage):
+Based on the easytest modules from rpitx, here are the **3 badass modules** we still need to implement (excluding that legacy rpitx garbage):
 
 - **SENDIQ** - IQ Data Transmission
 
@@ -800,17 +912,6 @@ Based on the easytest modules from rpitx, here are the **4 badass modules** we s
     ```
   - **Validation**: Callsign format (3rd char numeric), mode enum, frequency > 0
 
-- **PIRTTY** - RTTY Protocol
-  - **Command**: `pirtty frequency(Hz) SpaceFrequency(Hz) text`
-  - **Go struct**:
-    ```go
-    type PIRTTY struct {
-        Frequency float64 `json:"frequency"` // Hz, required, carrier frequency
-        SpaceFrequency int `json:"spaceFrequency"` // Hz, required, space tone
-        Text string `json:"text"` // Required, message text
-    }
-    ```
-  - **Validation**: All required, frequency > 0, space frequency > 0, text not empty
 
 ### Common Validation Functions Needed
 

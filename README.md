@@ -31,6 +31,7 @@ PIrateRF transforms your Pi Zero into a **standalone RF transmission station** t
 - **📟 POCSAG Paging**: Transmit POCSAG pager messages with configurable baud rates, function bits, and multi-message support
 - **📡 FT8 Digital Mode**: Extreme long-range digital amateur radio protocol capable of intercontinental communication with minimal power
 - **📺 PISSTV (SSTV)**: Slow Scan Television transmission using Martin 1 protocol for sending images over amateur radio frequencies
+- **📠 PIRTTY (RTTY)**: Radio Teletype transmission using Baudot code and frequency shift keying for text communication
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
 - **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
@@ -287,6 +288,16 @@ make uninstall          # Remove PIrateRF from Pi
 - **Compatible Reception**: Works with QSSTV (Linux), MMSSTV (Windows), Robot36 (Android), and other SSTV software
 - **Common SSTV Frequencies**: 2m band (144.500 MHz), 70cm band (434.000 MHz), and other amateur allocations
 - **Format Support**: JPEG, PNG, GIF with automatic RGB conversion for transmission
+
+### PIRTTY (Radio Teletype)
+
+- **Digital Text Communication**: Transmit text messages using Baudot code and frequency shift keying
+- **FSK Modulation**: Standard 170 Hz shift between mark and space frequencies for amateur radio compatibility
+- **Baudot Character Set**: 5-bit encoding with automatic LTRS/FIGS mode switching for letters, numbers, and symbols
+- **Configurable Frequencies**: User-defined space frequency with automatic mark frequency calculation (space + 170 Hz)
+- **Standard Baud Rate**: 45.45 baud (22ms per bit) following amateur radio RTTY conventions
+- **Common RTTY Frequencies**: 20m (14.080-14.099), 40m (7.035-7.045), 80m (3.580-3.600 MHz)
+- **Compatible Reception**: Works with standard RTTY software and terminal units
 
 ### Spectrum Painting
 

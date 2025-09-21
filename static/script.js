@@ -77,6 +77,12 @@ class PIrateRFController {
         frequency: "434000000",
         pictureFile: "",
       },
+
+      pirtty: {
+        frequency: "14080000",
+        spaceFrequency: "",
+        message: "",
+      },
     };
 
     this.initializeElements();
@@ -156,6 +162,7 @@ class PIrateRFController {
     this.pocsagForm = document.getElementById("pocsagForm");
     this.pift8Form = document.getElementById("pift8Form");
     this.pisstvForm = document.getElementById("pisstvForm");
+    this.pirttyForm = document.getElementById("pirttyForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -219,6 +226,11 @@ class PIrateRFController {
     // PISSTV form inputs
     this.pisstvFreqInput = document.getElementById("pisstvFreq");
     this.pisstvPictureFileInput = document.getElementById("pisstvPictureFile");
+
+    // PIRTTY form inputs
+    this.pirttyFreqInput = document.getElementById("pirttyFreq");
+    this.pirttySpaceFreqInput = document.getElementById("pirttySpaceFreq");
+    this.pirttyMessageInput = document.getElementById("pirttyMessage");
 
     // PISSTV image control buttons
     this.refreshPisstvImageBtn = document.getElementById("refreshPisstvImageBtn");
@@ -597,6 +609,20 @@ class PIrateRFController {
     );
     this.pisstvImageSelectBtn.addEventListener("click", () => this.imageFile.click());
 
+    // PIRTTY module form events
+    this.pirttyFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pirttySpaceFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.pirttyMessageInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -757,6 +783,7 @@ class PIrateRFController {
     this.pocsagForm.classList.add("hidden");
     this.pift8Form.classList.add("hidden");
     this.pisstvForm.classList.add("hidden");
+    this.pirttyForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -786,6 +813,9 @@ class PIrateRFController {
       case "pisstv":
         this.pisstvForm.classList.remove("hidden");
         this.loadImageFiles(false);
+        break;
+      case "pirtty":
+        this.pirttyForm.classList.remove("hidden");
         break;
     }
 
@@ -968,6 +998,9 @@ class PIrateRFController {
         break;
       case "pisstv":
         isValid = module && this.pisstvFreqInput.value && this.pisstvPictureFileInput.value;
+        break;
+      case "pirtty":
+        isValid = module && this.pirttyFreqInput.value && this.pirttyMessageInput.value.trim();
         break;
       default:
         isValid = false;
@@ -1325,6 +1358,18 @@ class PIrateRFController {
           pictureFile: this.pisstvPictureFileInput.value,
         };
         timeout = 0; // No timeout for pisstv by default
+        break;
+
+      case "pirtty":
+        args = {
+          frequency: parseFloat(this.pirttyFreqInput.value),
+          message: this.pirttyMessageInput.value.trim(),
+        };
+        // Add spaceFrequency only if it has a value
+        if (this.pirttySpaceFreqInput.value && this.pirttySpaceFreqInput.value.trim() !== "") {
+          args.spaceFrequency = parseInt(this.pirttySpaceFreqInput.value);
+        }
+        timeout = 0; // No timeout for pirtty by default
         break;
     }
 
@@ -2840,6 +2885,7 @@ class PIrateRFController {
     if (!this.state.pocsag) this.state.pocsag = {};
     if (!this.state.pift8) this.state.pift8 = {};
     if (!this.state.pisstv) this.state.pisstv = {};
+    if (!this.state.pirtty) this.state.pirtty = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2926,6 +2972,11 @@ class PIrateRFController {
     this.state.pisstv.frequency = this.pisstvFreqInput.value;
     this.state.pisstv.pictureFile = this.pisstvPictureFileInput.value;
 
+    // Update PIRTTY state
+    this.state.pirtty.frequency = this.pirttyFreqInput.value;
+    this.state.pirtty.spaceFrequency = this.pirttySpaceFreqInput.value;
+    this.state.pirtty.message = this.pirttyMessageInput.value;
+
     this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
     if (this.isDebugMode) {
       console.trace("📍 saveState() called from:");
@@ -2982,6 +3033,7 @@ class PIrateRFController {
           pocsag: { ...this.state.pocsag, ...parsedState.pocsag },
           pift8: { ...this.state.pift8, ...parsedState.pift8 },
           pisstv: { ...this.state.pisstv, ...parsedState.pisstv },
+          pirtty: { ...this.state.pirtty, ...parsedState.pirtty },
         };
       }
 
@@ -3195,6 +3247,14 @@ class PIrateRFController {
       this.pisstvFreqInput.value = this.state.pisstv.frequency;
     if (this.state.pisstv.pictureFile && this.pisstvPictureFileInput)
       this.pisstvPictureFileInput.value = this.state.pisstv.pictureFile;
+
+    // Restore PIRTTY state
+    if (this.state.pirtty.frequency && this.pirttyFreqInput)
+      this.pirttyFreqInput.value = this.state.pirtty.frequency;
+    if (this.state.pirtty.spaceFrequency && this.pirttySpaceFreqInput)
+      this.pirttySpaceFreqInput.value = this.state.pirtty.spaceFrequency;
+    if (this.state.pirtty.message && this.pirttyMessageInput)
+      this.pirttyMessageInput.value = this.state.pirtty.message;
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 
