@@ -94,6 +94,7 @@
             <option value="pichirp">pichirp</option>
             <option value="spectrumpaint">spectrumpaint</option>
             <option value="pocsag">pocsag</option>
+            <option value="pift8">pift8</option>
           </select>
         </div>
 
@@ -146,11 +147,11 @@
               <input type="file" id="audioFile" style="display: none" />
               <button
                 type="button"
-                class="play-mode-toggle play-once"
+                class="play-mode-toggle toggle-btn"
                 id="playModeToggle"
-                title="Play once"
+                title="Play continuously"
               >
-                ⏭️
+                🔁
               </button>
               <button
                 type="button"
@@ -186,7 +187,7 @@
               </button>
               <button
                 type="button"
-                class="intro-outro-toggle"
+                class="intro-outro-toggle toggle-btn"
                 id="introOutroToggle"
                 title="Toggle intro/outro"
               >
@@ -596,7 +597,7 @@ HACK THE PLANET</textarea
             <div class="pocsag-toggles">
               <button
                 type="button"
-                class="pocsag-toggle"
+                class="pocsag-toggle toggle-btn"
                 id="pocsagNumericMode"
                 data-module-name="pocsag"
                 data-field-name="numericMode"
@@ -606,7 +607,7 @@ HACK THE PLANET</textarea
               </button>
               <button
                 type="button"
-                class="pocsag-toggle"
+                class="pocsag-toggle toggle-btn"
                 id="pocsagInvertPolarity"
                 data-module-name="pocsag"
                 data-field-name="invertPolarity"
@@ -616,7 +617,7 @@ HACK THE PLANET</textarea
               </button>
               <button
                 type="button"
-                class="pocsag-toggle"
+                class="pocsag-toggle toggle-btn"
                 id="pocsagDebug"
                 data-module-name="pocsag"
                 data-field-name="debug"
@@ -687,6 +688,85 @@ TEST MESSAGE</textarea
                 ➕
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- FT8 Module Form -->
+        <div id="pift8Form" class="module-form hidden">
+          <div class="form-group">
+            <label for="ft8Freq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="ft8Freq"
+              step="1"
+              placeholder="14074000"
+              value="14074000"
+              data-module-name="pift8"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ft8Message" class="required">Message</label>
+            <input
+              type="text"
+              id="ft8Message"
+              placeholder="CQ CA0ALL JN06"
+              data-module-name="pift8"
+              data-field-name="message"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ft8PPM">PPM Clock Correction (optional)</label>
+            <input
+              type="number"
+              id="ft8PPM"
+              step="0.1"
+              placeholder="0"
+              data-module-name="pift8"
+              data-field-name="ppm"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ft8Offset">Frequency Offset (0-2500 Hz, optional)</label>
+            <input
+              type="number"
+              id="ft8Offset"
+              step="1"
+              min="0"
+              max="2500"
+              placeholder="1240"
+              data-module-name="pift8"
+              data-field-name="offset"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="ft8Slot">Time Slot (optional)</label>
+            <select
+              id="ft8Slot"
+              data-module-name="pift8"
+              data-field-name="slot"
+            >
+              <option value="0" selected>0 - First 15s slot</option>
+              <option value="1">1 - Second 15s slot</option>
+              <option value="2">2 - Always (every 15s)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <button
+              type="button"
+              class="toggle-btn"
+              id="ft8Repeat"
+              data-module-name="pift8"
+              data-field-name="repeat"
+              title="Toggle repeat mode (every 15 seconds)"
+            >
+              🔁 Repeat Mode
+            </button>
           </div>
         </div>
 

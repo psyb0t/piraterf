@@ -9,7 +9,6 @@ require (
 	github.com/psyb0t/common-go v0.0.0-20250914061813-a517b076b64a
 	github.com/psyb0t/ctxerrors v0.2.0
 	github.com/psyb0t/gonfiguration v1.3.1
-	github.com/psyb0t/gorpitx v0.0.0-20250920041940-0bddb0f33e9a
 	github.com/psyb0t/logrus-configurator v1.1.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
@@ -153,6 +152,7 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/psyb0t/gofindimpl v1.0.0 // indirect
+	github.com/psyb0t/gorpitx v0.0.0-20250921021845-ee670dbf7664 // indirect
 	github.com/quasilyte/go-ruleguard v0.4.4 // indirect
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22 // indirect
 	github.com/quasilyte/gogrep v0.5.0 // indirect

@@ -29,6 +29,7 @@ PIrateRF transforms your Pi Zero into a **standalone RF transmission station** t
 - **🎛️ Carrier Wave Generation**: Simple carrier frequency generation for testing and tuning
 - **🌊 Frequency Sweep**: Generate carrier frequency sweeps for RF testing and analysis or just for teh lulz
 - **📟 POCSAG Paging**: Transmit POCSAG pager messages with configurable baud rates, function bits, and multi-message support
+- **📡 FT8 Digital Mode**: Weak-signal digital amateur radio protocol with 15-second transmission periods and 8-FSK modulation
 - **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
 - **🎧 Audio Processing**: Upload files or record via microphone through the browser
 - **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
@@ -265,6 +266,17 @@ make uninstall          # Remove PIrateRF from Pi
 - **Multiple Messages**: Support for multiple messages in a single transmission
 - **Configurable Parameters**: Adjust baud rate (512, 1200, 2400 bps), function bits, and transmission options
 - **Flexible Options**: Numeric mode, polarity inversion, and debug mode with toggle controls
+
+### FT8 Digital Mode
+
+- **Weak Signal Communication**: Digital protocol designed for long-distance communication with minimal power
+- **Precise Timing**: 15-second transmission periods with automated time slot control (0/1/2)
+- **8-FSK Modulation**: Uses 8-level frequency-shift keying with 6.25 Hz tone spacing
+- **Frequency Management**: Configurable frequency offset (0-2500 Hz, default 1240 Hz) within FT8 sub-bands
+- **Repeat Mode**: Optional continuous transmission every 15 seconds for beacon operation
+- **Clock Correction**: PPM correction support for frequency accuracy
+- **Common Frequencies**: 20m (14.074), 40m (7.074), 80m (3.573), 15m (21.074), 10m (28.074) MHz
+- **Message Format**: Standard FT8 exchange formats (CQ calls, signal reports, grid squares, contest exchanges)
 
 ### Spectrum Painting
 

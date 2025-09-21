@@ -16,6 +16,7 @@ Executes rpitx modules through Go without the usual clusterfuck of manual proces
 - **morse**: Morse code transmission (frequency in Hz)
 - **pocsag**: Pager protocol transmission (frequency in Hz)
 - **spectrumpaint**: Spectrum painting transmission (frequency in Hz)
+- **pift8**: FT8 digital mode transmission (frequency in Hz)
 
 **Architecture Highlights:**
 
@@ -400,6 +401,108 @@ if err != nil {
 
 func floatPtr(f float64) *float64 { return &f }
 ```
+
+## 📡 FT8 Module Configuration
+
+```go
+type FT8 struct {
+    Frequency float64  `json:"frequency"`           // Hz, required, carrier frequency
+    Message   string   `json:"message"`             // Required, FT8 message
+    PPM       *float64 `json:"ppm,omitempty"`       // Optional, clock correction ppm
+    Offset    *float64 `json:"offset,omitempty"`    // Hz, optional, frequency offset (0-2500)
+    Slot      *int     `json:"slot,omitempty"`      // Optional, time slot 0/1/2
+    Repeat    *bool    `json:"repeat,omitempty"`    // Optional, repeat mode (every 15s)
+}
+```
+
+**Validation Rules:**
+
+- `Frequency`: Required, positive, within RPiTX range (50kHz-1500MHz) in Hz
+- `Message`: Required, cannot be empty/whitespace
+- `PPM`: Optional, clock correction value (positive, negative, or zero)
+- `Offset`: Optional, frequency offset 0-2500 Hz (default: 1240 Hz if not specified)
+- `Slot`: Optional, time slot: 0 (first 15s), 1 (second 15s), 2 (always/every 15s)
+- `Repeat`: Optional, enables repeat mode (transmit every 15 seconds)
+
+**FT8 Protocol Details:**
+
+FT8 is a weak-signal digital mode designed for amateur radio communication. Key characteristics:
+- 15-second transmission periods with precise timing
+- Uses 8-FSK modulation with 6.25 Hz tone spacing
+- Default frequency offset of 1240 Hz within the FT8 sub-band
+- Message length handled by the pift8 binary
+
+**Example Usage:**
+
+```go
+import (
+    "context"
+    "encoding/json"
+    "time"
+    "github.com/psyb0t/gorpitx"
+)
+
+// Basic CQ call
+args := gorpitx.FT8{
+    Frequency: 14074000.0,    // 14.074 MHz (20m FT8 frequency)
+    Message:   "CQ W1AW FN31", // Standard FT8 CQ format
+}
+
+argsJSON, _ := json.Marshal(args)
+ctx := context.Background()
+
+// Execute single FT8 transmission
+err := rpitx.Exec(ctx, gorpitx.ModuleNameFT8, argsJSON, 0) // No timeout
+if err != nil {
+    panic(err)
+}
+
+// Advanced configuration with repeat mode
+advancedArgs := gorpitx.FT8{
+    Frequency: 7074000.0,             // 7.074 MHz (40m FT8 frequency)
+    Message:   "K0HAM W5XYZ",         // Directed call
+    PPM:       floatPtr(2.5),         // Clock correction
+    Offset:    floatPtr(1500.0),      // Custom offset frequency
+    Slot:      intPtr(1),             // Second time slot
+    Repeat:    boolPtr(true),         // Repeat every 15 seconds
+}
+
+argsJSON2, _ := json.Marshal(advancedArgs)
+
+// Execute repeating FT8 transmission (press Ctrl+C to stop)
+err = rpitx.Exec(ctx, gorpitx.ModuleNameFT8, argsJSON2, 0)
+if err != nil {
+    panic(err)
+}
+
+func floatPtr(f float64) *float64 { return &f }
+func intPtr(i int) *int { return &i }
+func boolPtr(b bool) *bool { return &b }
+```
+
+**Common FT8 Frequencies:**
+
+- **20m**: 14.074 MHz
+- **40m**: 7.074 MHz
+- **80m**: 3.573 MHz
+- **15m**: 21.074 MHz
+- **10m**: 28.074 MHz
+
+**Message Format Examples (Typical QSO Sequence):**
+
+1. CQ call: `CQ W1AW FN31` (callsign + grid square)
+2. Reply: `W1AW K0HAM EM69` (their call + your call + your grid)
+3. Signal report: `K0HAM W1AW -15` (signal strength in dB)
+4. Report + confirm: `W1AW K0HAM R-08` (R = received, your report)
+5. Nearly complete: `K0HAM W1AW RR73` (RR = received + 73)
+6. QSO complete: `W1AW K0HAM 73` (final acknowledgment)
+
+**Other Valid Formats:**
+- Contest exchanges: `W1AW K0HAM 599 CA` (RST + state/province)
+- DX calls: `CQ DX K0HAM EM69`
+- Directed CQ: `CQ NA W1AW FN31` (North America only)
+
+**Note**: All FT8 operations should follow amateur radio band plans and regulations. Use appropriate power levels and ensure proper station identification.
 
 ## 🎛️ Process Control
 

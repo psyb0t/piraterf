@@ -63,6 +63,7 @@ func newRPITX() *RPITX {
 			ModuleNameSPECTRUMPAINT: &SPECTRUMPAINT{},
 			ModuleNamePICHIRP:       &PICHIRP{},
 			ModuleNamePOCSAG:        &POCSAG{},
+			ModuleNameFT8:           &FT8{},
 		},
 	}
 }

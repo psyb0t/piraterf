@@ -63,6 +63,15 @@ class PIrateRFController {
           },
         ],
       },
+
+      pift8: {
+        frequency: "14074000",
+        message: "",
+        ppm: "",
+        offset: "",
+        slot: "0",
+        repeat: false,
+      },
     };
 
     this.initializeElements();
@@ -118,6 +127,12 @@ class PIrateRFController {
     return debug;
   }
 
+  debug(...args) {
+    if (this.isDebugMode) {
+      console.log("🐛", ...args);
+    }
+  }
+
   initializeElements() {
     this.titleEl = document.getElementById("title");
     this.statusBar = document.getElementById("statusBar");
@@ -134,6 +149,7 @@ class PIrateRFController {
     this.tuneForm = document.getElementById("tuneForm");
     this.pichirpForm = document.getElementById("pichirpForm");
     this.pocsagForm = document.getElementById("pocsagForm");
+    this.pift8Form = document.getElementById("pift8Form");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -185,6 +201,15 @@ class PIrateRFController {
     this.pocsagDebugInput = document.getElementById("pocsagDebug");
     this.pocsagMessagesContainer = document.getElementById("pocsagMessages");
     this.addMessageBtn = document.getElementById("addMessageBtn");
+
+    // FT8 form inputs
+    this.ft8FreqInput = document.getElementById("ft8Freq");
+    this.ft8MessageInput = document.getElementById("ft8Message");
+    this.ft8PPMInput = document.getElementById("ft8PPM");
+    this.ft8OffsetInput = document.getElementById("ft8Offset");
+    this.ft8SlotInput = document.getElementById("ft8Slot");
+    this.ft8RepeatInput = document.getElementById("ft8Repeat");
+
     this.refreshImageBtn = document.getElementById("refreshImageBtn");
     this.editImageBtn = document.getElementById("editImageBtn");
     this.imageSelectBtn = document.getElementById("imageSelectBtn");
@@ -267,7 +292,9 @@ class PIrateRFController {
   bindEvents() {
     this.moduleSelect.addEventListener("change", () => {
       this.onModuleChange();
-      this.saveState();
+      if (!this.isRestoring) {
+        this.saveState();
+      }
     });
     this.startBtn.addEventListener("click", () => this.startExecution());
     this.stopBtn.addEventListener("click", () => this.stopExecution());
@@ -503,6 +530,40 @@ class PIrateRFController {
       this.validateForm();
     });
 
+    // FT8 module form events
+    this.debug("🔧 Setting up FT8 event listeners - freq element:", this.ft8FreqInput, "msg element:", this.ft8MessageInput);
+    this.ft8FreqInput.addEventListener("input", () => {
+      this.debug("🔧 FT8 freq changed, fucking finally:", this.ft8FreqInput.value);
+      this.saveState();
+      this.validateForm();
+    });
+    this.ft8MessageInput.addEventListener("input", () => {
+      this.debug("💬 FT8 message changed, you bastard:", this.ft8MessageInput.value);
+      this.saveState();
+      this.validateForm();
+    });
+    this.ft8PPMInput.addEventListener("input", () => {
+      this.debug("⚡ FT8 ppm tweaked:", this.ft8PPMInput.value);
+      this.saveState();
+      this.validateForm();
+    });
+    this.ft8OffsetInput.addEventListener("input", () => {
+      this.debug("📡 FT8 offset hacked:", this.ft8OffsetInput.value);
+      this.saveState();
+      this.validateForm();
+    });
+    this.ft8SlotInput.addEventListener("change", () => {
+      this.debug("🎰 FT8 slot switched:", this.ft8SlotInput.value);
+      this.saveState();
+      this.validateForm();
+    });
+    this.ft8RepeatInput.addEventListener("click", () => {
+      this.ft8RepeatInput.classList.toggle("active");
+      this.debug("🔁 FT8 repeat toggled, shit works:", this.ft8RepeatInput.classList.contains("active"));
+      this.saveState();
+      this.validateForm();
+    });
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -652,6 +713,7 @@ class PIrateRFController {
 
   onModuleChange() {
     const module = this.moduleSelect.value;
+    this.debug("🔄 Module switched to:", module);
 
     // Hide all module forms
     this.pifmrdsForm.classList.add("hidden");
@@ -660,6 +722,7 @@ class PIrateRFController {
     this.spectrumpaintForm.classList.add("hidden");
     this.pichirpForm.classList.add("hidden");
     this.pocsagForm.classList.add("hidden");
+    this.pift8Form.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -682,6 +745,9 @@ class PIrateRFController {
         break;
       case "pocsag":
         this.pocsagForm.classList.remove("hidden");
+        break;
+      case "pift8":
+        this.pift8Form.classList.remove("hidden");
         break;
     }
 
@@ -825,6 +891,7 @@ class PIrateRFController {
 
   validateForm() {
     const module = this.moduleSelect.value;
+    this.debug("🔍 validateForm() called for module:", module);
     let isValid = false;
 
     switch (module) {
@@ -856,6 +923,10 @@ class PIrateRFController {
         break;
       case "pocsag":
         isValid = module && this.pocsagFreqInput.value && this.validatePOCSAGMessages();
+        break;
+      case "pift8":
+        isValid = module && this.ft8FreqInput.value && this.ft8MessageInput.value;
+        this.debug("🔍 FT8 validation - module:", module, "freq:", this.ft8FreqInput.value, "msg:", this.ft8MessageInput.value, "isValid:", isValid);
         break;
       default:
         isValid = false;
@@ -1010,7 +1081,9 @@ class PIrateRFController {
 
     this.pocsagMessagesContainer.insertAdjacentHTML("beforeend", messageHtml);
     this.bindPOCSAGMessageEvents();
-    this.saveState();
+    if (!this.isRestoring) {
+      this.saveState();
+    }
     this.validateForm();
   }
 
@@ -1108,6 +1181,7 @@ class PIrateRFController {
     }
 
     const module = this.moduleSelect.value;
+    this.debug("📡 Starting transmission with:", module);
     let args = {};
     let timeout = 0;
 
@@ -1182,6 +1256,27 @@ class PIrateRFController {
         args = this.buildPOCSAGArgs();
         timeout = 0; // No timeout for pocsag by default
         break;
+
+      case "pift8":
+        args = {
+          frequency: parseFloat(this.ft8FreqInput.value),
+          message: this.ft8MessageInput.value.trim(),
+        };
+        // Add optional fields only if they have values
+        if (this.ft8PPMInput.value.trim()) {
+          args.ppm = parseFloat(this.ft8PPMInput.value);
+        }
+        if (this.ft8OffsetInput.value.trim()) {
+          args.offset = parseFloat(this.ft8OffsetInput.value);
+        }
+        if (this.ft8SlotInput.value.trim()) {
+          args.slot = parseInt(this.ft8SlotInput.value);
+        }
+        if (this.ft8RepeatInput.classList.contains("active")) {
+          args.repeat = true;
+        }
+        timeout = 0; // No timeout for ft8 by default
+        break;
     }
 
     const message = {
@@ -1192,7 +1287,7 @@ class PIrateRFController {
         timeout: timeout,
         playOnce:
           module === "pifmrds"
-            ? this.playModeToggle.classList.contains("play-once")
+            ? this.playModeToggle.classList.contains("active")
             : false,
         intro:
           module === "pifmrds" &&
@@ -2401,16 +2496,14 @@ class PIrateRFController {
   }
 
   togglePlayMode() {
-    if (this.playModeToggle.classList.contains("play-once")) {
+    if (this.playModeToggle.classList.contains("active")) {
       // Switch to continuous mode
-      this.playModeToggle.classList.remove("play-once");
-      this.playModeToggle.classList.add("continuous");
+      this.playModeToggle.classList.remove("active");
       this.playModeToggle.textContent = "🔁";
       this.playModeToggle.title = "Play continuously";
     } else {
       // Switch to play once mode
-      this.playModeToggle.classList.add("play-once");
-      this.playModeToggle.classList.remove("continuous");
+      this.playModeToggle.classList.add("active");
       this.playModeToggle.textContent = "⏭️";
       this.playModeToggle.title = "Play once";
     }
@@ -2630,6 +2723,7 @@ class PIrateRFController {
 
   // Update state object from DOM and save to localStorage
   saveState() {
+    this.debug("💾 Saving state to localStorage");
     // Ensure state object structure exists
     if (!this.state.pifmrds) this.state.pifmrds = {};
     if (!this.state.morse) this.state.morse = {};
@@ -2637,6 +2731,7 @@ class PIrateRFController {
     if (!this.state.spectrumpaint) this.state.spectrumpaint = {};
     if (!this.state.pichirp) this.state.pichirp = {};
     if (!this.state.pocsag) this.state.pocsag = {};
+    if (!this.state.pift8) this.state.pift8 = {};
 
     // Update state object from current DOM values
     this.state.modulename = this.moduleSelect.value;
@@ -2649,7 +2744,7 @@ class PIrateRFController {
     this.state.pifmrds.rt = this.rtInput.value;
     this.state.pifmrds.timeout = document.getElementById("timeout").value;
     this.state.pifmrds.playOnce =
-      this.playModeToggle.classList.contains("play-once");
+      this.playModeToggle.classList.contains("active");
     this.state.pifmrds.introOutroToggled =
       this.introOutroToggle.classList.contains("active");
     this.state.pifmrds.introSelect = this.introSelect.value;
@@ -2711,6 +2806,19 @@ class PIrateRFController {
       }
     });
 
+    // Update FT8 state
+    this.state.pift8.frequency = this.ft8FreqInput.value;
+    this.state.pift8.message = this.ft8MessageInput.value;
+    this.state.pift8.ppm = this.ft8PPMInput.value;
+    this.state.pift8.offset = this.ft8OffsetInput.value;
+    this.state.pift8.slot = this.ft8SlotInput.value;
+    this.state.pift8.repeat = this.ft8RepeatInput.classList.contains("active");
+
+    this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
+    if (this.isDebugMode) {
+      console.trace("📍 saveState() called from:");
+    }
+
     try {
       localStorage.setItem("piraterf_state", JSON.stringify(this.state));
     } catch (e) {
@@ -2725,8 +2833,11 @@ class PIrateRFController {
       if (savedState) {
         const parsedState = JSON.parse(savedState);
         if (parsedState.modulename) {
+          // Set flag to prevent saveState during restoration
+          this.isRestoring = true;
           this.moduleSelect.value = parsedState.modulename;
           this.onModuleChange();
+          this.isRestoring = false;
         }
       }
     } catch (e) {
@@ -2736,9 +2847,13 @@ class PIrateRFController {
 
   // Load state from localStorage and sync to DOM
   restoreState() {
+    this.debug("🔄 Starting state restoration from localStorage");
+    this.isRestoring = true;
     try {
       const savedState = localStorage.getItem("piraterf_state");
       if (savedState) {
+        this.debug("📦 Found saved state, loading that shit");
+        this.debug("💾 Raw saved state:", savedState);
         const parsedState = JSON.parse(savedState);
         // Merge with default state to ensure all properties exist
         this.state = {
@@ -2753,13 +2868,18 @@ class PIrateRFController {
           },
           pichirp: { ...this.state.pichirp, ...parsedState.pichirp },
           pocsag: { ...this.state.pocsag, ...parsedState.pocsag },
+          pift8: { ...this.state.pift8, ...parsedState.pift8 },
         };
       }
 
       // Sync state to DOM elements
+      this.debug("🔄 Syncing state to DOM elements");
       this.syncStateToDOM();
+      this.debug("✅ State restoration completed, shit works");
     } catch (e) {
       console.warn("Failed to restore state from localStorage:", e);
+    } finally {
+      this.isRestoring = false;
     }
   }
 
@@ -2791,13 +2911,11 @@ class PIrateRFController {
     // Sync play mode toggle (PIFMRDS only)
     if (this.state.pifmrds.playOnce !== undefined) {
       if (this.state.pifmrds.playOnce) {
-        this.playModeToggle.classList.add("play-once");
-        this.playModeToggle.classList.remove("continuous");
+        this.playModeToggle.classList.add("active");
         this.playModeToggle.textContent = "⏭️";
         this.playModeToggle.title = "Play once";
       } else {
-        this.playModeToggle.classList.add("continuous");
-        this.playModeToggle.classList.remove("play-once");
+        this.playModeToggle.classList.remove("active");
         this.playModeToggle.textContent = "🔁";
         this.playModeToggle.title = "Play continuously";
       }
@@ -2934,6 +3052,27 @@ class PIrateRFController {
       // If no messages were restored, ensure we have at least one empty message
       if (messagesContainer.children.length === 0) {
         this.addPOCSAGMessage();
+      }
+    }
+
+    // Sync FT8 form inputs
+    this.debug("🔄 Restoring FT8 state from localStorage:", this.state.pift8);
+    if (this.state.pift8.frequency) {
+      this.debug("📡 Restoring FT8 frequency:", this.state.pift8.frequency);
+      this.ft8FreqInput.value = this.state.pift8.frequency;
+    }
+    if (this.state.pift8.message) {
+      this.debug("💬 Restoring FT8 message:", this.state.pift8.message);
+      this.ft8MessageInput.value = this.state.pift8.message;
+    }
+    if (this.state.pift8.ppm) this.ft8PPMInput.value = this.state.pift8.ppm;
+    if (this.state.pift8.offset) this.ft8OffsetInput.value = this.state.pift8.offset;
+    if (this.state.pift8.slot !== undefined) this.ft8SlotInput.value = this.state.pift8.slot;
+    if (this.state.pift8.repeat !== undefined) {
+      if (this.state.pift8.repeat) {
+        this.ft8RepeatInput.classList.add("active");
+      } else {
+        this.ft8RepeatInput.classList.remove("active");
       }
     }
 

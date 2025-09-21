@@ -453,55 +453,50 @@ body.executing .system-output {
   font-weight: bold;
 }
 
-.audio-method-selector .play-mode-toggle {
+/* Audio method selector specific overrides for toggle buttons */
+.audio-method-selector .toggle-btn {
   flex: 1;
   min-width: 0;
   padding: 8px;
-  background: rgba(255, 107, 53, 0.2);
-  color: #ff6b35;
-  border: 1px solid #ff6b35;
-  border-radius: 4px;
-  cursor: pointer;
+  margin-bottom: 0;
   font-size: 16px;
   line-height: 1;
-  transition: all 0.3s ease;
 }
 
-.audio-method-selector .play-mode-toggle:hover {
+.audio-method-selector .toggle-btn.active:hover {
   background: rgba(255, 107, 53, 0.3);
-  transform: scale(1.05);
+  border-color: #ff6b35;
+  color: #ff6b35;
 }
 
-.audio-method-selector .play-mode-toggle.play-once {
-  background: rgba(0, 255, 0, 0.2);
-  border-color: #00ff00;
-  color: #00ff00;
-}
-
-.audio-method-selector .play-mode-toggle.play-once:hover {
-  background: rgba(0, 255, 0, 0.3);
-  transform: scale(1.05);
-}
-
+/* Intro outro toggle specific overrides */
 .intro-outro-toggle {
   width: auto !important;
-  padding: 8px 12px;
   margin-bottom: 10px;
-  background: #000;
+}
+
+/* Universal Toggle Button Class */
+.toggle-btn {
+  padding: 8px 12px;
+  background: rgba(0, 255, 0, 0.2);
   color: #00ff00;
   border: 1px solid #00ff00;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
-.intro-outro-toggle:hover {
-  background: rgba(0, 255, 0, 0.1);
+.toggle-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
 }
 
-.intro-outro-toggle.active {
-  background: rgba(0, 255, 0, 0.2);
+.toggle-btn.active {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: #ff6b35;
+  color: #ff6b35;
 }
 
 /* POCSAG Toggle Buttons */
@@ -512,35 +507,12 @@ body.executing .system-output {
   margin-top: 5px;
 }
 
+/* POCSAG toggle specific overrides */
 .pocsag-toggle {
-  padding: 8px 12px;
-  background: #000;
-  color: #666;
-  border: 1px solid #666;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 5px;
   min-width: fit-content;
-}
-
-.pocsag-toggle:hover {
-  background: rgba(102, 102, 102, 0.1);
-  color: #999;
-  border-color: #999;
-}
-
-.pocsag-toggle.active {
-  background: rgba(0, 255, 0, 0.2);
-  color: #00ff00;
-  border-color: #00ff00;
-}
-
-.pocsag-toggle.active:hover {
-  background: rgba(0, 255, 0, 0.3);
 }
 
 /* POCSAG Message Remove Button */
@@ -1673,50 +1645,6 @@ body.executing .record-btn {
   color: #ff0000;
 }
 
-/* Intro/Outro Controls */
-.intro-outro-toggle {
-  width: auto !important;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  background: #000;
-  color: #00ff00;
-  border: 1px solid #00ff00;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-}
-
-.intro-outro-toggle:hover {
-  background: rgba(0, 255, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-}
-
-.intro-outro-toggle.active {
-  background: #00ff00;
-  color: #000;
-}
-
-/* When intro/outro button is inside audio-method-selector, use same styling as other buttons */
-.audio-method-selector .intro-outro-toggle {
-  flex: 1;
-  min-width: 0;
-  padding: 8px;
-  margin-bottom: 0;
-  background: rgba(0, 255, 0, 0.2);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.audio-method-selector .intro-outro-toggle:hover {
-  background: rgba(0, 255, 0, 0.3);
-  transform: scale(1.05);
-}
-
-.audio-method-selector .intro-outro-toggle.active {
-  background: #00ff00;
-  color: #000;
-}
 
 .intro-outro-controls {
   margin-bottom: 15px;

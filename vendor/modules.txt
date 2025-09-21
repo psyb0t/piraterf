@@ -712,7 +712,7 @@ github.com/psyb0t/gofindimpl
 # github.com/psyb0t/gonfiguration v1.3.1
 ## explicit; go 1.24.5
 github.com/psyb0t/gonfiguration
-# github.com/psyb0t/gorpitx v0.0.0-20250920041940-0bddb0f33e9a
+# github.com/psyb0t/gorpitx v0.0.0-00010101000000-000000000000 => ../gorpitx
 ## explicit; go 1.24.6
 github.com/psyb0t/gorpitx
 # github.com/psyb0t/logrus-configurator v1.1.0
@@ -1323,3 +1323,4 @@ mvdan.cc/gofumpt/internal/version
 # mvdan.cc/unparam v0.0.0-20250301125049-0df0534333a4
 ## explicit; go 1.23
 mvdan.cc/unparam/check
+# github.com/psyb0t/gorpitx => ../gorpitx
