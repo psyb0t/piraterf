@@ -54,7 +54,7 @@ All of this runs on a **Pi Zero W configured as a WiFi access point**, making it
 
 PIrateRF is a **single Go service** with modular components:
 
-- **RF Transmission Engine**: Core logic for generating FM, Morse, and spectrum signals
+- **RF Transmission Engine**: Core logic for fucking up the airwaves
 - **Execution Manager**: Handles RF transmission execution with atomic state control preventing concurrent transmissions
 - **WebSocket Hub**: Real-time bidirectional communication with the frontend interface
 - **HTTP Server**: Serves the web interface and handles secure file uploads
