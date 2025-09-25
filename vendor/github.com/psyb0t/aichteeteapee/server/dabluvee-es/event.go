@@ -1,4 +1,4 @@
-package websocket
+package dabluveees
 
 import (
 	"encoding/json"
@@ -20,15 +20,16 @@ const (
 )
 
 type Event struct {
-	ID        uuid.UUID         `json:"id"` // UUID4 identifier
-	Type      EventType         `json:"type"`
-	Data      json.RawMessage   `json:"data"`
-	Timestamp int64             `json:"timestamp"` // Unix timestamp (seconds) - SET BY SENDER
-	Metadata  *EventMetadataMap `json:"metadata"`  // For rooms, userID, etc.
+	ID   uuid.UUID       `json:"id"` // UUID4 identifier
+	Type EventType       `json:"type"`
+	Data json.RawMessage `json:"data"`
+	// Unix timestamp (seconds) - SET BY SENDER
+	Timestamp int64             `json:"timestamp"`
+	Metadata  *EventMetadataMap `json:"metadata"` // For rooms, userID, etc.
 }
 
 // NewEvent creates a new event with current unix timestamp
-// Use this when the SERVER is creating/sending an event
+// Use this when the SERVER is creating/sending an event.
 func NewEvent(eventType EventType, data any) *Event {
 	eventID := uuid.New()
 
@@ -57,7 +58,7 @@ func NewEvent(eventType EventType, data any) *Event {
 	}
 }
 
-// WithMetadata adds metadata to an event (chainable)
+// WithMetadata adds metadata to an event (chainable).
 func (e Event) WithMetadata(key string, value any) Event {
 	if e.Metadata == nil {
 		e.Metadata = newEventMetadataMap()
@@ -68,19 +69,19 @@ func (e Event) WithMetadata(key string, value any) Event {
 	return e
 }
 
-// WithTimestamp sets a specific unix timestamp (chainable)
+// WithTimestamp sets a specific unix timestamp (chainable).
 func (e Event) WithTimestamp(unixTimestamp int64) Event {
 	e.Timestamp = unixTimestamp
 
 	return e
 }
 
-// GetTime converts unix timestamp to time.Time for Go usage
+// GetTime converts unix timestamp to time.Time for Go usage.
 func (e Event) GetTime() time.Time {
 	return time.Unix(e.Timestamp, 0)
 }
 
-// IsRecent checks if event is within the last N seconds
+// IsRecent checks if event is within the last N seconds.
 func (e Event) IsRecent(seconds int64) bool {
 	return time.Now().Unix()-e.Timestamp <= seconds
 }

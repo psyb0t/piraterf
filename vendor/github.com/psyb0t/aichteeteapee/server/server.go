@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	// File cache configuration constants
+	// File cache configuration constants.
 	defaultFileCacheTTL     = 30 * time.Second // Cache entries for 30 seconds
 	defaultFileCacheMaxSize = 1000             // Maximum 1000 cached entries
 )
@@ -29,7 +29,7 @@ type fileCacheEntry struct {
 	timestamp time.Time
 }
 
-// fileCache provides a simple cache for file existence checks to prevent DoS
+// fileCache provides a simple cache for file existence checks to prevent DoS.
 type fileCache struct {
 	cache   map[string]fileCacheEntry
 	mu      sync.RWMutex
@@ -265,12 +265,15 @@ func (s *Server) setupStaticRoute(
 	)
 }
 
-// createSecureStaticHandler creates a static file handler with configurable directory listing
+// createSecureStaticHandler creates a static file handler with configurable
+// directory listing.
 func (s *Server) createSecureStaticHandler(
 	staticConfig StaticRouteConfig,
 ) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fullPath, ok := s.validateAndBuildPath(w, r, staticConfig.Dir, staticConfig.Path)
+		fullPath, ok := s.validateAndBuildPath(
+			w, r, staticConfig.Dir, staticConfig.Path,
+		)
 		if !ok {
 			return
 		}
@@ -285,7 +288,8 @@ func (s *Server) createSecureStaticHandler(
 	})
 }
 
-// validateAndBuildPath validates the request path and builds the full file path
+// validateAndBuildPath validates the request path and builds the full
+// file path.
 func (s *Server) validateAndBuildPath(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -299,7 +303,8 @@ func (s *Server) validateAndBuildPath(
 
 	// Security: prevent directory traversal by cleaning the path
 	cleanPath := filepath.Clean(relativePath)
-	if strings.HasPrefix(cleanPath, "..") || strings.Contains(cleanPath, ".."+string(filepath.Separator)) {
+	if strings.HasPrefix(cleanPath, "..") ||
+		strings.Contains(cleanPath, ".."+string(filepath.Separator)) {
 		aichteeteapee.WriteJSON(
 			w,
 			http.StatusForbidden,
@@ -315,7 +320,8 @@ func (s *Server) validateAndBuildPath(
 
 // checkFileAccess checks file existence and permissions using cache
 // Returns true if it's a regular file that should be served by the caller
-// Returns false if the request was handled (error, directory, etc) or should not continue
+// Returns false if the request was handled (error, directory, etc) or should
+// not continue.
 func (s *Server) checkFileAccess(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -331,7 +337,7 @@ func (s *Server) checkFileAccess(
 }
 
 // handleCachedResult processes cached file information
-// Returns true only if it's a regular file that should be served by the caller
+// Returns true only if it's a regular file that should be served by the caller.
 func (s *Server) handleCachedResult(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -358,7 +364,7 @@ func (s *Server) handleCachedResult(
 	return true // Regular file, should be served by caller
 }
 
-// handleCacheMiss processes filesystem lookup and caches the result
+// handleCacheMiss processes filesystem lookup and caches the result.
 func (s *Server) handleCacheMiss(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -391,7 +397,7 @@ func (s *Server) handleCacheMiss(
 	return true // Regular file, should be served by caller
 }
 
-// validateTLSConfig validates TLS configuration when TLS is enabled
+// validateTLSConfig validates TLS configuration when TLS is enabled.
 func (s *Server) validateTLSConfig() error {
 	// If TLS is not enabled, no validation needed
 	if !s.config.TLSEnabled {
@@ -414,17 +420,22 @@ func (s *Server) validateTLSConfig() error {
 
 	// Validate cert and key files exist and are readable
 	if _, err := os.Stat(s.config.TLSCertFile); err != nil {
-		return ctxerrors.Wrapf(err, "TLS cert file not accessible: %s", s.config.TLSCertFile)
+		return ctxerrors.Wrapf(
+			err, "TLS cert file not accessible: %s", s.config.TLSCertFile,
+		)
 	}
 
 	if _, err := os.Stat(s.config.TLSKeyFile); err != nil {
-		return ctxerrors.Wrapf(err, "TLS key file not accessible: %s", s.config.TLSKeyFile)
+		return ctxerrors.Wrapf(
+			err, "TLS key file not accessible: %s", s.config.TLSKeyFile,
+		)
 	}
 
 	return nil
 }
 
-// Start starts the HTTP server and blocks until context is cancelled or Stop is called
+// Start starts the HTTP server and blocks until context is cancelled or
+// Stop is called.
 func (s *Server) Start(
 	ctx context.Context,
 	router *Router,
@@ -502,7 +513,9 @@ func (s *Server) serveAndWait(
 ) error {
 	s.logServerStart()
 
-	httpServerErrCh, httpsServerErrCh := s.startServers(httpListener, httpsListener)
+	httpServerErrCh, httpsServerErrCh := s.startServers(
+		httpListener, httpsListener,
+	)
 
 	return s.waitForCompletion(ctx, httpServerErrCh, httpsServerErrCh)
 }
@@ -530,7 +543,9 @@ func (s *Server) startServers(
 
 	if s.config.TLSEnabled {
 		go func() {
-			err := s.httpsServer.ServeTLS(httpsListener, s.config.TLSCertFile, s.config.TLSKeyFile)
+			err := s.httpsServer.ServeTLS(
+				httpsListener, s.config.TLSCertFile, s.config.TLSKeyFile,
+			)
 			if err != nil && !errors.Is(err, http.ErrServerClosed) {
 				httpsServerErrCh <- ctxerrors.Wrap(err, "HTTPS server error")
 			}
@@ -637,7 +652,10 @@ func (s *Server) Stop(ctx context.Context) error {
 
 			const additionalErrorIndexOffset = 2
 			for i, shutdownErr := range shutdownErrors[1:] {
-				s.logger.Errorf("Additional shutdown error %d: %v", i+additionalErrorIndexOffset, shutdownErr)
+				s.logger.Errorf(
+					"Additional shutdown error %d: %v",
+					i+additionalErrorIndexOffset, shutdownErr,
+				)
 			}
 		}
 	})
@@ -645,7 +663,7 @@ func (s *Server) Stop(ctx context.Context) error {
 	return err
 }
 
-// closeListeners closes both HTTP and HTTPS listeners
+// closeListeners closes both HTTP and HTTPS listeners.
 func (s *Server) closeListeners(
 	shutdownErrors *[]error,
 ) {
@@ -704,12 +722,13 @@ func (s *Server) GetRootGroup() *Group {
 }
 
 // GetListenerAddr returns the HTTP listener address if the server is running
-// Deprecated: Use GetHTTPListenerAddr() instead
+// Deprecated: Use GetHTTPListenerAddr() instead.
 func (s *Server) GetListenerAddr() net.Addr {
 	return s.GetHTTPListenerAddr()
 }
 
-// GetHTTPListenerAddr returns the HTTP listener address if the server is running
+// GetHTTPListenerAddr returns the HTTP listener address if the server is
+// running.
 func (s *Server) GetHTTPListenerAddr() net.Addr {
 	s.listenerMu.RLock()
 	defer s.listenerMu.RUnlock()
@@ -721,7 +740,8 @@ func (s *Server) GetHTTPListenerAddr() net.Addr {
 	return s.httpListener.Addr()
 }
 
-// GetHTTPSListenerAddr returns the HTTPS listener address if the server is running with TLS
+// GetHTTPSListenerAddr returns the HTTPS listener address if the server is
+// running with TLS.
 func (s *Server) GetHTTPSListenerAddr() net.Addr {
 	s.listenerMu.RLock()
 	defer s.listenerMu.RUnlock()

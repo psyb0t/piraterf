@@ -8,15 +8,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/common-go/constants"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	eventTypeAudioPlaylistCreate        websocket.EventType = "audio.playlist.create"
-	eventTypeAudioPlaylistCreateSuccess websocket.EventType = "audio.playlist.create.success"
-	eventTypeAudioPlaylistCreateError   websocket.EventType = "audio.playlist.create.error"
+	eventTypeAudioPlaylistCreate        dabluveees.EventType = "audio.playlist.create"
+	eventTypeAudioPlaylistCreateSuccess dabluveees.EventType = "audio.playlist.create.success"
+	eventTypeAudioPlaylistCreateError   dabluveees.EventType = "audio.playlist.create.error"
 )
 
 type audioPlaylistCreateMessage struct {
@@ -38,9 +39,9 @@ type audioPlaylistCreateErrorMessageData struct {
 }
 
 func (s *PIrateRF) handleAudioPlaylistCreate(
-	_ websocket.Hub,
-	_ *websocket.Client,
-	event *websocket.Event,
+	_ wshub.Hub,
+	_ *wshub.Client,
+	event *dabluveees.Event,
 ) error {
 	logger := logrus.WithFields(logrus.Fields{
 		constants.FieldEventType: event.Type,
@@ -128,7 +129,7 @@ func (s *PIrateRF) validatePlaylistRequest(
 func (s *PIrateRF) sendAudioPlaylistCreateSuccessEvent(
 	playlistName, filePath string,
 ) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeAudioPlaylistCreateSuccess,
 		audioPlaylistCreateSuccessMessageData{
 			PlaylistName: playlistName,
@@ -141,7 +142,7 @@ func (s *PIrateRF) sendAudioPlaylistCreateSuccessEvent(
 func (s *PIrateRF) sendAudioPlaylistCreateErrorEvent(
 	playlistName, errorType, message string,
 ) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeAudioPlaylistCreateError,
 		audioPlaylistCreateErrorMessageData{
 			PlaylistName: playlistName,

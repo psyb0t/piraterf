@@ -6,7 +6,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// SecurityHeadersConfig holds configuration for security headers
+// SecurityHeadersConfig holds configuration for security headers.
 type SecurityHeadersConfig struct {
 	XContentTypeOptions        string
 	XFrameOptions              string
@@ -48,64 +48,65 @@ func WithStrictTransportSecurity(value string) SecurityHeadersOption {
 	}
 }
 
-// WithReferrerPolicy sets the Referrer-Policy header value
+// WithReferrerPolicy sets the Referrer-Policy header value.
 func WithReferrerPolicy(value string) SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.ReferrerPolicy = value
 	}
 }
 
-// WithContentSecurityPolicy sets the Content-Security-Policy header value
+// WithContentSecurityPolicy sets the Content-Security-Policy header value.
 func WithContentSecurityPolicy(value string) SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.ContentSecurityPolicy = value
 	}
 }
 
-// DisableXContentTypeOptions disables the X-Content-Type-Options header
+// DisableXContentTypeOptions disables the X-Content-Type-Options header.
 func DisableXContentTypeOptions() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableXContentTypeOptions = true
 	}
 }
 
-// DisableXFrameOptions disables the X-Frame-Options header
+// DisableXFrameOptions disables the X-Frame-Options header.
 func DisableXFrameOptions() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableXFrameOptions = true
 	}
 }
 
-// DisableXXSSProtection disables the X-XSS-Protection header
+// DisableXXSSProtection disables the X-XSS-Protection header.
 func DisableXXSSProtection() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableXXSSProtection = true
 	}
 }
 
-// DisableHSTS disables the Strict-Transport-Security header
+// DisableHSTS disables the Strict-Transport-Security header.
 func DisableHSTS() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableHSTS = true
 	}
 }
 
-// DisableReferrerPolicy disables the Referrer-Policy header
+// DisableReferrerPolicy disables the Referrer-Policy header.
 func DisableReferrerPolicy() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableReferrerPolicy = true
 	}
 }
 
-// DisableCSP disables the Content-Security-Policy header
+// DisableCSP disables the Content-Security-Policy header.
 func DisableCSP() SecurityHeadersOption {
 	return func(c *SecurityHeadersConfig) {
 		c.DisableCSP = true
 	}
 }
 
-// SecurityHeadersMiddleware adds common security headers with default values
+// SecurityHeadersMiddleware adds common security headers with default values.
 func SecurityHeaders(opts ...SecurityHeadersOption) Middleware {
+	//nolint:lll
 	config := &SecurityHeadersConfig{
 		XContentTypeOptions:     aichteeteapee.DefaultSecurityXContentTypeOptionsNoSniff,
 		XFrameOptions:           aichteeteapee.DefaultSecurityXFrameOptionsDeny,
@@ -122,7 +123,10 @@ func SecurityHeaders(opts ...SecurityHeadersOption) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !config.DisableXContentTypeOptions {
-				w.Header().Set(aichteeteapee.HeaderNameXContentTypeOptions, config.XContentTypeOptions)
+				w.Header().Set(
+					aichteeteapee.HeaderNameXContentTypeOptions,
+					config.XContentTypeOptions,
+				)
 			}
 
 			if !config.DisableXFrameOptions {
@@ -130,19 +134,29 @@ func SecurityHeaders(opts ...SecurityHeadersOption) Middleware {
 			}
 
 			if !config.DisableXXSSProtection {
-				w.Header().Set(aichteeteapee.HeaderNameXXSSProtection, config.XXSSProtection)
+				w.Header().Set(
+					aichteeteapee.HeaderNameXXSSProtection, config.XXSSProtection,
+				)
 			}
 
 			if !config.DisableHSTS {
-				w.Header().Set(aichteeteapee.HeaderNameStrictTransportSecurity, config.StrictTransportSecurity)
+				w.Header().Set(
+					aichteeteapee.HeaderNameStrictTransportSecurity,
+					config.StrictTransportSecurity,
+				)
 			}
 
 			if !config.DisableReferrerPolicy {
-				w.Header().Set(aichteeteapee.HeaderNameReferrerPolicy, config.ReferrerPolicy)
+				w.Header().Set(
+					aichteeteapee.HeaderNameReferrerPolicy, config.ReferrerPolicy,
+				)
 			}
 
 			if !config.DisableCSP && config.ContentSecurityPolicy != "" {
-				w.Header().Set(aichteeteapee.HeaderNameContentSecurityPolicy, config.ContentSecurityPolicy)
+				w.Header().Set(
+					aichteeteapee.HeaderNameContentSecurityPolicy,
+					config.ContentSecurityPolicy,
+				)
 			}
 
 			next.ServeHTTP(w, r)

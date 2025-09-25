@@ -13,7 +13,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// HealthHandler provides a basic health check endpoint
+// HealthHandler provides a basic health check endpoint.
 func (s *Server) HealthHandler(
 	w http.ResponseWriter,
 	_ *http.Request,
@@ -30,7 +30,7 @@ func (s *Server) HealthHandler(
 	)
 }
 
-// EchoHandler echoes back request information (useful for testing)
+// EchoHandler echoes back request information (useful for testing).
 func (s *Server) EchoHandler(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -53,7 +53,9 @@ func (s *Server) EchoHandler(
 	if r.Body != nil {
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&body); err != nil {
-			s.logger.WithError(err).Error("Failed to decode request body in echo handler")
+			s.logger.WithError(err).Error(
+				"Failed to decode request body in echo handler",
+			)
 		}
 	}
 
@@ -79,7 +81,8 @@ func (s *Server) EchoHandler(
 	)
 }
 
-// FileUploadPostprocessor defines the function signature for processing file upload responses
+// FileUploadPostprocessor defines the function signature for processing
+// file upload responses.
 type FileUploadPostprocessor func(
 	response map[string]any,
 	request *http.Request,
@@ -88,23 +91,24 @@ type FileUploadPostprocessor func(
 type FilenamePrependType uint8
 
 const (
-	// FilenamePrependTypeNone does not add any prefix to the filename
+	// FilenamePrependTypeNone does not add any prefix to the filename.
 	FilenamePrependTypeNone FilenamePrependType = iota
-	// FilenamePrependTypeDateTime prepends date and time in Y_M_D_H_I_S format
+	// FilenamePrependTypeDateTime prepends date and time in Y_M_D_H_I_S format.
 	FilenamePrependTypeDateTime
-	// FilenamePrependTypeUUID prepends a UUID4 to the filename (default)
+	// FilenamePrependTypeUUID prepends a UUID4 to the filename (default).
 	FilenamePrependTypeUUID
 )
 
 type FileUploadHandlerOption func(*FileUploadHandlerConfig)
 
-// FileUploadHandlerConfig holds the configuration for the file upload handler
+// FileUploadHandlerConfig holds the configuration for the file upload handler.
 type FileUploadHandlerConfig struct {
 	postprocessor   FileUploadPostprocessor
 	filenamePrepend FilenamePrependType
 }
 
-// WithFileUploadHandlerPostprocessor sets a postprocessor that modifies the response
+// WithFileUploadHandlerPostprocessor sets a postprocessor that modifies
+// the response.
 func WithFileUploadHandlerPostprocessor(
 	processor FileUploadPostprocessor,
 ) FileUploadHandlerOption {
@@ -113,7 +117,7 @@ func WithFileUploadHandlerPostprocessor(
 	}
 }
 
-// WithFilenamePrependType sets the type of prefix to add to uploaded filenames
+// WithFilenamePrependType sets the type of prefix to add to uploaded filenames.
 func WithFilenamePrependType(
 	prependType FilenamePrependType,
 ) FileUploadHandlerOption {
@@ -122,7 +126,8 @@ func WithFilenamePrependType(
 	}
 }
 
-// FileUploadHandler returns a handler for file uploads to the specified directory
+// FileUploadHandler returns a handler for file uploads to the specified
+// directory.
 func (s *Server) FileUploadHandler(
 	uploadsDir string,
 	opts ...FileUploadHandlerOption,
@@ -201,7 +206,9 @@ func (s *Server) handleFileUpload(
 	}()
 
 	// Generate filename with configured prepend type
-	uniqueFilename := s.generateUniqueFilename(handler.Filename, config.filenamePrepend)
+	uniqueFilename := s.generateUniqueFilename(
+		handler.Filename, config.filenamePrepend,
+	)
 	filePath := filepath.Join(uploadsDir, uniqueFilename)
 
 	if err := s.saveUploadedFile(file, filePath); err != nil {
@@ -258,7 +265,7 @@ func (s *Server) handleFileUpload(
 	return nil
 }
 
-// saveUploadedFile saves the uploaded file to the specified path
+// saveUploadedFile saves the uploaded file to the specified path.
 func (s *Server) saveUploadedFile(
 	src io.Reader,
 	filePath string,
@@ -288,7 +295,7 @@ func (s *Server) saveUploadedFile(
 	return nil
 }
 
-// generateUniqueFilename creates a unique filename based on the prepend type
+// generateUniqueFilename creates a unique filename based on the prepend type.
 func (s *Server) generateUniqueFilename(
 	originalFilename string,
 	prependType FilenamePrependType,

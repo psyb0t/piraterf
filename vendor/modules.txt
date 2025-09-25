@@ -688,21 +688,24 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/psyb0t/aichteeteapee v0.0.0-20250921184625-920295467ce2
+# github.com/psyb0t/aichteeteapee v0.0.0-20250925010250-59e5acd982fa
 ## explicit; go 1.24.6
 github.com/psyb0t/aichteeteapee
 github.com/psyb0t/aichteeteapee/server
+github.com/psyb0t/aichteeteapee/server/dabluvee-es
+github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub
+github.com/psyb0t/aichteeteapee/server/dabluvee-es/wsunixbridge
 github.com/psyb0t/aichteeteapee/server/middleware
-github.com/psyb0t/aichteeteapee/server/websocket
 # github.com/psyb0t/commander v0.4.1
 ## explicit; go 1.24.6
 github.com/psyb0t/commander
-# github.com/psyb0t/common-go v0.0.0-20250914061813-a517b076b64a
+# github.com/psyb0t/common-go v0.0.0-20250922043457-a771ef735af8
 ## explicit; go 1.24.6
 github.com/psyb0t/common-go/app-runner
 github.com/psyb0t/common-go/constants
 github.com/psyb0t/common-go/env
 github.com/psyb0t/common-go/errors
+github.com/psyb0t/common-go/types
 # github.com/psyb0t/ctxerrors v0.2.0
 ## explicit; go 1.24.6
 github.com/psyb0t/ctxerrors
@@ -712,7 +715,7 @@ github.com/psyb0t/gofindimpl
 # github.com/psyb0t/gonfiguration v1.3.1
 ## explicit; go 1.24.5
 github.com/psyb0t/gonfiguration
-# github.com/psyb0t/gorpitx v0.0.0-20250921222425-38a03f26d180
+# github.com/psyb0t/gorpitx v0.0.0-00010101000000-000000000000 => ../gorpitx
 ## explicit; go 1.24.6
 github.com/psyb0t/gorpitx
 # github.com/psyb0t/logrus-configurator v1.1.0
@@ -1323,3 +1326,4 @@ mvdan.cc/gofumpt/internal/version
 # mvdan.cc/unparam v0.0.0-20250301125049-0df0534333a4
 ## explicit; go 1.23
 mvdan.cc/unparam/check
+# github.com/psyb0t/gorpitx => ../gorpitx

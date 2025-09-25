@@ -1,4 +1,4 @@
-package websocket
+package wshub
 
 import (
 	"sync"
@@ -8,21 +8,22 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/psyb0t/aichteeteapee"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/sirupsen/logrus"
 )
 
 type Connection struct {
-	id       uuid.UUID       // UUID4 connection identifier
-	conn     *websocket.Conn // WebSocket connection
-	client   *Client         // Reference to parent client
-	sendCh   chan *Event     // Per-connection message channel
-	doneCh   chan struct{}   // Connection shutdown signal
-	stopOnce sync.Once       // Ensure single stop
-	isDone   atomic.Bool     // Atomic flag for connection state
-	sendWg   sync.WaitGroup  // Wait for in-flight sends to complete
+	id       uuid.UUID              // UUID4 connection identifier
+	conn     *websocket.Conn        // WebSocket connection
+	client   *Client                // Reference to parent client
+	sendCh   chan *dabluveees.Event // Per-connection message channel
+	doneCh   chan struct{}          // Connection shutdown signal
+	stopOnce sync.Once              // Ensure single stop
+	isDone   atomic.Bool            // Atomic flag for connection state
+	sendWg   sync.WaitGroup         // Wait for in-flight sends to complete
 }
 
-// NewConnection creates a new WebSocket connection
+// NewConnection creates a new WebSocket connection.
 func NewConnection(
 	conn *websocket.Conn,
 	client *Client,
@@ -31,13 +32,13 @@ func NewConnection(
 		id:       uuid.New(),
 		conn:     conn,
 		client:   client,
-		sendCh:   make(chan *Event, client.config.SendBufferSize),
+		sendCh:   make(chan *dabluveees.Event, client.config.SendBufferSize),
 		doneCh:   make(chan struct{}),
 		stopOnce: sync.Once{},
 	}
 }
 
-// GetHubName safely returns the hub name, handling nil cases
+// GetHubName safely returns the hub name, handling nil cases.
 func (c *Connection) GetHubName() string {
 	if c.client == nil {
 		return "unknown"
@@ -46,7 +47,7 @@ func (c *Connection) GetHubName() string {
 	return c.client.GetHubName()
 }
 
-// GetClientID safely returns the client ID, handling nil cases
+// GetClientID safely returns the client ID, handling nil cases.
 func (c *Connection) GetClientID() uuid.UUID {
 	if c.client == nil {
 		return uuid.Nil
@@ -55,8 +56,8 @@ func (c *Connection) GetClientID() uuid.UUID {
 	return c.client.id
 }
 
-// Send sends an event to the connection's send channel
-func (c *Connection) Send(event *Event) {
+// Send sends an event to the connection's send channel.
+func (c *Connection) Send(event *dabluveees.Event) {
 	logger := logrus.WithFields(logrus.Fields{
 		aichteeteapee.FieldHubName:      c.GetHubName(),
 		aichteeteapee.FieldClientID:     c.GetClientID(),
@@ -100,7 +101,7 @@ func (c *Connection) Send(event *Event) {
 	}
 }
 
-// Stop cleanly shuts down the connection
+// Stop cleanly shuts down the connection.
 func (c *Connection) Stop() {
 	logger := logrus.WithFields(logrus.Fields{
 		aichteeteapee.FieldHubName:      c.GetHubName(),
@@ -136,7 +137,7 @@ func (c *Connection) Stop() {
 	})
 }
 
-// writePump handles outbound messages and keepalive
+// writePump handles outbound messages and keepalive.
 func (c *Connection) writePump() { //nolint:cyclop,funlen
 	logger := logrus.WithFields(logrus.Fields{
 		aichteeteapee.FieldHubName:      c.GetHubName(),
@@ -180,7 +181,9 @@ func (c *Connection) writePump() { //nolint:cyclop,funlen
 			_ = c.conn.SetWriteDeadline(time.Now().Add(c.client.config.WriteTimeout))
 
 			if err := c.conn.WriteJSON(event); err != nil {
-				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				if websocket.IsCloseError(
+					err, websocket.CloseNormalClosure, websocket.CloseGoingAway,
+				) {
 					logger.Info("connection closed normally during write")
 
 					return
@@ -201,7 +204,9 @@ func (c *Connection) writePump() { //nolint:cyclop,funlen
 			_ = c.conn.SetWriteDeadline(time.Now().Add(c.client.config.WriteTimeout))
 
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				if websocket.IsCloseError(
+					err, websocket.CloseNormalClosure, websocket.CloseGoingAway,
+				) {
 					logger.Info("connection closed normally during ping")
 
 					return
@@ -218,7 +223,7 @@ func (c *Connection) writePump() { //nolint:cyclop,funlen
 	}
 }
 
-// readPump handles inbound messages and connection monitoring
+// readPump handles inbound messages and connection monitoring.
 func (c *Connection) readPump() { //nolint:cyclop,funlen
 	logger := logrus.WithFields(logrus.Fields{
 		aichteeteapee.FieldHubName:      c.GetHubName(),
@@ -267,7 +272,7 @@ func (c *Connection) readPump() { //nolint:cyclop,funlen
 		default:
 		}
 
-		var event Event
+		var event dabluveees.Event
 		if err := c.conn.ReadJSON(&event); err != nil {
 			if websocket.IsCloseError(err,
 				websocket.CloseNormalClosure,

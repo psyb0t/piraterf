@@ -12,8 +12,9 @@ import (
 
 	"github.com/psyb0t/aichteeteapee"
 	"github.com/psyb0t/aichteeteapee/server"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wsunixbridge"
 	"github.com/psyb0t/aichteeteapee/server/middleware"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/sirupsen/logrus"
@@ -73,11 +74,6 @@ func (s *PIrateRF) getHTTPServerRouter() (*server.Router, error) {
 						Handler: s.rootHandler,
 					},
 					{
-						Method:  http.MethodGet,
-						Path:    "/ws",
-						Handler: websocket.UpgradeHandler(s.websocketHub),
-					},
-					{
 						Method: http.MethodPost,
 						Path:   "/upload",
 						Handler: s.httpServer.FileUploadHandler(
@@ -89,6 +85,28 @@ func (s *PIrateRF) getHTTPServerRouter() (*server.Router, error) {
 								server.FilenamePrependTypeDateTime,
 							),
 						),
+					},
+				},
+			},
+			{
+				Path: "/",
+				Middlewares: []middleware.Middleware{
+					middleware.Recovery(),
+					middleware.RequestID(),
+					middleware.Logger(),
+					middleware.SecurityHeaders(),
+					middleware.CORS(),
+				},
+				Routes: []server.RouteConfig{
+					{
+						Method:  http.MethodGet,
+						Path:    "/ws",
+						Handler: wshub.UpgradeHandler(s.websocketHub),
+					},
+					{
+						Method:  http.MethodGet,
+						Path:    "/wsunix",
+						Handler: wsunixbridge.NewUpgradeHandler(s.config.UploadDir, s.handleLiveAudioConnection),
 					},
 				},
 			},

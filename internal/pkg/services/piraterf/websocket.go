@@ -1,11 +1,11 @@
 package piraterf
 
 import (
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 )
 
 func (s *PIrateRF) setupWebsocketHub() {
-	s.websocketHub = websocket.NewHub("piraterf")
+	s.websocketHub = wshub.NewHub("piraterf")
 
 	// RPITX execution handlers
 	s.websocketHub.RegisterEventHandler(

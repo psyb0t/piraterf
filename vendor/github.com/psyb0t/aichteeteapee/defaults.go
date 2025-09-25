@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	// Server defaults
+	// Server defaults.
 	DefaultHTTPServerListenAddress     = "127.0.0.1:8080"
 	DefaultHTTPServerReadTimeout       = 15 * time.Second
 	DefaultHTTPServerReadHeaderTimeout = 10 * time.Second
@@ -17,35 +17,36 @@ const (
 	DefaultHTTPServerShutdownTimeout   = 10 * time.Second
 	DefaultHTTPServerServiceName       = "http-server"
 
-	// TLS Server defaults
+	// TLS Server defaults.
 	DefaultHTTPServerTLSEnabled       = false
 	DefaultHTTPServerTLSListenAddress = "127.0.0.1:8443"
 	DefaultHTTPServerTLSCertFile      = ""
 	DefaultHTTPServerTLSKeyFile       = ""
 
-	// Request defaults
+	// Request defaults.
 	DefaultHTTPRequestTimeout = 30 * time.Second
 	DefaultHTTPClientTimeout  = 30 * time.Second
 
-	// CORS defaults
+	// CORS defaults.
 	DefaultCORSAllowOriginAll = "*"
 	DefaultCORSMaxAge         = 86400 // 24 hours in seconds
 
-	// Security header default values
+	// Security header default values.
 	DefaultSecurityXContentTypeOptionsNoSniff = "nosniff"
 	DefaultSecurityXFrameOptionsDeny          = "DENY"
 	DefaultSecurityXXSSProtectionBlock        = "1; mode=block"
-	DefaultSecurityStrictTransportSecurity    = "max-age=31536000; includeSubDomains"
+	DefaultSecurityStrictTransportSecurity    = "max-age=31536000; " +
+		"includeSubDomains"
 	DefaultSecurityReferrerPolicyStrictOrigin = "strict-origin-when-cross-origin"
 
-	// Authentication default values
+	// Authentication default values.
 	DefaultBasicRealmName      = "restricted"
 	DefaultUnauthorizedMessage = "Unauthorized"
 
-	// File upload defaults
+	// File upload defaults.
 	DefaultFileUploadMaxMemory = int64(32 << 20) // 32MB
 
-	// WebSocket Client Configuration Defaults
+	// WebSocket Client Configuration Defaults.
 	DefaultWebSocketClientSendBufferSize  = 256
 	DefaultWebSocketClientReadBufferSize  = 1024
 	DefaultWebSocketClientWriteBufferSize = 1024
@@ -55,7 +56,7 @@ const (
 	DefaultWebSocketClientPingInterval    = 54 * time.Second
 	DefaultWebSocketClientPongTimeout     = 60 * time.Second
 
-	// WebSocket Handler Configuration Defaults
+	// WebSocket Handler Configuration Defaults.
 	DefaultWebSocketHandlerReadBufferSize    = 1024
 	DefaultWebSocketHandlerWriteBufferSize   = 1024
 	DefaultWebSocketHandlerHandshakeTimeout  = 45 * time.Second
@@ -81,8 +82,9 @@ func GetDefaultCORSAllowHeaders() string {
 	}, ", ")
 }
 
-// GetDefaultWebSocketCheckOrigin is the default origin checker for WebSocket connections
-// WARNING: This allows all origins - configure for your security needs in production
+// GetDefaultWebSocketCheckOrigin is the default origin checker for WebSocket
+// connections. WARNING: This allows all origins - configure for your security
+// needs in production.
 func GetDefaultWebSocketCheckOrigin(_ *http.Request) bool {
 	return true
 }

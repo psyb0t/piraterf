@@ -124,8 +124,9 @@ linters:
         linters:
           - cyclop
           - funlen
-          - gocogni
+          - gocognit
           - maintidx
+          - wrapcheck
 
 formatters:
   enable:

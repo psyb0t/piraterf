@@ -1,7 +1,7 @@
 .vscode
 test
 .env
-coverage.*
+*coverage.*
 __pycache__
 http/server/.test/uploads
 *.out

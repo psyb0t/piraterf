@@ -696,6 +696,16 @@ input[type="checkbox"] {
   vertical-align: middle;
 }
 
+.help-text {
+  color: #00ff0080;
+  font-family: "Fira Code", monospace;
+  font-size: 0.75rem;
+  font-style: italic;
+  margin-top: 4px;
+  display: block;
+  line-height: 1.3;
+}
+
 body.executing select,
 body.executing input,
 body.executing textarea {

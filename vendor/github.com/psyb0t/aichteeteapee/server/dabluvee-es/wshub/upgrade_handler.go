@@ -1,4 +1,4 @@
-package websocket
+package wshub
 
 import (
 	"net/http"
@@ -9,12 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// UpgradeHandler creates an HTTP handler that upgrades connections to WebSocket
+// UpgradeHandler creates an HTTP handler that upgrades connections
+// to WebSocket.
 func UpgradeHandler( //nolint:funlen
 	hub Hub,
-	opts ...HandlerOption,
+	opts ...UpgradeHandlerOption,
 ) http.HandlerFunc {
-	config := NewHandlerConfig() // Start with defaults
+	config := NewUpgradeHandlerConfig() // Start with defaults
 
 	// Apply user options to override defaults
 	for _, opt := range opts {
@@ -81,7 +82,9 @@ func UpgradeHandler( //nolint:funlen
 			// Use atomic get-or-create to avoid race conditions
 			var wasCreated bool
 
-			client, wasCreated = hub.GetOrCreateClient(parsedClientID, config.ClientOptions...)
+			client, wasCreated = hub.GetOrCreateClient(
+				parsedClientID, config.ClientOptions...,
+			)
 
 			if !wasCreated {
 				clientLogger.Debug("adding connection to existing client")
@@ -110,7 +113,7 @@ func UpgradeHandler( //nolint:funlen
 }
 
 // extractClientIDFromRequest extracts client ID from request
-// This can be customized based on your authentication system
+// This can be customized based on your authentication system.
 func extractClientIDFromRequest(r *http.Request) string {
 	// Try to extract from query parameter first
 	if clientID := r.URL.Query().Get("clientID"); clientID != "" {
@@ -118,7 +121,8 @@ func extractClientIDFromRequest(r *http.Request) string {
 	}
 
 	// Try to extract from custom header
-	if clientID := r.Header.Get(aichteeteapee.HeaderNameXClientID); clientID != "" {
+	clientID := r.Header.Get(aichteeteapee.HeaderNameXClientID)
+	if clientID != "" {
 		return clientID
 	}
 
@@ -128,13 +132,14 @@ func extractClientIDFromRequest(r *http.Request) string {
 }
 
 // parseClientID converts string client ID to UUID
-// Returns zero UUID if parsing fails, which will generate a new UUID
+// Returns zero UUID if parsing fails, which will generate a new UUID.
 func parseClientID(clientID string) uuid.UUID {
 	if parsedID, err := uuid.Parse(clientID); err == nil {
 		return parsedID
 	}
 
-	logrus.WithField("providedClientID", clientID).Warn("invalid client ID format, generating new UUID")
+	logrus.WithField("providedClientID", clientID).
+		Warn("invalid client ID format, generating new UUID")
 
 	return uuid.New()
 }

@@ -1,4 +1,4 @@
-package websocket
+package wshub
 
 import (
 	"time"
@@ -17,7 +17,7 @@ type ClientConfig struct {
 	PongTimeout     time.Duration
 }
 
-// NewClientConfig creates config with defaults from http/defaults.go
+// NewClientConfig creates config with defaults from http/defaults.go.
 func NewClientConfig() ClientConfig {
 	return ClientConfig{
 		SendBufferSize:  aichteeteapee.DefaultWebSocketClientSendBufferSize,
@@ -57,28 +57,28 @@ func WithReadLimit(limit int64) ClientOption {
 	}
 }
 
-// WithReadTimeout sets the timeout for reading messages from the WebSocket
+// WithReadTimeout sets the timeout for reading messages from the WebSocket.
 func WithReadTimeout(timeout time.Duration) ClientOption {
 	return func(c *ClientConfig) {
 		c.ReadTimeout = timeout
 	}
 }
 
-// WithWriteTimeout sets the timeout for writing messages to the WebSocket
+// WithWriteTimeout sets the timeout for writing messages to the WebSocket.
 func WithWriteTimeout(timeout time.Duration) ClientOption {
 	return func(c *ClientConfig) {
 		c.WriteTimeout = timeout
 	}
 }
 
-// WithPingInterval sets the interval for sending ping messages
+// WithPingInterval sets the interval for sending ping messages.
 func WithPingInterval(interval time.Duration) ClientOption {
 	return func(c *ClientConfig) {
 		c.PingInterval = interval
 	}
 }
 
-// WithPongTimeout sets the timeout for waiting for pong responses
+// WithPongTimeout sets the timeout for waiting for pong responses.
 func WithPongTimeout(timeout time.Duration) ClientOption {
 	return func(c *ClientConfig) {
 		c.PongTimeout = timeout

@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/psyb0t/aichteeteapee/server"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/commander"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/psyb0t/gorpitx"
@@ -69,7 +69,7 @@ type PIrateRF struct {
 	config           Config
 	rpitx            *gorpitx.RPITX
 	httpServer       *server.Server
-	websocketHub     websocket.Hub
+	websocketHub     wshub.Hub
 	executionManager *executionManager
 	commander        commander.Commander
 	serviceCtx       context.Context //nolint:containedctx

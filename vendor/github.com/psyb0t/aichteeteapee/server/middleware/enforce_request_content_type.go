@@ -7,12 +7,15 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// EnforceRequestContentTypeMiddleware enforces specific content types on incoming requests
+// EnforceRequestContentTypeMiddleware enforces specific content types on
+// incoming requests.
 func EnforceRequestContentType(allowedContentTypes ...string) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Skip enforcement for GET, HEAD, DELETE methods which typically don't have request bodies
-			if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodDelete {
+			// Skip enforcement for GET, HEAD, DELETE methods which typically
+			// don't have request bodies
+			if r.Method == http.MethodGet || r.Method == http.MethodHead ||
+				r.Method == http.MethodDelete {
 				next.ServeHTTP(w, r)
 
 				return
@@ -57,7 +60,8 @@ func EnforceRequestContentType(allowedContentTypes ...string) Middleware {
 	}
 }
 
-// EnforceRequestContentTypeJSONMiddleware is a convenience function that enforces JSON content type on requests
+// EnforceRequestContentTypeJSONMiddleware is a convenience function that
+// enforces JSON content type on requests.
 func EnforceRequestContentTypeJSON() Middleware {
 	return EnforceRequestContentType(aichteeteapee.ContentTypeJSON)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// RequestIDMiddleware generates and injects a unique request ID
+// RequestIDMiddleware generates and injects a unique request ID.
 func RequestID() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

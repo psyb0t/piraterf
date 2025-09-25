@@ -91,6 +91,14 @@ class PIrateRFController {
         file: "",
         baudRate: "",
       },
+
+      "audiosock-broadcast": {
+        frequency: "144500000",
+        sampleRate: "",
+        bufferSize: "4096",
+        modulation: "FM",
+        gain: "1.0",
+      },
     };
 
     this.initializeElements();
@@ -177,6 +185,7 @@ class PIrateRFController {
     this.pisstvForm = document.getElementById("pisstvForm");
     this.pirttyForm = document.getElementById("pirttyForm");
     this.fskForm = document.getElementById("fskForm");
+    this.audioSockBroadcastForm = document.getElementById("audiosock-broadcastForm");
 
     // PIFMRDS form inputs
     this.freqInput = document.getElementById("freq");
@@ -258,6 +267,13 @@ class PIrateRFController {
     this.refreshFskFileBtn = document.getElementById("refreshFskFileBtn");
     this.fskFileSelectBtn = document.getElementById("fskFileSelectBtn");
     this.editFskFileBtn = document.getElementById("editFskFileBtn");
+
+    // AudioSock Broadcast form inputs
+    this.audioSockBroadcastFreqInput = document.getElementById("audioSockBroadcastFreq");
+    this.audioSockBroadcastSampleRateInput = document.getElementById("audioSockBroadcastSampleRate");
+    this.audioSockBroadcastBufferSizeInput = document.getElementById("audioSockBroadcastBufferSize");
+    this.audioSockBroadcastCsdrPresetInput = document.getElementById("audioSockBroadcastCsdrPreset");
+    this.audioSockBroadcastGainInput = document.getElementById("audioSockBroadcastGain");
     this.fskDataFile = document.getElementById("fskDataFile");
 
     // PISSTV image control buttons
@@ -670,6 +686,28 @@ class PIrateRFController {
       this.validateForm();
     });
 
+    // AudioSock Broadcast module form events
+    this.audioSockBroadcastFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.audioSockBroadcastSampleRateInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.audioSockBroadcastBufferSizeInput.addEventListener("change", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.audioSockBroadcastCsdrPresetInput.addEventListener("change", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.audioSockBroadcastGainInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -857,6 +895,7 @@ class PIrateRFController {
     this.pisstvForm.classList.add("hidden");
     this.pirttyForm.classList.add("hidden");
     this.fskForm.classList.add("hidden");
+    this.audioSockBroadcastForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -893,6 +932,9 @@ class PIrateRFController {
       case "fsk":
         this.fskForm.classList.remove("hidden");
         this.loadDataFiles(false);
+        break;
+      case "audiosock-broadcast":
+        this.audioSockBroadcastForm.classList.remove("hidden");
         break;
     }
 
@@ -1084,6 +1126,10 @@ class PIrateRFController {
         const isText = this.fskInputTypeText.classList.contains('active') && this.fskTextInput.value.trim();
         const isFile = this.fskInputTypeFile.classList.contains('active') && this.fskFileInput.value;
         isValid = module && hasFreq && (isText || isFile);
+        break;
+      case "audiosock-broadcast":
+        // For AudioSock, socket path gets populated after connecting, so don't require it
+        isValid = module && this.audioSockBroadcastFreqInput.value;
         break;
       default:
         isValid = false;
@@ -1631,6 +1677,10 @@ class PIrateRFController {
         }
         timeout = 0; // No timeout for fsk by default
         break;
+      case "audiosock-broadcast":
+        // For audiosock-broadcast, we first need to connect to /wsunix to get socket path
+        this.startAudioSockBroadcast();
+        return; // Return early, don't send normal rpitx message yet
     }
 
     const message = {
@@ -1667,6 +1717,14 @@ class PIrateRFController {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       this.log("❌ WebSocket not connected", "system");
       return;
+    }
+
+    // Disconnect unix socket if it exists (for USB AudioSock Broadcast)
+    if (this.unixSocket && this.unixSocket.readyState === WebSocket.OPEN) {
+      this.log("🔌 Disconnecting from unix socket bridge...", "system");
+      this.stopMicrophoneCapture(); // Stop live audio capture
+      this.unixSocket.close();
+      this.unixSocket = null;
     }
 
     const message = {
@@ -1720,6 +1778,14 @@ class PIrateRFController {
     if (this.isDebugMode) {
       this.log(`Client: ${data.stoppingClientId}`, "system");
     }
+
+    // Clean up unix socket connection if it exists (for USB AudioSock Broadcast)
+    if (this.unixSocket && this.unixSocket.readyState === WebSocket.OPEN) {
+      this.log("🔌 Closing unix socket after execution stopped", "system");
+      this.stopMicrophoneCapture();
+      this.unixSocket.close();
+      this.unixSocket = null;
+    }
   }
 
   onExecutionError(data) {
@@ -1727,6 +1793,14 @@ class PIrateRFController {
 
     this.log(`❌ EXECUTION ERROR: ${data.error}`, "system");
     this.log(`Message: ${data.message}`, "system");
+
+    // Clean up unix socket connection if it exists (for USB AudioSock Broadcast)
+    if (this.unixSocket && this.unixSocket.readyState === WebSocket.OPEN) {
+      this.log("🔌 Closing unix socket due to execution error", "system");
+      this.stopMicrophoneCapture();
+      this.unixSocket.close();
+      this.unixSocket = null;
+    }
   }
 
   onOutputLine(data) {
@@ -3246,6 +3320,13 @@ class PIrateRFController {
     this.state.fsk.file = this.fskFileInput.value;
     this.state.fsk.baudRate = this.fskBaudRateInput.value;
 
+    // Update AudioSock Broadcast state
+    this.state["audiosock-broadcast"].frequency = this.audioSockBroadcastFreqInput.value;
+    this.state["audiosock-broadcast"].sampleRate = this.audioSockBroadcastSampleRateInput.value;
+    this.state["audiosock-broadcast"].bufferSize = this.audioSockBroadcastBufferSizeInput.value;
+    this.state["audiosock-broadcast"].modulation = this.audioSockBroadcastCsdrPresetInput.value;
+    this.state["audiosock-broadcast"].gain = this.audioSockBroadcastGainInput.value;
+
     this.debug("💾 Saving FSK state:", this.state.fsk);
     this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
     if (this.isDebugMode) {
@@ -3542,10 +3623,358 @@ class PIrateRFController {
     if (this.state.fsk.baudRate && this.fskBaudRateInput)
       this.fskBaudRateInput.value = this.state.fsk.baudRate;
 
+    // Restore AudioSock Broadcast state
+    if (this.state["audiosock-broadcast"].frequency && this.audioSockBroadcastFreqInput)
+      this.audioSockBroadcastFreqInput.value = this.state["audiosock-broadcast"].frequency;
+    if (this.state["audiosock-broadcast"].sampleRate && this.audioSockBroadcastSampleRateInput)
+      this.audioSockBroadcastSampleRateInput.value = this.state["audiosock-broadcast"].sampleRate;
+    if (this.state["audiosock-broadcast"].bufferSize && this.audioSockBroadcastBufferSizeInput)
+      this.audioSockBroadcastBufferSizeInput.value = this.state["audiosock-broadcast"].bufferSize;
+    if (this.state["audiosock-broadcast"].modulation && this.audioSockBroadcastCsdrPresetInput)
+      this.audioSockBroadcastCsdrPresetInput.value = this.state["audiosock-broadcast"].modulation;
+    if (this.state["audiosock-broadcast"].gain && this.audioSockBroadcastGainInput)
+      this.audioSockBroadcastGainInput.value = this.state["audiosock-broadcast"].gain;
+
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 
     // Trigger module change to show/hide appropriate form fields
     this.onModuleChange();
+  }
+
+  startAudioSockBroadcast() {
+    // Connect to /wsunix endpoint to get socket path
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/wsunix`;
+
+    this.log("🔌 Connecting to unix socket bridge...", "system");
+
+    const unixWs = new WebSocket(wsUrl);
+
+    unixWs.onopen = async () => {
+      this.log("✅ Connected to unix socket bridge", "system");
+      // Start microphone capture for live audio streaming
+      const micSuccess = await this.startMicrophoneCapture(unixWs);
+      if (!micSuccess) {
+        // Microphone failed, connection will be closed by startMicrophoneCapture
+        return;
+      }
+    };
+
+    unixWs.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === "wsunixbridge.init") {
+          this.handleWSUnixBridgeInit(message.data, unixWs);
+        }
+      } catch (error) {
+        this.log(`❌ Error parsing unix socket message: ${error.message}`, "system");
+      }
+    };
+
+    unixWs.onerror = (error) => {
+      this.log("❌ Unix socket connection error", "system");
+      console.error("Unix socket WebSocket error:", error);
+      // Clean up on error
+      this.stopMicrophoneCapture();
+    };
+
+    unixWs.onclose = () => {
+      this.log("🔌 Unix socket connection closed", "system");
+      // Clean up when connection closes
+      this.stopMicrophoneCapture();
+    };
+  }
+
+  handleWSUnixBridgeInit(initData, unixWs) {
+    this.log(`📍 Received socket path: ${initData.writerSocket}`, "system");
+
+    // Check if microphone capture is ready - if not, don't start gorpitx
+    if (!this.microphoneReady) {
+      this.log(`⚠️ Waiting for microphone before starting transmission...`, "system");
+      // Store the data for later use when mic is ready
+      this.pendingAudioSockArgs = {
+        frequency: parseFloat(this.audioSockBroadcastFreqInput.value),
+        socketPath: initData.writerSocket,
+        unixWs: unixWs
+      };
+      if (this.audioSockBroadcastSampleRateInput.value && this.audioSockBroadcastSampleRateInput.value.trim() !== "") {
+        this.pendingAudioSockArgs.sampleRate = parseInt(this.audioSockBroadcastSampleRateInput.value);
+      }
+      if (this.audioSockBroadcastCsdrPresetInput.value && this.audioSockBroadcastCsdrPresetInput.value.trim() !== "") {
+        this.pendingAudioSockArgs.modulation = this.audioSockBroadcastCsdrPresetInput.value.trim();
+      }
+      if (this.audioSockBroadcastGainInput.value && this.audioSockBroadcastGainInput.value.trim() !== "") {
+        this.pendingAudioSockArgs.gain = parseFloat(this.audioSockBroadcastGainInput.value);
+      }
+      return;
+    }
+
+    // Microphone is ready, start gorpitx immediately
+    this.startGorpitxAudioSockModule(initData, unixWs);
+  }
+
+  startGorpitxAudioSockModule(initData, unixWs) {
+    const args = {
+      frequency: parseFloat(this.audioSockBroadcastFreqInput.value),
+      socketPath: initData.writerSocket
+    };
+
+    // Add optional sample rate if provided
+    if (this.audioSockBroadcastSampleRateInput.value && this.audioSockBroadcastSampleRateInput.value.trim() !== "") {
+      args.sampleRate = parseInt(this.audioSockBroadcastSampleRateInput.value);
+    }
+
+    // Add optional modulation if provided
+    if (this.audioSockBroadcastCsdrPresetInput.value && this.audioSockBroadcastCsdrPresetInput.value.trim() !== "") {
+      args.modulation = this.audioSockBroadcastCsdrPresetInput.value.trim();
+    }
+
+    // Add optional gain if provided
+    if (this.audioSockBroadcastGainInput.value && this.audioSockBroadcastGainInput.value.trim() !== "") {
+      args.gain = parseFloat(this.audioSockBroadcastGainInput.value);
+    }
+
+    // Now start the gorpitx module through normal WebSocket
+    const message = {
+      type: "rpitx.execution.start",
+      data: {
+        moduleName: "audiosock-broadcast",
+        args: args,
+        timeout: 0, // No timeout - run until stopped
+        playOnce: false,
+        intro: null,
+        outro: null,
+      },
+      id: this.generateUUID(),
+    };
+
+    if (this.isDebugMode) {
+      this.log("📤 SENDING: " + JSON.stringify(message, null, 2), "send");
+    }
+
+    // Send via the main WebSocket connection
+    this.ws.send(JSON.stringify(message));
+
+    // Store reference to unix socket for later cleanup
+    this.unixSocket = unixWs;
+  }
+
+  async startMicrophoneCapture(unixWs) {
+    // Initialize microphone status
+    this.microphoneReady = false;
+
+    try {
+      this.log("🎤 Starting live microphone capture...", "system");
+
+      // Check for browser compatibility
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("getUserMedia not supported in this browser");
+      }
+
+      // Check for HTTPS requirement (getUserMedia requires secure context)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        throw new Error("getUserMedia requires HTTPS or localhost");
+      }
+
+      // Get configured sample rate or default to 48000
+      const configuredSampleRate = this.audioSockBroadcastSampleRateInput.value ?
+        parseInt(this.audioSockBroadcastSampleRateInput.value) : 48000;
+
+      // Request microphone access for live streaming
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: configuredSampleRate,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+
+      this.log("✅ Microphone access granted for live streaming", "system");
+      return await this.processMicrophoneStream(stream, unixWs);
+
+    } catch (error) {
+      this.log(`❌ Microphone capture error: ${error.message}`, "system");
+
+      if (error.message.includes("getUserMedia not supported")) {
+        this.log("❌ Browser doesn't support microphone access (try Chrome/Firefox)", "system");
+      } else if (error.message.includes("requires HTTPS")) {
+        this.log("❌ Microphone access requires HTTPS or localhost", "system");
+      } else if (error.name === "NotFoundError") {
+        this.log("❌ No microphone found for live streaming", "system");
+      } else if (error.name === "NotAllowedError") {
+        this.log("❌ Microphone permission denied for live streaming", "system");
+      } else if (error.name === "NotSupportedError") {
+        this.log("❌ Microphone not supported on this device", "system");
+      } else if (error.name === "OverconstrainedError") {
+        this.log("❌ Microphone constraints not supported (trying fallback)", "system");
+        // Try with basic constraints as fallback
+        try {
+          const basicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          this.log("✅ Basic microphone access granted", "system");
+          // Continue with basic stream processing...
+          return await this.processMicrophoneStream(basicStream, unixWs);
+        } catch (fallbackError) {
+          this.log(`❌ Fallback microphone access failed: ${fallbackError.message}`, "system");
+        }
+      }
+
+      // Close the unix socket connection since we can't stream audio
+      this.log("🔌 Closing connection - no audio available", "system");
+      if (unixWs.readyState === WebSocket.OPEN) {
+        unixWs.close();
+      }
+
+      return false; // Failure
+    }
+  }
+
+  async processMicrophoneStream(stream, unixWs) {
+    try {
+      // Get configured sample rate or default to 48000
+      const configuredSampleRate = this.audioSockBroadcastSampleRateInput.value ?
+        parseInt(this.audioSockBroadcastSampleRateInput.value) : 48000;
+
+      // Create audio context for PCM processing
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: configuredSampleRate
+      });
+
+      this.log(`🎵 Using sample rate: ${configuredSampleRate} Hz (actual: ${audioContext.sampleRate} Hz)`, "system");
+
+      const source = audioContext.createMediaStreamSource(stream);
+
+      // Try to use AudioWorkletNode (modern approach)
+      let processor;
+      try {
+        // Define the AudioWorklet processor inline as a data URL
+        const workletCode = `
+          class PCMProcessor extends AudioWorkletProcessor {
+            process(inputs, outputs, parameters) {
+              const input = inputs[0];
+              if (input && input[0]) {
+                // Send PCM data to main thread
+                this.port.postMessage({
+                  type: 'pcm',
+                  data: input[0] // Float32Array
+                });
+              }
+              return true;
+            }
+          }
+          registerProcessor('pcm-processor', PCMProcessor);
+        `;
+
+        const workletBlob = new Blob([workletCode], { type: 'application/javascript' });
+        const workletUrl = URL.createObjectURL(workletBlob);
+
+        await audioContext.audioWorklet.addModule(workletUrl);
+        processor = new AudioWorkletNode(audioContext, 'pcm-processor');
+
+        processor.port.onmessage = (event) => {
+          if (event.data.type === 'pcm' && unixWs.readyState === WebSocket.OPEN) {
+            const float32Data = event.data.data;
+
+            // Convert float32 (-1.0 to 1.0) to int16 (-32768 to 32767)
+            const int16Data = new Int16Array(float32Data.length);
+            for (let i = 0; i < float32Data.length; i++) {
+              const sample = Math.max(-1, Math.min(1, float32Data[i]));
+              int16Data[i] = sample < 0 ? sample * 32768 : sample * 32767;
+            }
+
+            // Send raw PCM data to Unix socket
+            unixWs.send(int16Data.buffer);
+          }
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+
+        const bufferSize = parseInt(this.audioSockBroadcastBufferSizeInput.value) || 4096;
+        this.log(`🎵 AudioWorkletNode initialized (buffer size setting: ${bufferSize} samples)`, "system");
+
+      } catch (workletError) {
+        this.log("⚠️ Falling back to ScriptProcessorNode", "system");
+
+        // Fallback to ScriptProcessorNode (deprecated but more compatible)
+        const bufferSize = parseInt(this.audioSockBroadcastBufferSizeInput.value) || 4096;
+        processor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+        this.log(`🎵 Using ScriptProcessorNode with buffer size: ${bufferSize} samples (${bufferSize * 2} bytes)`, "system");
+
+        processor.onaudioprocess = (event) => {
+          if (unixWs.readyState === WebSocket.OPEN) {
+            // Get the float32 PCM data
+            const float32Data = event.inputBuffer.getChannelData(0);
+
+            // Convert float32 (-1.0 to 1.0) to int16 (-32768 to 32767)
+            const int16Data = new Int16Array(float32Data.length);
+            for (let i = 0; i < float32Data.length; i++) {
+              const sample = Math.max(-1, Math.min(1, float32Data[i]));
+              int16Data[i] = sample < 0 ? sample * 32768 : sample * 32767;
+            }
+
+            // Send raw PCM data to Unix socket
+            unixWs.send(int16Data.buffer);
+          }
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+      }
+
+      // Store references for cleanup
+      this.liveAudioStream = stream;
+      this.liveAudioContext = audioContext;
+      this.liveAudioProcessor = processor;
+
+      this.log("🎵 Live audio streaming started (48kHz mono PCM)", "system");
+
+      // Mark microphone as ready
+      this.microphoneReady = true;
+
+      // If we have pending AudioSock args, start gorpitx now
+      if (this.pendingAudioSockArgs) {
+        this.log("🚀 Microphone ready, starting transmission...", "system");
+        this.startGorpitxAudioSockModule({
+          writerSocket: this.pendingAudioSockArgs.socketPath
+        }, this.pendingAudioSockArgs.unixWs);
+        this.pendingAudioSockArgs = null;
+      }
+
+      return true; // Success
+
+    } catch (error) {
+      this.log(`❌ Audio processing error: ${error.message}`, "system");
+
+      // Clean up the stream
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+      return false;
+    }
+  }
+
+  stopMicrophoneCapture() {
+    if (this.liveAudioStream) {
+      this.liveAudioStream.getTracks().forEach(track => track.stop());
+      this.liveAudioStream = null;
+      this.log("🔇 Stopped live audio stream", "system");
+    }
+
+    if (this.liveAudioProcessor) {
+      this.liveAudioProcessor.disconnect();
+      this.liveAudioProcessor = null;
+    }
+
+    if (this.liveAudioContext) {
+      this.liveAudioContext.close();
+      this.liveAudioContext = null;
+    }
+
+    // Clean up flags and pending args
+    this.microphoneReady = false;
+    this.pendingAudioSockArgs = null;
   }
 }
 

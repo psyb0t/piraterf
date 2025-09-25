@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/common-go/env"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,7 @@ func init() {
 func TestSendFileRenameSuccessEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -35,7 +36,7 @@ func TestSendFileRenameSuccessEvent(t *testing.T) {
 func TestSendFileRenameErrorEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -48,7 +49,7 @@ func TestSendFileRenameErrorEvent(t *testing.T) {
 func TestSendFileDeleteSuccessEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -61,7 +62,7 @@ func TestSendFileDeleteSuccessEvent(t *testing.T) {
 func TestSendFileDeleteErrorEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -74,7 +75,7 @@ func TestSendFileDeleteErrorEvent(t *testing.T) {
 func TestValidateFileRenameRequest(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	tempDir := t.TempDir()
@@ -131,7 +132,7 @@ func TestHandleFileRename(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			defer hub.Close()
 
 			tempDir := t.TempDir()
@@ -154,13 +155,13 @@ func TestHandleFileRename(t *testing.T) {
 				tt.eventData = fmt.Sprintf(`{"filePath": "%s", "newName": "renamed_file.txt"}`, originalFilePath)
 			}
 
-			event := &websocket.Event{
+			event := &dabluveees.Event{
 				Type: "fileRename",
 				ID:   uuid.New(),
 				Data: json.RawMessage(tt.eventData),
 			}
 
-			client := &websocket.Client{}
+			client := &wshub.Client{}
 
 			// Test that handleFileRename doesn't panic
 			if tt.eventData == `{invalid json` {
@@ -214,7 +215,7 @@ func TestHandleFileDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			defer hub.Close()
 
 			tempDir := t.TempDir()
@@ -236,13 +237,13 @@ func TestHandleFileDelete(t *testing.T) {
 				tt.eventData = fmt.Sprintf(`{"filePath": "%s"}`, filePath)
 			}
 
-			event := &websocket.Event{
+			event := &dabluveees.Event{
 				Type: "fileDelete",
 				ID:   uuid.New(),
 				Data: json.RawMessage(tt.eventData),
 			}
 
-			client := &websocket.Client{}
+			client := &wshub.Client{}
 
 			// Test that handleFileDelete doesn't panic
 			if tt.eventData == `{invalid json` {

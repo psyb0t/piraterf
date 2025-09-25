@@ -7,9 +7,9 @@ type ErrorResponse struct {
 	Details any    `json:"details,omitempty"`
 }
 
-// Predefined error responses for common scenarios
+// Predefined error responses for common scenarios.
 var (
-	// File and path errors
+	// File and path errors.
 	ErrorResponseFileNotFound = ErrorResponse{
 		Code:    ErrorCodeFileNotFound,
 		Message: "File not found",
@@ -25,7 +25,7 @@ var (
 		Message: "Path traversal denied",
 	}
 
-	// HTTP errors
+	// HTTP errors.
 	ErrorResponseEndpointNotFound = ErrorResponse{
 		Code:    ErrorCodeEndpointNotFound,
 		Message: "Endpoint not found",
@@ -36,7 +36,7 @@ var (
 		Message: "Method not allowed",
 	}
 
-	// User-related errors
+	// User-related errors.
 	ErrorResponseMissingUserID = ErrorResponse{
 		Code:    ErrorCodeMissingUserID,
 		Message: "User ID is required",
@@ -47,7 +47,7 @@ var (
 		Message: "Invalid user ID format",
 	}
 
-	// Generic errors
+	// Generic errors.
 	ErrorResponseValidationFailed = ErrorResponse{
 		Code:    ErrorCodeValidationFailed,
 		Message: "Validation failed",
@@ -73,7 +73,7 @@ var (
 		Message: "Internal server error",
 	}
 
-	// Content type errors
+	// Content type errors.
 	ErrorResponseMissingContentType = ErrorResponse{
 		Code:    ErrorCodeMissingContentType,
 		Message: "Content-Type header is required",
@@ -84,7 +84,7 @@ var (
 		Message: "Unsupported content type",
 	}
 
-	// File upload errors
+	// File upload errors.
 	ErrorResponseInvalidMultipartForm = ErrorResponse{
 		Code:    ErrorCodeInvalidMultipartForm,
 		Message: "Invalid multipart form",

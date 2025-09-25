@@ -49,7 +49,8 @@ sudo apt-get install -y \
     ffmpeg \
     openssl \
     minimodem \
-    pulseaudio
+    pulseaudio \
+    socat
 
 echo "📥 Cloning the fucking rpitx repository..."
 

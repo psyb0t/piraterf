@@ -4,7 +4,7 @@ import "net/http"
 
 type Middleware func(http.Handler) http.Handler
 
-// Chain composes middlewares around a final handler
+// Chain composes middlewares around a final handler.
 func Chain(
 	h http.Handler,
 	middlewares ...Middleware,

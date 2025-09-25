@@ -9,7 +9,7 @@ import (
 type StaticRouteConfig struct {
 	Dir                   string                // Directory to serve files from
 	Path                  string                // URL path prefix to serve on
-	DirectoryIndexingType DirectoryIndexingType // Directory indexing type: none, html, or json (default: none)
+	DirectoryIndexingType DirectoryIndexingType // Directory indexing type
 }
 
 type Router struct {

@@ -1,4 +1,4 @@
-MIN_TEST_COVERAGE := 90
+MIN_TEST_COVERAGE := 85
 
 all: dep lint test ## Run dep, lint and test
 

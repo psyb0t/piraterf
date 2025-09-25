@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/gorpitx"
@@ -127,7 +128,7 @@ func TestProcessIntroOutro(t *testing.T) {
 func TestHandleRPITXExecutionStop(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{
@@ -135,8 +136,8 @@ func TestHandleRPITXExecutionStop(t *testing.T) {
 		executionManager: newExecutionManager(gorpitx.GetInstance(), hub),
 	}
 
-	client := &websocket.Client{}
-	event := &websocket.Event{
+	client := &wshub.Client{}
+	event := &dabluveees.Event{
 		Type: "rpitx.execution.stop",
 		Data: json.RawMessage(`{}`),
 	}

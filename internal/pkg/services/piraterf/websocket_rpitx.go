@@ -9,7 +9,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/common-go/constants"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/psyb0t/gorpitx"
@@ -17,12 +18,12 @@ import (
 )
 
 const (
-	eventTypeRPITXExecutionStart      websocket.EventType = "rpitx.execution.start"
-	eventTypeRPITXExecutionStarted    websocket.EventType = "rpitx.execution.started"
-	eventTypeRPITXExecutionStop       websocket.EventType = "rpitx.execution.stop"
-	eventTypeRPITXExecutionStopped    websocket.EventType = "rpitx.execution.stopped"
-	eventTypeRPITXExecutionError      websocket.EventType = "rpitx.execution.error"
-	eventTypeRPITXExecutionOutputLine websocket.EventType = "rpitx.execution.output-line"
+	eventTypeRPITXExecutionStart      dabluveees.EventType = "rpitx.execution.start"
+	eventTypeRPITXExecutionStarted    dabluveees.EventType = "rpitx.execution.started"
+	eventTypeRPITXExecutionStop       dabluveees.EventType = "rpitx.execution.stop"
+	eventTypeRPITXExecutionStopped    dabluveees.EventType = "rpitx.execution.stopped"
+	eventTypeRPITXExecutionError      dabluveees.EventType = "rpitx.execution.error"
+	eventTypeRPITXExecutionOutputLine dabluveees.EventType = "rpitx.execution.output-line"
 
 	// Audio duration rounding offset for converting float to int
 	// seconds.
@@ -64,9 +65,9 @@ type rpitxExecutionOutputLineMessageData struct {
 }
 
 func (s *PIrateRF) handleRPITXExecutionStart(
-	_ websocket.Hub,
-	client *websocket.Client,
-	event *websocket.Event,
+	_ wshub.Hub,
+	client *wshub.Client,
+	event *dabluveees.Event,
 ) error {
 	logger := logrus.WithFields(logrus.Fields{
 		constants.FieldEventType: event.Type,
@@ -88,7 +89,7 @@ func (s *PIrateRF) handleRPITXExecutionStart(
 }
 
 func (s *PIrateRF) parseExecutionMessage(
-	event *websocket.Event,
+	event *dabluveees.Event,
 	logger *logrus.Entry,
 ) (*rpitxExecutionStartMessage, error) {
 	var msg rpitxExecutionStartMessage
@@ -116,7 +117,7 @@ func (s *PIrateRF) handleModuleValidationError(err error, moduleName gorpitx.Mod
 
 func (s *PIrateRF) processModuleExecution(
 	msg *rpitxExecutionStartMessage,
-	client *websocket.Client,
+	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
 	finalTimeout := msg.Timeout
@@ -139,7 +140,7 @@ func (s *PIrateRF) processModuleExecution(
 func (s *PIrateRF) handlePIFMRDSExecution(
 	msg *rpitxExecutionStartMessage,
 	finalTimeout int,
-	client *websocket.Client,
+	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
 	processedTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(*msg, finalTimeout, logger)
@@ -157,7 +158,7 @@ func (s *PIrateRF) handlePIFMRDSExecution(
 func (s *PIrateRF) handleSPECTRUMPAINTExecution(
 	msg *rpitxExecutionStartMessage,
 	finalTimeout int,
-	client *websocket.Client,
+	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
 	modifiedArgs, err := s.processImageModifications(msg.Args, logger)
@@ -173,7 +174,7 @@ func (s *PIrateRF) handleSPECTRUMPAINTExecution(
 func (s *PIrateRF) handlePICHIRPExecution(
 	msg *rpitxExecutionStartMessage,
 	finalTimeout int,
-	client *websocket.Client,
+	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
 	logger.Debug("Processing PICHIRP execution request")
@@ -184,7 +185,7 @@ func (s *PIrateRF) handlePICHIRPExecution(
 func (s *PIrateRF) handlePOCSAGExecution(
 	msg *rpitxExecutionStartMessage,
 	finalTimeout int,
-	client *websocket.Client,
+	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
 	logger.Debug("Processing POCSAG execution request")
@@ -211,9 +212,9 @@ func (s *PIrateRF) createCleanupCallback(cleanupPath string, logger *logrus.Entr
 }
 
 func (s *PIrateRF) handleRPITXExecutionStop(
-	_ websocket.Hub,
-	client *websocket.Client,
-	event *websocket.Event,
+	_ wshub.Hub,
+	client *wshub.Client,
+	event *dabluveees.Event,
 ) error {
 	logger := logrus.WithFields(logrus.Fields{
 		constants.FieldEventType: event.Type,

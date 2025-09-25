@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// RecoveryConfig holds configuration for recovery middleware
+// RecoveryConfig holds configuration for recovery middleware.
 type RecoveryConfig struct {
 	Logger        *logrus.Logger
 	LogLevel      logrus.Level
@@ -25,56 +25,56 @@ type RecoveryConfig struct {
 
 type RecoveryOption func(*RecoveryConfig)
 
-// WithRecoveryLogger sets the logger instance
+// WithRecoveryLogger sets the logger instance.
 func WithRecoveryLogger(logger *logrus.Logger) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.Logger = logger
 	}
 }
 
-// WithRecoveryLogLevel sets the log level for panic recovery
+// WithRecoveryLogLevel sets the log level for panic recovery.
 func WithRecoveryLogLevel(level logrus.Level) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.LogLevel = level
 	}
 }
 
-// WithRecoveryLogMessage sets the log message for panic recovery
+// WithRecoveryLogMessage sets the log message for panic recovery.
 func WithRecoveryLogMessage(message string) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.LogMessage = message
 	}
 }
 
-// WithRecoveryStatusCode sets the HTTP status code for panic responses
+// WithRecoveryStatusCode sets the HTTP status code for panic responses.
 func WithRecoveryStatusCode(code int) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.StatusCode = code
 	}
 }
 
-// WithRecoveryResponse sets the response body for panic responses
+// WithRecoveryResponse sets the response body for panic responses.
 func WithRecoveryResponse(response any) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.Response = response
 	}
 }
 
-// WithRecoveryContentType sets the content type for panic responses
+// WithRecoveryContentType sets the content type for panic responses.
 func WithRecoveryContentType(contentType string) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.ContentType = contentType
 	}
 }
 
-// WithIncludeStack enables/disables stack trace inclusion in logs
+// WithIncludeStack enables/disables stack trace inclusion in logs.
 func WithIncludeStack(include bool) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		c.IncludeStack = include
 	}
 }
 
-// WithRecoveryExtraFields adds extra fields to panic log entries
+// WithRecoveryExtraFields adds extra fields to panic log entries.
 func WithRecoveryExtraFields(fields map[string]any) RecoveryOption {
 	return func(c *RecoveryConfig) {
 		if c.ExtraFields == nil {
@@ -85,7 +85,7 @@ func WithRecoveryExtraFields(fields map[string]any) RecoveryOption {
 	}
 }
 
-// WithCustomRecoveryHandler sets a custom handler for panic recovery
+// WithCustomRecoveryHandler sets a custom handler for panic recovery.
 func WithCustomRecoveryHandler(
 	handler func(recovered any, w http.ResponseWriter, r *http.Request),
 ) RecoveryOption {
@@ -96,7 +96,9 @@ func WithCustomRecoveryHandler(
 
 // RecoveryMiddleware recovers from panics with configurable options
 //
-//nolint:gocognit,nestif,cyclop,funlen // Complex panic handling logic is necessary for proper recovery
+// Complex panic handling logic is necessary for proper recovery
+//
+//nolint:gocognit,nestif,cyclop,funlen
 func Recovery(opts ...RecoveryOption) Middleware {
 	config := &RecoveryConfig{
 		Logger:        logrus.StandardLogger(),
@@ -158,23 +160,34 @@ func Recovery(opts ...RecoveryOption) Middleware {
 						jsonData, err := json.Marshal(config.Response)
 						if err != nil {
 							// If encoding fails, use a hardcoded fallback
-							config.Logger.Errorf("Failed to encode error response during panic recovery: %v", err)
+							config.Logger.Errorf(
+								"Failed to encode error response during panic recovery: %v", err,
+							)
 
-							fallbackResponse := []byte(`{"code":"INTERNAL_SERVER_ERROR","message":"Internal server error"}`)
+							fallbackResponse := []byte(
+								`{"code":"INTERNAL_SERVER_ERROR","message":"Internal server error"}`,
+							)
 							if _, writeErr := w.Write(fallbackResponse); writeErr != nil {
-								config.Logger.Errorf("Failed to write fallback response during panic recovery: %v", writeErr)
+								config.Logger.Errorf(
+									"Failed to write fallback response during panic recovery: %v",
+									writeErr,
+								)
 							}
 						} else {
 							// Encoding succeeded, write the response
 							if _, writeErr := w.Write(jsonData); writeErr != nil {
-								config.Logger.Errorf("Failed to write JSON response during panic recovery: %v", writeErr)
+								config.Logger.Errorf(
+									"Failed to write JSON response during panic recovery: %v", writeErr,
+								)
 							}
 						}
 					} else {
 						// For non-JSON responses, try to write as string
 						if str, ok := config.Response.(string); ok {
 							if _, err := w.Write([]byte(str)); err != nil {
-								config.Logger.Errorf("Failed to write error response during panic recovery: %v", err)
+								config.Logger.Errorf(
+									"Failed to write error response during panic recovery: %v", err,
+								)
 							}
 						}
 					}

@@ -1,27 +1,27 @@
 package aichteeteapee
 
 const (
-	// Authentication headers
+	// Authentication headers.
 	HeaderNameAuthorization = "Authorization"
 	HeaderNameXAPIKey       = "X-Api-Key" //nolint: gosec
 
-	// Content headers
+	// Content headers.
 	HeaderNameContentType    = "Content-Type"
 	HeaderNameContentLength  = "Content-Length"
 	HeaderNameAccept         = "Accept"
 	HeaderNameAcceptEncoding = "Accept-Encoding"
 
-	// Request tracking
+	// Request tracking.
 	HeaderNameXRequestID     = "X-Request-ID"
 	HeaderNameXCorrelationID = "X-Correlation-ID"
 
-	// Client info
+	// Client info.
 	HeaderNameUserAgent     = "User-Agent"
 	HeaderNameXForwardedFor = "X-Forwarded-For"
 	HeaderNameXRealIP       = "X-Real-IP"
 	HeaderNameXClientID     = "X-Client-ID"
 
-	// CORS headers
+	// CORS headers.
 	HeaderNameOrigin                        = "Origin"
 	HeaderNameAccessControlAllowOrigin      = "Access-Control-Allow-Origin"
 	HeaderNameAccessControlAllowMethods     = "Access-Control-Allow-Methods"
@@ -31,12 +31,12 @@ const (
 	HeaderNameAccessControlMaxAge           = "Access-Control-Max-Age"
 	HeaderNameVary                          = "Vary"
 
-	// Cache control
+	// Cache control.
 	HeaderNameCacheControl = "Cache-Control"
 	HeaderNameETag         = "ETag"
 	HeaderNameIfNoneMatch  = "If-None-Match"
 
-	// Security headers
+	// Security headers.
 	HeaderNameStrictTransportSecurity = "Strict-Transport-Security"
 	HeaderNameXContentTypeOptions     = "X-Content-Type-Options"
 	HeaderNameXFrameOptions           = "X-Frame-Options"

@@ -1,4 +1,4 @@
-package websocket
+package wshub
 
 import (
 	"maps"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// connectionsMap manages connection storage with thread-safe operations
+// connectionsMap manages connection storage with thread-safe operations.
 type connectionsMap struct {
 	conns map[uuid.UUID]*Connection
 	mu    sync.RWMutex
@@ -41,7 +41,7 @@ func (cm *connectionsMap) Remove(
 	return nil
 }
 
-// Get retrieves a connection by ID
+// Get retrieves a connection by ID.
 func (cm *connectionsMap) Get(connectionID uuid.UUID) *Connection {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()

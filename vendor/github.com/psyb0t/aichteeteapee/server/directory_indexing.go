@@ -17,9 +17,9 @@ import (
 type DirectoryIndexingType uint
 
 const (
-	DirectoryIndexingTypeNone DirectoryIndexingType = iota // No directory indexing (default: 0)
-	DirectoryIndexingTypeHTML                              // HTML directory listing
-	DirectoryIndexingTypeJSON                              // JSON directory listing
+	DirectoryIndexingTypeNone DirectoryIndexingType = iota // No indexing (0)
+	DirectoryIndexingTypeHTML                              // HTML listing
+	DirectoryIndexingTypeJSON                              // JSON listing
 )
 
 type DirectoryEntry struct {
@@ -36,7 +36,7 @@ type DirectoryListing struct {
 	Entries []DirectoryEntry `json:"entries"`
 }
 
-// HTML template for directory listings
+// HTML template for directory listings.
 const directoryListingHTMLTemplate = `<!DOCTYPE html>
 <html>
 <head>
@@ -44,11 +44,20 @@ const directoryListingHTMLTemplate = `<!DOCTYPE html>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         .container { max-width: 1000px; }
-        .header { border-bottom: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px; }
+        .header {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
         .parent { margin-bottom: 20px; }
         .parent a { text-decoration: none; color: #0066cc; font-weight: bold; }
         .entries { border-collapse: collapse; width: 100%; }
-        .entries th { text-align: left; padding: 8px; border-bottom: 2px solid #ddd; background: #f5f5f5; }
+        .entries th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 2px solid #ddd;
+            background: #f5f5f5;
+        }
         .entries td { padding: 8px; border-bottom: 1px solid #eee; }
         .entries tr:hover { background-color: #f9f9f9; }
         .name { width: 50%; }
@@ -85,12 +94,17 @@ const directoryListingHTMLTemplate = `<!DOCTYPE html>
                 {{range .Entries}}
                 <tr>
                     <td class="name">
-                        <a href="{{.URL}}" class="{{if .IsDir}}dir{{else}}file{{end}}">{{.Name}}</a>
+                        <a href="{{.URL}}"
+                           class="{{if .IsDir}}dir{{else}}file{{end}}">
+                            {{.Name}}
+                        </a>
                     </td>
                     <td class="size">
                         {{if .IsDir}}-{{else}}{{.Size}} bytes{{end}}
                     </td>
-                    <td class="date">{{.ModTime.Format "2006-01-02 15:04:05"}}</td>
+                    <td class="date">
+                        {{.ModTime.Format "2006-01-02 15:04:05"}}
+                    </td>
                 </tr>
                 {{end}}
             </tbody>
@@ -99,7 +113,8 @@ const directoryListingHTMLTemplate = `<!DOCTYPE html>
 </body>
 </html>`
 
-// handleDirectoryRequest handles directory access - tries to serve index.html or provides directory listing
+// handleDirectoryRequest handles directory access - tries to serve
+// index.html or provides directory listing.
 func (s *Server) handleDirectoryRequest(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -131,7 +146,7 @@ func (s *Server) handleDirectoryRequest(
 	s.generateDirectoryListing(w, r, fullPath, staticConfig)
 }
 
-// generateDirectoryListing creates and serves a directory listing
+// generateDirectoryListing creates and serves a directory listing.
 func (s *Server) generateDirectoryListing(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -155,6 +170,15 @@ func (s *Server) generateDirectoryListing(
 	listing := s.buildDirectoryListing(r, entries, staticConfig)
 
 	// Serve the listing in the requested format
+	s.serveDirectoryListing(w, listing, staticConfig)
+}
+
+// serveDirectoryListing serves the directory listing in the requested format.
+func (s *Server) serveDirectoryListing(
+	w http.ResponseWriter,
+	listing DirectoryListing,
+	staticConfig StaticRouteConfig,
+) {
 	switch staticConfig.DirectoryIndexingType {
 	case DirectoryIndexingTypeNone:
 		// This should never happen since we check for DirectoryIndexingNone earlier,
@@ -167,41 +191,61 @@ func (s *Server) generateDirectoryListing(
 
 		return
 	case DirectoryIndexingTypeJSON:
-		w.Header().Set(aichteeteapee.HeaderNameContentType, aichteeteapee.ContentTypeJSON)
-
-		// For JSON, just return the entries array directly
-		if err := json.NewEncoder(w).Encode(listing.Entries); err != nil {
-			s.logger.WithError(err).Error("failed to encode directory listing JSON")
-			aichteeteapee.WriteJSON(
-				w,
-				http.StatusInternalServerError,
-				aichteeteapee.ErrorResponseInternalServerError,
-			)
-		}
+		s.serveDirectoryListingJSON(w, listing)
 	case DirectoryIndexingTypeHTML:
 		fallthrough
 	default:
-		w.Header().Set(aichteeteapee.HeaderNameContentType, "text/html; charset=utf-8")
-
-		tmpl, err := template.New("directory").Parse(directoryListingHTMLTemplate)
-		if err != nil {
-			s.logger.WithError(err).Error("failed to parse directory listing template")
-			aichteeteapee.WriteJSON(
-				w,
-				http.StatusInternalServerError,
-				aichteeteapee.ErrorResponseInternalServerError,
-			)
-
-			return
-		}
-
-		if err := tmpl.Execute(w, listing); err != nil {
-			s.logger.WithError(err).Error("failed to execute directory listing template")
-		}
+		s.serveDirectoryListingHTML(w, listing)
 	}
 }
 
-// buildDirectoryListing creates a DirectoryListing from directory contents
+// serveDirectoryListingJSON serves directory listing as JSON.
+func (s *Server) serveDirectoryListingJSON(
+	w http.ResponseWriter,
+	listing DirectoryListing,
+) {
+	w.Header().Set(
+		aichteeteapee.HeaderNameContentType, aichteeteapee.ContentTypeJSON,
+	)
+
+	// For JSON, just return the entries array directly
+	if err := json.NewEncoder(w).Encode(listing.Entries); err != nil {
+		s.logger.WithError(err).Error("failed to encode directory listing JSON")
+		aichteeteapee.WriteJSON(
+			w,
+			http.StatusInternalServerError,
+			aichteeteapee.ErrorResponseInternalServerError,
+		)
+	}
+}
+
+// serveDirectoryListingHTML serves directory listing as HTML.
+func (s *Server) serveDirectoryListingHTML(
+	w http.ResponseWriter,
+	listing DirectoryListing,
+) {
+	w.Header().Set(
+		aichteeteapee.HeaderNameContentType, "text/html; charset=utf-8",
+	)
+
+	tmpl, err := template.New("directory").Parse(directoryListingHTMLTemplate)
+	if err != nil {
+		s.logger.WithError(err).Error("failed to parse directory listing template")
+		aichteeteapee.WriteJSON(
+			w,
+			http.StatusInternalServerError,
+			aichteeteapee.ErrorResponseInternalServerError,
+		)
+
+		return
+	}
+
+	if err := tmpl.Execute(w, listing); err != nil {
+		s.logger.WithError(err).Error("failed to execute directory listing template")
+	}
+}
+
+// buildDirectoryListing creates a DirectoryListing from directory contents.
 func (s *Server) buildDirectoryListing(
 	r *http.Request,
 	entries []os.DirEntry,
@@ -260,7 +304,8 @@ func (s *Server) buildDirectoryListing(
 			return listing.Entries[i].IsDir // Directories first
 		}
 
-		return strings.ToLower(listing.Entries[i].Name) < strings.ToLower(listing.Entries[j].Name)
+		return strings.ToLower(listing.Entries[i].Name) <
+			strings.ToLower(listing.Entries[j].Name)
 	})
 
 	return listing

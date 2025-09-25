@@ -88,16 +88,17 @@
         <div class="form-group">
           <label for="moduleSelect" class="required">Module</label>
           <select id="moduleSelect">
-            <option value="pifmrds" selected>pifmrds</option>
-            <option value="morse">morse</option>
-            <option value="tune">tune</option>
-            <option value="pichirp">pichirp</option>
-            <option value="spectrumpaint">spectrumpaint</option>
-            <option value="pocsag">pocsag</option>
-            <option value="pift8">pift8</option>
-            <option value="pisstv">pisstv</option>
-            <option value="pirtty">pirtty</option>
-            <option value="fsk">fsk</option>
+            <option value="pifmrds" selected>FM Station</option>
+            <option value="morse">Morse Code</option>
+            <option value="tune">Carrier Wave</option>
+            <option value="pichirp">Frequency Sweep</option>
+            <option value="spectrumpaint">Spectrum Paint</option>
+            <option value="pocsag">POCSAG</option>
+            <option value="pift8">FT8</option>
+            <option value="pisstv">SSTV</option>
+            <option value="pirtty">RTTY</option>
+            <option value="fsk">FSK</option>
+            <option value="audiosock-broadcast">Live Microphone Broadcast</option>
           </select>
         </div>
 
@@ -109,8 +110,8 @@
               type="number"
               id="freq"
               step="0.1"
-              placeholder="431"
-              value="431"
+              placeholder="87.9"
+              value="87.9"
               data-module-name="pifmrds"
               data-field-name="freq"
             />
@@ -297,7 +298,7 @@
           </div>
 
           <div class="form-group">
-            <label for="ppm">PPM Clock Correction (optional)</label>
+            <label for="ppm">PPM Clock Correction</label>
             <input
               type="number"
               id="ppm"
@@ -330,8 +331,8 @@
               type="number"
               id="morseFreq"
               step="1"
-              placeholder="431000000"
-              value="431000000"
+              placeholder="7058000"
+              value="7058000"
               data-module-name="morse"
               data-field-name="freq"
             />
@@ -374,8 +375,8 @@ HACK THE PLANET</textarea
               type="number"
               id="tuneFreq"
               step="1"
-              placeholder="431000000"
-              value="431000000"
+              placeholder="144500000"
+              value="144500000"
               data-module-name="tune"
               data-field-name="freq"
             />
@@ -395,7 +396,7 @@ HACK THE PLANET</textarea
           </div>
 
           <div class="form-group">
-            <label for="tunePPM">PPM Clock Correction (optional)</label>
+            <label for="tunePPM">PPM Clock Correction</label>
             <input
               type="number"
               id="tunePPM"
@@ -417,8 +418,8 @@ HACK THE PLANET</textarea
               type="number"
               id="spectrumpaintFreq"
               step="1"
-              placeholder="431000000"
-              value="431000000"
+              placeholder="144500000"
+              value="144500000"
               data-module-name="spectrumpaint"
               data-field-name="frequency"
             />
@@ -476,7 +477,7 @@ HACK THE PLANET</textarea
           </div>
 
           <div class="form-group">
-            <label for="excursion">Excursion (Hz, optional)</label>
+            <label for="excursion">Excursion (Hz)</label>
             <input
               type="number"
               id="excursion"
@@ -498,8 +499,8 @@ HACK THE PLANET</textarea
               type="number"
               id="pichirpFreq"
               step="1"
-              placeholder="431000000"
-              value="431000000"
+              placeholder="144500000"
+              value="144500000"
               data-module-name="pichirp"
               data-field-name="frequency"
             />
@@ -544,8 +545,8 @@ HACK THE PLANET</textarea
               type="number"
               id="pocsagFreq"
               step="1"
-              placeholder="431000000"
-              value="431000000"
+              placeholder="152000000"
+              value="152000000"
               required
               data-module-name="pocsag"
               data-field-name="frequency"
@@ -553,7 +554,7 @@ HACK THE PLANET</textarea
           </div>
 
           <div class="form-group">
-            <label for="pocsagBaudRate">Baud Rate (optional)</label>
+            <label for="pocsagBaudRate">Baud Rate</label>
             <select
               id="pocsagBaudRate"
               data-module-name="pocsag"
@@ -568,7 +569,7 @@ HACK THE PLANET</textarea
 
           <div class="form-group">
             <label for="pocsagFunctionBits"
-              >Function Bits (0-3, optional)</label
+              >Function Bits (0-3)</label
             >
             <select
               id="pocsagFunctionBits"
@@ -584,7 +585,7 @@ HACK THE PLANET</textarea
           </div>
 
           <div class="form-group">
-            <label for="pocsagRepeatCount">Repeat Count (optional)</label>
+            <label for="pocsagRepeatCount">Repeat Count</label>
             <input
               type="number"
               id="pocsagRepeatCount"
@@ -670,7 +671,7 @@ TEST MESSAGE</textarea
                   </div>
                   <div class="form-group">
                     <label for="pocsagMessageFunctionBits0"
-                      >Function Bits (optional)</label
+                      >Function Bits</label
                     >
                     <select
                       id="pocsagMessageFunctionBits0"
@@ -721,7 +722,7 @@ TEST MESSAGE</textarea
           </div>
 
           <div class="form-group">
-            <label for="ft8PPM">PPM Clock Correction (optional)</label>
+            <label for="ft8PPM">PPM Clock Correction</label>
             <input
               type="number"
               id="ft8PPM"
@@ -733,7 +734,7 @@ TEST MESSAGE</textarea
           </div>
 
           <div class="form-group">
-            <label for="ft8Offset">Frequency Offset (0-2500 Hz, optional)</label>
+            <label for="ft8Offset">Frequency Offset (0-2500 Hz)</label>
             <input
               type="number"
               id="ft8Offset"
@@ -747,7 +748,7 @@ TEST MESSAGE</textarea
           </div>
 
           <div class="form-group">
-            <label for="ft8Slot">Time Slot (optional)</label>
+            <label for="ft8Slot">Time Slot</label>
             <select
               id="ft8Slot"
               data-module-name="pift8"
@@ -781,8 +782,8 @@ TEST MESSAGE</textarea
               type="number"
               id="pisstvFreq"
               step="1"
-              placeholder="434000000"
-              value="434000000"
+              placeholder="14233000"
+              value="14233000"
               data-module-name="pisstv"
               data-field-name="frequency"
             />
@@ -839,15 +840,15 @@ TEST MESSAGE</textarea
               type="number"
               id="pirttyFreq"
               step="1"
-              placeholder="14080000"
-              value="14080000"
+              placeholder="14075000"
+              value="14075000"
               data-module-name="pirtty"
               data-field-name="frequency"
             />
           </div>
 
           <div class="form-group">
-            <label for="pirttySpaceFreq">Space Frequency (Hz, optional)</label>
+            <label for="pirttySpaceFreq">Space Frequency (Hz)</label>
             <input
               type="number"
               id="pirttySpaceFreq"
@@ -878,8 +879,8 @@ TEST MESSAGE</textarea
               type="number"
               id="fskFreq"
               step="1"
-              placeholder="144390000"
-              value="144390000"
+              placeholder="144500000"
+              value="144500000"
               data-module-name="fsk"
               data-field-name="frequency"
             />
@@ -972,7 +973,7 @@ TEST MESSAGE</textarea
           </div>
 
           <div class="form-group">
-            <label for="fskBaudRate">Baud Rate (optional)</label>
+            <label for="fskBaudRate">Baud Rate</label>
             <input
               type="number"
               id="fskBaudRate"
@@ -980,6 +981,79 @@ TEST MESSAGE</textarea
               placeholder="50"
               data-module-name="fsk"
               data-field-name="baudRate"
+            />
+          </div>
+        </div>
+
+        <!-- USB AudioSock Broadcast Module Form -->
+        <div id="audiosock-broadcastForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="audioSockBroadcastFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="audioSockBroadcastFreq"
+              step="1"
+              placeholder="27225000"
+              value="27225000"
+              data-module-name="audiosock-broadcast"
+              data-field-name="frequency"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="audioSockBroadcastSampleRate">Sample Rate (Hz)</label>
+            <input
+              type="number"
+              id="audioSockBroadcastSampleRate"
+              step="1"
+              placeholder="48000"
+              data-module-name="audiosock-broadcast"
+              data-field-name="sampleRate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="audioSockBroadcastBufferSize">Browser Audio Buffer Size (samples)</label>
+            <select
+              id="audioSockBroadcastBufferSize"
+              data-module-name="audiosock-broadcast"
+              data-field-name="bufferSize"
+            >
+              <option value="1024">1024 (low latency, may glitch)</option>
+              <option value="2048">2048 (balanced)</option>
+              <option value="4096" selected>4096 (default)</option>
+              <option value="8192">8192 (high quality, higher latency)</option>
+              <option value="16384">16384 (max quality, high latency)</option>
+            </select>
+            <span class="help-text">Larger buffers reduce audio glitches but increase latency. Smaller buffers are more responsive but may cause dropouts.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="audioSockBroadcastCsdrPreset">CSDR Preset</label>
+            <select
+              id="audioSockBroadcastCsdrPreset"
+              data-module-name="audiosock-broadcast"
+              data-field-name="modulation"
+            >
+              <option value="AM">AM</option>
+              <option value="DSB">DSB</option>
+              <option value="USB">USB</option>
+              <option value="LSB">LSB</option>
+              <option value="FM" selected>FM</option>
+              <option value="RAW">RAW</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="audioSockBroadcastGain">Gain</label>
+            <input
+              type="number"
+              id="audioSockBroadcastGain"
+              step="0.1"
+              min="0"
+              placeholder="1.0"
+              data-module-name="audiosock-broadcast"
+              data-field-name="gain"
             />
           </div>
         </div>

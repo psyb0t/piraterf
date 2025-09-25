@@ -1,91 +1,57 @@
 # 🏴‍☠️ PIrateRF - Software-Defined Radio Transmission Platform
 
-**PIrateRF** is a fucking badass software-defined radio (SDR) transmission platform that turns your **Raspberry Pi Zero W** into a portable RF signal generator with a sleek web interface. This beast enables you to transmit various types of radio signals including FM radio broadcasts, Morse code, carrier waves, and even spectrum painting - all controlled through your browser like a proper pirate! 📡⚡
+**PIrateRF** transforms your **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. Control everything from FM broadcasts to digital modes through your browser - hack the airwaves from anywhere! 📡⚡
 
 ## 📋 Table of Contents
 
-- [What the Fuck Does This Thing Do?](#-what-the-fuck-does-this-thing-do)
-- [Architecture & Technology Stack](#️-architecture--technology-stack)
-- [Quick Fucking Setup](#-quick-fucking-setup)
-- [Development Workflow](#️-development-workflow)
-- [RF Transmission Modes](#-rf-transmission-modes)
-- [Network Configuration](#-network-configuration)
-- [Project Structure](#-project-structure)
-- [Make Targets Reference](#-make-targets-reference)
-- [Configuration](#-configuration)
-- [Audio Processing Pipeline](#-audio-processing-pipeline)
-- [Image Processing for Spectrum Painting](#️-image-processing-for-spectrum-painting)
-- [Legal and Safety Notice](#️-legal-and-safety-notice)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Dependencies](#-dependencies)
+- [🎯 11 Different Transmission Modes](#-11-different-transmission-modes)
+- [🚀 Quick Setup Guide](#-quick-setup-guide)
+- [📡 Transmission Modes Explained](#-transmission-modes-explained)
+- [🛠️ Development Commands](#️-development-commands)
+- [🔧 Configuration](#-configuration)
+- [📁 Project Structure](#-project-structure)
+- [🏴‍☠️ Legal and Safety Notice](#️-legal-and-safety-notice)
+- [📡 Standard Operating Frequencies](#-standard-operating-frequencies)
+- [🔗 Core Dependencies](#-core-dependencies)
+- [📝 License](#-license)
 
-## 🎯 What the Fuck Does This Thing Do?
+## 🎯 11 Different Transmission Modes
 
-PIrateRF transforms your Pi Zero into a **standalone RF transmission station** that can:
+- **🎵 FM Station** - Full FM broadcasting with RDS metadata, playlists, and audio processing
+- **🎙️ Live Microphone Broadcast** - Real-time microphone streaming with configurable modulation (AM/DSB/USB/LSB/FM/RAW)
+- **📟 FT8** - Long-range digital mode for weak-signal communication on HF bands
+- **📠 RTTY** - Radio teletype using Baudot code and FSK modulation
+- **📊 FSK** - Frequency Shift Keying for digital data transmission
+- **📱 POCSAG** - Digital pager messaging system
+- **📻 Morse Code** - CW transmission with configurable WPM
+- **🎛️ Carrier Wave** - Simple carrier generation for testing
+- **🌊 Frequency Sweep** - RF sweeps for antenna testing and analysis
+- **📺 SSTV** - Slow Scan Television image transmission
+- **🎨 Spectrum Paint** - Convert images to RF spectrum art
 
-- **🎵 FM Radio Broadcasting**: Transmit FM modulated audio with full RDS (Radio Data System) metadata including station names, radio text, and PI codes
-- **📻 Morse Code Transmission**: Send CW (continuous wave) Morse code signals
-- **🎛️ Carrier Wave Generation**: Simple carrier frequency generation for testing and tuning
-- **🌊 Frequency Sweep**: Generate carrier frequency sweeps for RF testing and analysis or just for teh lulz
-- **📟 POCSAG Paging**: Transmit POCSAG pager messages with configurable baud rates, function bits, and multi-message support
-- **📡 FT8 Digital Mode**: Extreme long-range digital amateur radio protocol capable of intercontinental communication with minimal power
-- **📺 PISSTV (SSTV)**: Slow Scan Television transmission using Martin 1 protocol for sending images over amateur radio frequencies
-- **📠 PIRTTY (RTTY)**: Radio Teletype transmission using Baudot code and frequency shift keying for text communication
-- **📊 FSK Data Transmission**: Frequency Shift Keying for transmitting text files and data using minimodem with configurable baud rates
-- **🎨 Spectrum Painting**: Transmit images as RF spectrum patterns (because why the fuck not?)
-- **🎧 Audio Processing**: Upload files or record via microphone through the browser
-- **📱 Web-based Control**: Full-featured HTML5 interface with live WebSocket updates
+All controlled through a **standalone WiFi access point** - connect any device and start transmitting like the RF rebel you were meant to be!
 
-All of this runs on a **Pi Zero W configured as a WiFi access point**, making it a completely standalone, portable RF transmission platform that you can take anywhere and control from any device with a browser.
-
-## 🏗️ Architecture & Technology Stack
-
-### Core Components
-
-- **Backend**: Go 1.24.6 with ARM cross-compilation for Pi Zero efficiency
-- **RF Engine**: [`gorpitx`](https://github.com/psyb0t/gorpitx) - Go wrapper for the legendary [rpitx](https://github.com/F5OEO/rpitx) C library
-- **Web Framework**: Custom HTTP server with WebSocket support via [`aichteeteapee`](https://github.com/psyb0t/aichteeteapee)
-- **Frontend**: Modern HTML5/CSS3/JavaScript with real-time communication
-- **Audio Processing**: Sox and FFmpeg for professional audio conversion and manipulation
-- **Service Framework**: Custom [`servicepack`](https://github.com/psyb0t/servicepack) framework for project structure and deployment
-
-### Service Architecture
-
-PIrateRF is a **single Go service** with modular components:
-
-- **RF Transmission Engine**: Core logic for fucking up the airwaves
-- **Execution Manager**: Handles RF transmission execution with atomic state control preventing concurrent transmissions
-- **WebSocket Hub**: Real-time bidirectional communication with the frontend interface
-- **HTTP Server**: Serves the web interface and handles secure file uploads
-- **Audio/Image Processing**: Automatic format conversion and optimization pipelines
-
-## 🚀 Quick Fucking Setup
+## 🚀 Quick Setup Guide
 
 ### Prerequisites
 
-- **Raspberry Pi Zero W**
-- **SD Card** (8GB+ recommended)
-- **Docker** for development
-- Basic knowledge of RF regulations in your area (don't be a fucking idiot)
+- **Raspberry Pi Zero W** with SD card (4GB+ - system uses ~2.5GB, rest is for your audio/image/data files)
 
 ### 🚨 IMPORTANT: Pi Zero Setup First!
 
-**Before you do ANYTHING else**, you need to get your fucking Pi Zero W connected and accessible via SSH. Follow this tutorial that actually fucking works:
+**Before you do ANYTHING else**, get your fucking Pi Zero W connected and accessible via SSH. Follow this tutorial that actually works:
 
 👉 **[Pi Zero W USB Connection Tutorial](https://ciprian.51k.eu/pi-zero-1-wh-ubuntu-24-04-usb-connection-the-tutorial-that-actually-fkin-works/)**
 
-This will get your Pi Zero connected via USB with SSH access so you can actually deploy PIrateRF to the bastard. Don't skip this step or you'll be fucked trying to connect to your Pi later!
+This will get your Pi Zero connected via USB with SSH access so you can actually deploy PIrateRF to the little bastard.
 
-**Credentials setup**: During the Pi Zero setup tutorial, I used username `fucker`, hostname `piraterf.local`, password `FUCKER`. Use these same credentials if you don't want to get confused with the rest of this tutorial - otherwise go ahead and set up some lame ass shit with your own credentials.
+**🌐 INTERNET SHARING REQUIRED**: After USB connection is working, you MUST share internet from your computer to the Pi Zero. The setup scripts need to download packages and dependencies - no internet, no RF chaos.
 
-**🌐 INTERNET SHARING REQUIRED**: After USB connection is working, you MUST share internet from your computer to the Pi Zero. The setup scripts need to download packages and dependencies. Your Pi Zero connects via USB but has no internet unless you share it from your host computer.
+**Set up internet sharing on Ubuntu/Linux**:
 
-**Set up internet sharing on Ubuntu/Linux** (complete fucking setup):
+1. **Set connection to shared**: In Ubuntu Network Settings, find the USB connection (usually `usb0`), click on it, go to IPv4 settings, and change the method from "Link-Local Only" to "Shared to other computers"
 
-1. **Set connection to shared**: In Ubuntu Network Settings, find the USB connection (usually shows as `usb0` or similar), click on it, go to IPv4 settings, and change the method from "Link-Local Only" to "Shared to other computers". This is fucking critical!
-
-2. **Stop Docker services** (they fuck with networking):
+2. **Stop Docker services** (they interfere with networking):
 
 ```bash
 sudo systemctl stop docker.socket
@@ -101,369 +67,387 @@ sudo systemctl restart NetworkManager
 4. **Configure iptables rules** (replace `usb0` and `enp5s0` with your actual interfaces):
 
 ```bash
-sudo iptables -A INPUT -i lo -j ACCEPT
-sudo iptables -A OUTPUT -o lo -j ACCEPT
-sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 sudo iptables -A FORWARD -i usb0 -o enp5s0 -j ACCEPT
 sudo iptables -A FORWARD -i enp5s0 -o usb0 -j ACCEPT
 sudo iptables -t nat -A POSTROUTING -s 10.42.0.0/24 -o enp5s0 -j MASQUERADE
-sudo iptables -P INPUT ACCEPT
-sudo iptables -P FORWARD ACCEPT
-sudo iptables -P OUTPUT ACCEPT
 ```
 
-5. **Test it**: SSH into your Pi and run `ping 8.8.8.8` - if it works, you're fucking golden!
+5. **Test it**: SSH into your Pi with `ssh fucker@piraterf.local` (or whatever user@host.local you set up) and run `ping 8.8.8.8` - if it works, you're ready to cause some RF mayhem!
 
-**Find your interfaces**: Use `ip link show` to see `usb0` (Pi connection) and your main internet interface (usually `eth0`, `wlan0`, `enp0s3`, etc.). Without this internet sharing setup, the dependency installation will fail because the Pi can't reach package repositories!
+**Find your interfaces**: Use `ip link show` to see `usb0` (Pi connection) and your main internet interface.
 
-### 🔌 ANTENNA SETUP
+### 🔌 Antenna Setup
 
-Connect your fucking antenna to the Pi Zero:
+Connect your antenna to **GPIO 4 (Physical Pin 7)** on the Pi Zero W:
 
-**GPIO Connection**: Connect your antenna cable to **GPIO 4 (Physical Pin 7)** on the Pi Zero W. This is your RF output pin.
+- **No antenna**: Extremely weak signal contained within your home - perfect for safe chaos without pissing off the neighbors
+- **Short wire (10-20cm)**: Minimal range for indoor experimentation
+- **Wire antenna (75cm)**: Longer range but square wave harmonics travel farther than intended - keep this shit indoors
+- **Low-pass filter + antenna**: For proper outdoor transmission (get your fucking license first)
+- **Low-pass filter + amplifier + antenna**: For maximum range and maximum chaos (Pi outputs milliwatts by default)
 
-**Antenna Options**:
-
-1. **Short wire** (~10-20cm): Best for indoor testing and learning. Keeps power low and legal.
-2. **75cm wire**: Longer range but too much signal leaks outside your property - use this **ONLY indoors**
-3. **Proper antenna with low pass filter**: Build or buy a proper antenna system with SMA connector and appropriate low pass filter for your frequency
-
-**⚠️ IMPORTANT**: The 75cm antenna is a fucking liability outdoors - your signal will travel way beyond your property and you'll be violating regulations. Stick to short wires for testing or build proper filtered antenna systems for serious use.
-
-**⚠️ USE A FUCKING LOW PASS FILTER!** The Pi GPIO outputs square waves which generate harmonics across the entire spectrum. Without proper filtering, you'll spray RF energy all over the fucking place and violate spurious emission regulations. Always use an appropriate low pass filter for your transmission frequency!
-
-### 1. Initial Pi Setup and Configuration
-
-Flash Raspberry Pi OS Lite to your SD card and enable SSH. Then:
+### 1. Initial Setup
 
 ```bash
-# Clone this badass project
+# Clone the repository
 git clone https://github.com/psyb0t/piraterf.git
 cd piraterf
+
+# Configure your Pi settings
+nano scripts/pi_config.sh
+# Set: PI_USER, PI_HOST, PI_PASS, AP_SSID, AP_PASSWORD
 ```
 
-Edit scripts/pi_config.sh and modify these values to match your Pi:
+**Example configuration** (modify to match your Pi setup):
 
 ```bash
-export PI_USER="fucker"              # Pi username
-export PI_HOST="piraterf.local"      # Pi hostname/IP
-export PI_PASS="FUCKER"             # Pi password
+PI_USER="fucker"                # Pi username
+PI_HOST="piraterf.local"        # Pi hostname/IP
+PI_PASS="FUCKER"                # Pi password
 
-# WiFi AP Configuration
-export AP_SSID="🏴‍☠️📡"             # WiFi access point name
-export AP_PASSWORD="FUCKER!!!"      # WiFi access point password
-export AP_CHANNEL="7"                # WiFi channel (1-14)
-export AP_COUNTRY="US"               # WiFi country code (US, UK, DE, etc.)
+AP_SSID="🏴‍☠️📡"               # WiFi AP name
+AP_PASSWORD="FUCKER!!!"         # WiFi AP password
+AP_CHANNEL="7"                  # WiFi channel (1-14)
+AP_COUNTRY="US"                 # Country code
 ```
 
-### 2. Complete Automated Setup
-
-Run the full setup pipeline that configures everything automatically:
+### 2. Complete Pi Setup
 
 ```bash
+# Run the full automated setup
 make pi
 ```
 
-This fucking command will:
+This command will:
 
-1. **Install dependencies** (rpitx, sox, ffmpeg, etc.)
-2. **Configure WiFi Access Point** (SSID: "🏴‍☠️📡", Password: "FUCKER!!!")
-3. **Setup system branding** (MOTD, terminal aliases, pirate theme)
-4. **Build and deploy** the PIrateRF application
-5. **Install systemd service** for auto-start
-6. **Reboot** the Pi into pirate mode
+- Install rpitx and dependencies
+- Configure WiFi access point
+- Build and deploy PIrateRF
+- Install systemd service
+- Reboot into full pirate mode 🏴‍☠️
 
 ### 3. Connect and Use
 
-After reboot:
+1. Connect to WiFi: Your configured SSID (default: "🏴‍☠️📡")
+2. Open browser: `https://piraterf.local`
+3. Select transmission mode and start broadcasting like a proper RF pirate!
 
-1. **Connect to WiFi**: "🏴‍☠️📡" with password "FUCKER!!!"
-2. **Open browser**: Navigate to `https://piraterf.local` (or whatever hostname you configured)
-3. **Start transmitting**: Upload audio, configure RDS, and broadcast like a proper pirate!
+## 📡 Transmission Modes Explained
 
-**⚠️ IMPORTANT**: Use the HTTPS hostname for full functionality. The fucking microphone recording feature requires HTTPS with a proper hostname to work due to browser security restrictions.
+### 🎵 FM Station
 
-**🎉 Pirate Crew Mode**: Connect multiple devices to the same WiFi network and all access the web interface simultaneously! While only one transmission can run at a time (because GPIO doesn't fucking share), all connected devices see real-time transmission status, output logs, and can take turns controlling the RF transmissions. Perfect for fucking around with friends in a radio wave gangbang! 📡💥
+Full FM broadcasting with RDS support:
 
-## 🛠️ Development Workflow
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in MHz
+- **Audio File**: Upload MP3/WAV/FLAC/OGG (auto-converted to 48kHz/16-bit/mono WAV) or select already processed WAV files
+- **Playlist Builder**: UI tool to combine multiple audio files and SFX into a single WAV
+- **RDS Settings**:
+  - **PI Code**: 4-character station identifier
+  - **PS Name**: 8-character station name
+  - **Radio Text**: 64-character scrolling message
+- **Play Mode**: Toggle between "play once" and "play continuously"
+- **Intro/Outro**: Intro and outro SFX tracks
+- **PPM Clock Correction**: Fine-tune frequency accuracy
+- **Timeout**: Auto-stop after specified seconds (0 = no timeout)
+- **Microphone Recording**: Record audio directly through browser interface and save as WAV
+
+**Applications:** Underground radio broadcasting, music streaming, podcasting, community radio, event broadcasting, spreading the signal
+
+### 🎙️ Live Microphone Broadcast
+
+Real-time microphone streaming with configurable modulation:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Sample Rate**: Audio sample rate (default 48000 Hz)
+- **Buffer Size**: Browser audio buffer (1024-16384 samples)
+  - 1024: Low latency, may glitch
+  - 4096: Default balanced setting
+  - 16384: Max quality, higher latency
+- **Modulation**: AM, DSB, USB, LSB, FM, RAW (note: USB/LSB are slow on Pi Zero)
+- **Gain**: Audio gain multiplier (default 1.0)
+- **Real-time processing**: Browser captures microphone, streams via WebSocket into unix socket that gets piped to rpitx
+
+**Applications:** Live commentary, emergency communications, amateur radio nets, real-time broadcasting, voice communication, instant chaos
+
+### 📟 FT8
+
+Ultra-weak signal digital mode for HF DX:
+
+**Configuration Options:**
+
+- **Frequency**: Base frequency in Hz (e.g., 14074000 for 20m)
+- **Message**: FT8 message text (e.g., "CQ CA0ALL JN06")
+- **PPM Clock Correction**: Fine-tune frequency accuracy
+- **Frequency Offset**: 0-2500 Hz within FT8 sub-band (default 1240)
+- **Time Slot**: Choose 15-second transmission slot (0, 1, or 2)
+- **Repeat Mode**: Continuous transmission every 15 seconds
+
+**Applications:** Long-range DX contacts, weak signal wizardry, intercontinental communication, amateur radio experimentation
+
+### 📠 RTTY
+
+Classic digital text communication:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Space Frequency**: FSK space frequency offset (default 170 Hz)
+- **Message**: Text to transmit
+
+**Applications:** Digital text communication, bulletins, casual digital chat, amateur radio messaging, old-school data transmission
+
+### 📊 FSK
+
+Binary frequency shift keying for data transmission:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Input Type**: Text or file mode
+  - **Text Mode**: Direct text input
+  - **File Mode**: Upload data files (any format)
+- **Baud Rate**: Transmission speed (default 50 baud for reliability)
+
+**Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, binary chaos over the airwaves
+
+### 📱 POCSAG
+
+Digital pager messaging system:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Baud Rate**: 512, 1200 (default), or 2400 bps
+- **Function Bits**: 0-3 (default 3) for message type
+- **Repeat Count**: Number of transmission repeats (default 4)
+- **Numeric Mode**: Toggle for numeric-only messages
+- **Invert Polarity**: Signal polarity inversion
+- **Debug Mode**: Enable debug output
+- **Multiple Messages**: Support for batch message transmission
+
+**Applications:** Emergency communications, alerting systems, pager messaging, notification systems, 90s nostalgia trips
+
+### 📻 Morse Code
+
+Traditional CW transmission:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Rate**: Transmission speed in dits per minute (default 20)
+- **Message**: Text to convert to Morse code
+
+**Applications:** Emergency communications, amateur radio tradition, CW practice, beacon transmissions, old-school dots and dashes
+
+### 🎛️ Carrier Wave
+
+Simple carrier generation for testing:
+
+**Configuration Options:**
+
+- **Frequency**: Carrier frequency in Hz
+- **Exit Immediate**: Option to exit without killing carrier
+- **PPM Clock Correction**: Fine-tune frequency accuracy
+
+**Applications:** Antenna tuning, SWR measurements, transmitter testing, filter alignment, RF circuit testing, carrier wave madness
+
+### 🌊 Frequency Sweep
+
+Automated frequency sweeps for RF analysis:
+
+**Configuration Options:**
+
+- **Center Frequency**: Center frequency in Hz
+- **Bandwidth**: Sweep bandwidth in Hz (default 1 MHz)
+- **Sweep Duration**: Time for complete sweep in seconds (default 5.0)
+
+**Applications:** Antenna analysis, filter testing, spectrum analysis, RF circuit characterization, frequency sweeping mayhem
+
+### 📺 SSTV
+
+Slow Scan Television image transmission:
+
+**Configuration Options:**
+
+- **Frequency**: Transmission frequency in Hz
+- **Picture File**: Upload or select image file
+
+**Applications:** Image sharing over amateur radio, visual communication, amateur radio experimentation, sending pictures through the ether
+
+### 🎨 Spectrum Paint
+
+Convert images to RF spectrum art:
+
+**Configuration Options:**
+
+- **Frequency**: Base transmission frequency in Hz
+- **Picture File**: Upload or select image file
+- **Excursion**: Frequency deviation in Hz (default 100000)
+
+**Applications:** RF art, spectrum visualization, testing, spectrum analyzer demonstrations, educational purposes, turning images into radio waves
+
+## 🛠️ Development Commands
 
 ### Local Development
 
 ```bash
-# Run locally in development mode
-make run-dev
-
-# Format and lint code
-make lint-fix
-
-# Run tests with coverage
-make test-coverage
-
-# Build for production
-make build
+make run-dev          # Run locally with development setup
+make build            # Cross-compile for Pi Zero ARM
+make lint-fix         # Format and lint code
+make test-coverage    # Run tests with coverage
 ```
 
-### Pi Development Cycle
+### Pi Management
 
 ```bash
-# Cross-compile for Pi
-make build
-
-# Deploy to Pi
-make deploy
-
-# Install service
-make install
-
-# SSH into Pi for debugging
-make ssh
-
-# View logs
-make ssh
-# Then: sudo journalctl -fu piraterf
+make pi               # Complete automated setup
+make deploy           # Deploy to Pi
+make install          # Install systemd service
+make ssh              # SSH into Pi
+make pi-reboot        # Reboot Pi
+make uninstall        # Remove from Pi
 ```
 
-### Individual Pi Setup Commands
+## 🔧 Configuration
 
-If you want to run setup steps individually:
+### Pi Settings (scripts/pi_config.sh)
 
 ```bash
-make pi-setup-deps      # Install rpitx and dependencies
-make pi-setup-ap        # Configure Pi as WiFi access point
-make pi-setup-branding  # System branding setup
-make deploy             # Copy files to Pi
-make install            # Install as systemd service
-make pi-reboot          # Reboot Pi
-make uninstall          # Remove PIrateRF from Pi
+PI_USER="pi"                    # Pi username
+PI_HOST="piraterf.local"        # Pi hostname/IP
+PI_PASS="raspberry"             # Pi password
+
+AP_SSID="🏴‍☠️📡"               # WiFi AP name
+AP_PASSWORD="piraterf123"       # WiFi AP password
+AP_CHANNEL="7"                  # WiFi channel (1-14)
+AP_COUNTRY="US"                 # Country code (US/UK/DE/etc)
 ```
 
-## 📡 RF Transmission Modes
+### Audio Processing Pipeline
 
-### FM Radio Broadcasting
+1. **Upload**: MP3/WAV/FLAC/OGG files supported
+2. **Conversion**: Auto-convert to 48kHz/16-bit/mono WAV using Sox
+3. **Storage**: Organized in `/files/audio/uploads/` and `/files/audio/sfx/`
+4. **Playlists**: Support for intro/outro tracks and repeat modes
 
-- **Audio Support**: MP3, WAV, and more (auto-converted to 48kHz/16-bit/mono)
-- **RDS Metadata**: Station name, radio text, and PI codes
-- **Playlist Mode**: Create playlists with intro/outro support
-- **Play Once Mode**: Single play with automatic timeout calculation
-- **Microphone Recording**: Record audio directly through the browser interface
+### Image Processing
 
-### Morse Code (CW)
-
-- **Text to Morse**: Automatic conversion with configurable WPM (words per minute)
-- **CW Transmission**: Continuous wave RF transmission
-
-### Tune Mode
-
-- **Carrier Wave**: Simple carrier wave generation for testing and verification
-
-### Frequency Sweep (CHIRP)
-
-- **Configurable Sweeps**: Generate carrier wave sweeps with customizable center frequency, bandwidth, and duration
-- **RF Testing**: Perfect for antenna analysis, filter characterization, and RF circuit testing
-- **Wide Range Support**: Supports frequencies from 50 kHz to 1500 MHz with variable bandwidth
-
-### POCSAG Paging
-
-- **Message Transmission**: Send pager messages with configurable addresses and text content
-- **Multiple Messages**: Support for multiple messages in a single transmission
-- **Configurable Parameters**: Adjust baud rate (512, 1200, 2400 bps), function bits, and transmission options
-- **Flexible Options**: Numeric mode, polarity inversion, and debug mode with toggle controls
-
-### FT8 Digital Mode
-
-- **Extreme Long-Range Communication**: Digital protocol designed for intercontinental communication with proper amplification and antenna systems
-- **Precise Timing**: 15-second transmission periods with automated time slot control (0/1/2)
-- **8-FSK Modulation**: Uses 8-level frequency-shift keying with 6.25 Hz tone spacing
-- **Frequency Management**: Configurable frequency offset (0-2500 Hz, default 1240 Hz) within FT8 sub-bands
-- **Repeat Mode**: Optional continuous transmission every 15 seconds for beacon operation
-- **Clock Correction**: PPM correction support for frequency accuracy
-- **Common Frequencies**: 20m (14.074), 40m (7.074), 80m (3.573), 15m (21.074), 10m (28.074) MHz
-- **Message Format**: Standard FT8 exchange formats (CQ calls, signal reports, grid squares, contest exchanges)
-
-### PISSTV (Slow Scan Television)
-
-- **Amateur Radio Image Transmission**: Send dick pics over radio using audio frequency modulation
-- **Martin 1 Protocol**: Industry-standard SSTV protocol with automatic VIS header identification
-- **RGB Image Support**: Upload images that are automatically converted to 320x256 RGB format
-- **Compatible Reception**: Works with QSSTV (Linux), MMSSTV (Windows), Robot36 (Android), and other SSTV software
-- **Common SSTV Frequencies**: 2m band (144.500 MHz), 70cm band (434.000 MHz), and other amateur allocations
-- **Format Support**: JPEG, PNG, GIF with automatic RGB conversion for transmission
-
-### PIRTTY (Radio Teletype)
-
-- **Digital Text Communication**: Transmit text messages using Baudot code and frequency shift keying
-- **FSK Modulation**: Standard 170 Hz shift between mark and space frequencies for amateur radio compatibility
-- **Baudot Character Set**: 5-bit encoding with automatic LTRS/FIGS mode switching for letters, numbers, and symbols
-- **Configurable Frequencies**: User-defined space frequency with automatic mark frequency calculation (space + 170 Hz)
-- **Standard Baud Rate**: 45.45 baud (22ms per bit) following amateur radio RTTY conventions
-- **Common RTTY Frequencies**: 20m (14.080-14.099), 40m (7.035-7.045), 80m (3.580-3.600 MHz)
-- **Compatible Reception**: Works with standard RTTY software and terminal units
-
-### FSK Data Transmission
-
-- **Frequency Shift Keying**: Binary FSK modulation using minimodem with mark and space frequencies
-- **Configurable Baud Rate**: Adjustable transmission speed (default 50 baud for optimal reliability)
-- **Text and File Transmission**: Support for both direct text input and file-based data transmission
-- **Amateur Radio Compatible**: Standard FSK frequencies and modulation for digital mode compatibility
-- **Common FSK Frequencies**: 20m (14.070), 40m (7.035), 80m (3.580), 30m (10.140), 17m (18.100) MHz
-
-### Spectrum Painting
-
-- **Image Upload**: Convert images to RF spectrum patterns
-- **Format Support**: JPEG, PNG, GIF with automatic YUV conversion
-- **Visual RF**: Turn your images into radio art (because pirates love art too)
-
-## 🌐 Network Configuration
-
-The `make pi-setup-ap` command configures the Pi as a **standalone WiFi access point**. Access point settings (SSID, password, IP ranges, etc.) are configured in `scripts/make/pi_setup_ap.sh`.
+1. **Upload**: JPEG/PNG/GIF formats supported
+2. **Dual conversion**:
+   - YUV format for Spectrum Paint
+   - RGB 320x256 for SSTV transmission
+3. **Storage**: Both formats saved in `/files/images/uploads/`
 
 ## 📁 Project Structure
 
 ```
 piraterf/
-├── cmd/                    # Main application entry points
+├── cmd/                    # Application entry points
 ├── internal/pkg/services/
-│   └── piraterf/          # Core PIrateRF service implementation
-│       ├── piraterf.go    # Main service logic
+│   └── piraterf/          # Core service implementation
 │       ├── http_server.go # Web server and API
 │       ├── websocket*.go  # Real-time communication
-│       ├── audio_*.go     # Audio processing pipeline
-│       ├── image_*.go     # Image processing for spectrum paint
+│       ├── audio_*.go     # Audio processing
+│       ├── image_*.go     # Image processing
 │       └── execution_*.go # RF transmission management
-├── scripts/
-│   ├── pi_config.sh       # Central configuration for Pi setup
-│   ├── piraterf.sh        # Main Pi runtime script
-│   ├── setup_*.sh         # Pi setup scripts (deps, AP, branding)
-│   ├── deploy.sh          # Pi deployment script
-│   ├── install.sh         # Pi service installation
-│   ├── uninstall.sh       # Pi service removal
-│   └── make/              # Make target implementations
-│       ├── pi.sh          # Complete Pi setup pipeline
-│       ├── build.sh       # Cross-compilation for Pi
-│       ├── deploy.sh      # Deployment automation
-│       ├── install.sh     # Service installation
-│       ├── pi_setup_*.sh  # Pi configuration scripts
-│       ├── ssh.sh         # SSH connection helper
-│       ├── tls.sh         # TLS certificate generation
-│       └── servicepack/   # Framework scripts
+├── scripts/               # Setup and deployment scripts
 ├── html/                  # Web interface templates
-├── static/                # CSS, JavaScript, images
-├── files/                 # Audio and image file storage
-├── uploads/               # Temporary upload staging
-├── Makefile              # Main build configuration
-└── Makefile.servicepack  # Framework integration
+├── static/                # Frontend assets (CSS/JS/images)
+├── files/                 # Audio, image, and data storage
+└── uploads/              # Temporary upload staging
 ```
-
-## 🧰 Make Targets Reference
-
-### Development
-
-- `make run-dev` - Run locally with development setup
-- `make build` - Cross-compile for ARM/Pi Zero
-- `make lint-fix` - Format code and fix linting issues
-- `make test-coverage` - Run tests with coverage analysis
-
-### Pi Management
-
-- `make pi-setup-deps` - Install rpitx and system dependencies
-- `make pi-setup-ap` - Configure WiFi access point
-- `make pi-setup-branding` - Setup system branding and accounts
-- `make deploy` - Copy built files to Pi
-- `make install` - Install and start systemd service
-- `make pi` - Run full setup pipeline
-- `make ssh` - SSH into the Pi
-- `make pi-reboot` - Reboot the Pi
-- `make uninstall` - Remove PIrateRF from Pi
-
-### Utilities
-
-- `make tls` - Generate TLS certificates
-- `make clean` - Clean build artifacts
-- `make help` - Show all available targets
-
-## 🔧 Configuration
-
-### Pi Connection Settings
-
-All Pi configuration values are centralized in `scripts/pi_config.sh`:
-
-- **PI_USER, PI_HOST, PI_PASS**: SSH connection credentials
-- **AP_SSID, AP_PASSWORD**: WiFi access point credentials
-- **AP_CHANNEL**: WiFi channel (1-14, avoid crowded channels)
-- **AP_COUNTRY**: WiFi country code for regulatory compliance
-
-### Service Configuration
-
-The PIrateRF service uses environment variables for configuration. See `scripts/piraterf.sh` for all available configuration options and their default values.
-
-## 🎵 Audio Processing Pipeline
-
-PIrateRF automatically processes uploaded audio through a sophisticated pipeline:
-
-1. **Format Detection**: Supports MP3, WAV, FLAC, OGG, and more
-2. **Conversion**: Automatically converts to 48kHz, 16-bit, mono WAV using Sox
-3. **Validation**: Ensures audio meets RF transmission requirements
-4. **Storage**: Organizes files in `/files/audio/uploads/` and `/files/audio/sfx/`
-5. **Playlist Support**: Create playlists with intro/outro and repeat modes
-
-## 🖼️ Image Processing for Spectrum Painting & SSTV
-
-Images are processed for RF transmission in both Spectrum Painting and PISSTV modes:
-
-1. **Format Support**: JPEG, PNG, GIF automatically detected
-2. **Dual Conversion**:
-   - **YUV format (.Y files)**: For Spectrum Painting RF transmission
-   - **RGB format (.rgb files)**: For PISSTV/SSTV transmission (320x256 resolution)
-3. **Optimization**: Automatically resized and optimized for each transmission mode
-4. **Storage**: Organized in `/files/images/uploads/` with both .Y and .rgb versions created
 
 ## 🏴‍☠️ Legal and Safety Notice
 
-**IMPORTANT**: This software enables RF transmission. **You are responsible for complying with your local RF regulations and licensing requirements.**
+**⚠️ IMPORTANT LEGAL REQUIREMENTS ⚠️**
 
-- Ensure you have proper licenses for your transmission frequency and power levels
-- Some frequencies require amateur radio licenses
-- Respect power limitations and spurious emission requirements
-- Don't interfere with emergency services or licensed operators
-- When in doubt, consult your local RF regulatory authority
+### Amateur Radio License Required
 
-**⚠️ USE A FUCKING LOW PASS FILTER!** The Pi GPIO outputs square waves which generate harmonics across the entire spectrum. Without proper filtering, you'll spray RF energy all over the fucking place and violate spurious emission regulations. Always use an appropriate low pass filter for your transmission frequency!
+- **Most frequencies require an amateur radio license**
+- FT8, RTTY, FSK, SSTV, and most HF/VHF/UHF operations need proper licensing
+- Check your local amateur radio authority (FCC/Ofcom/etc.) for license requirements
 
-**PIrateRF is designed for educational, experimental, and licensed amateur radio use. The developers are not responsible for any misuse or regulatory violations.**
+### Frequency Regulations
 
-## 🤝 Contributing
+- **Stay within amateur bands**: Use only frequencies allocated to amateur radio
+- **Power limits**: Respect maximum power limitations (typically 100W on HF, varies by band/license class)
+- **Spurious emissions**: Always use appropriate low-pass filters
+- **No commercial content**: Amateur radio prohibits business communications
 
-Want to make this pirate ship even more badass?
+### Hardware Requirements (for proper use)
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your fucking awesome changes
-4. Test on actual Pi hardware
-5. Submit a pull request with a clear description
+- **Low-pass filters mandatory**: Pi GPIO outputs square waves with harmonics across the spectrum
+- **Proper antenna**: Use resonant antennas for your operating frequency
+- **SWR monitoring**: High SWR can damage your Pi - use antenna analyzer/SWR meter
 
-### Development Guidelines
+### Geographic Restrictions
 
-- Follow the existing code style (use `make lint-fix`)
-- Write tests for new features
-- Update documentation for any new functionality
-- Test on real Pi Zero W hardware before submitting
+- **Band plans vary by country**: US/European/Asian amateur allocations differ
+- **Power limits vary**: Check local regulations for your license class
+- **Emergency frequencies**: Never interfere with emergency/public safety communications
+
+### 🏠 Indoor Testing & Experimentation
+
+- **No antenna = minimal range**: Without a proper antenna, signals are extremely weak and contained within your home
+- **Testing and learning**: Perfect for understanding RF concepts, digital modes, and software functionality
+- **Protocol development**: Test encoding/decoding without external transmission
+- **Educational use**: Learn about modulation, filtering, and signal processing safely indoors
+
+**PIrateRF is designed for legal amateur radio experimentation and education - including safe indoor testing without external antennas. Users are responsible for compliance with all local RF regulations and licensing requirements.**
+
+## 📡 Standard Operating Frequencies
+
+PIrateRF supports the full amateur radio spectrum. Here are common frequencies for each mode:
+
+### HF Amateur Bands (3-30 MHz)
+
+- **80m**: 3.5-4.0 MHz | **40m**: 7.0-7.3 MHz | **30m**: 10.1-10.15 MHz
+- **20m**: 14.0-14.35 MHz | **17m**: 18.068-18.168 MHz | **15m**: 21.0-21.45 MHz
+- **12m**: 24.89-24.99 MHz | **10m**: 28.0-29.7 MHz
+
+### VHF/UHF Amateur Bands
+
+- **2m**: 144-148 MHz (FM: 144.0-148.0 MHz, Repeaters: 146.0-148.0 MHz out)
+- **1.25m**: 222-225 MHz | **70cm**: 420-450 MHz (Repeaters: 440-450 MHz out)
+
+### FT8 Standard Frequencies (USB mode)
+
+- **80m**: 3.573 MHz | **40m**: 7.074 MHz | **30m**: 10.136 MHz
+- **20m**: 14.074 MHz | **17m**: 18.100 MHz | **15m**: 21.074 MHz | **10m**: 28.074 MHz
+
+### RTTY Standard Frequencies (USB mode)
+
+- **80m**: 3.580-3.600 MHz | **40m**: 7.035-7.045 MHz | **30m**: 10.130-10.150 MHz
+- **20m**: 14.070-14.099 MHz | **15m**: 21.070-21.100 MHz | **10m**: 28.070-28.120 MHz
+
+### SSTV Standard Frequencies
+
+- **80m**: 3.736 MHz (LSB) | **40m**: 7.055 MHz (LSB)
+- **20m**: 14.233 MHz (USB) | **15m**: 21.343 MHz (USB) | **10m**: 28.667 MHz (USB)
+- **2m**: 144.55 MHz (FM)
+
+### FM Repeater Standard Splits
+
+- **2m**: Input 144-146 MHz, Output 146-148 MHz (0.6 MHz split)
+- **70cm**: Input 420-430 MHz, Output 440-450 MHz (5 MHz split)
+
+## 🔗 Core Dependencies
+
+- **[rpitx](https://github.com/F5OEO/rpitx)** - RF transmission library for Raspberry Pi GPIO
+- **[gorpitx](https://github.com/psyb0t/gorpitx)** - Go wrapper providing clean API for rpitx
+- **[servicepack](https://github.com/psyb0t/servicepack)** - Development and deployment framework
+- **[aichteeteapee](https://github.com/psyb0t/aichteeteapee)** - HTTP server with WebSocket support
 
 ## 📝 License
 
 This project is licensed under WTFPL (Do What The Fuck You Want To Public License).
 
-## 🔗 Dependencies
-
-- **[rpitx](https://github.com/F5OEO/rpitx)** - The legendary RF transmission library that makes this all possible
-- **[servicepack](https://github.com/psyb0t/servicepack)** - The framework that keeps this project organized and deployable
-- **[aichteeteapee](https://github.com/psyb0t/aichteeteapee)** - The HTTP server framework powering the web interface
-- **[gorpitx](https://github.com/psyb0t/gorpitx)** - Go wrapper for rpitx that makes RF transmission elegant
-
 ---
 
-_Built with spite using https://github.com/psyb0t/servicepack_
+**🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
----
-
-_Now get out there and start broadcasting like the RF pirate you were meant to be! 🏴‍☠️📡_
+_Remember: With great RF power comes great responsibility. Always operate legally and don't be a dick to other operators._

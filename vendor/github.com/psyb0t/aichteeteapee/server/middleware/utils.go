@@ -8,7 +8,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// GetRequestID extracts the request ID from the request context
+// GetRequestID extracts the request ID from the request context.
 func GetRequestID(r *http.Request) string {
 	if requestID, ok := r.Context().Value(
 		aichteeteapee.ContextKeyRequestID,
@@ -19,7 +19,7 @@ func GetRequestID(r *http.Request) string {
 	return ""
 }
 
-// GetClientIP extracts the client IP address from the request
+// GetClientIP extracts the client IP address from the request.
 func GetClientIP(r *http.Request) string {
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 		// X-Forwarded-For can contain multiple IPs, take the first one

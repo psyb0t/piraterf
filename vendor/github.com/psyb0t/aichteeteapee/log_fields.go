@@ -1,34 +1,34 @@
 package aichteeteapee
 
 const (
-	// Client identifiers
+	// Client identifiers.
 	FieldClientID = "clientID"
 
-	// WebSocket-specific fields
+	// WebSocket-specific fields.
 	FieldConnectionID = "connectionID" // Individual connection identifier
 
-	// Event-related fields
+	// Event-related fields.
 	FieldEventType = "eventType" // Event type being processed
 	FieldEventID   = "eventID"   // Unique event identifier
 
-	// Hub and system identifiers
+	// Hub and system identifiers.
 	FieldHubName = "hubName" // Hub instance name
 
-	// Error and performance fields
+	// Error and performance fields.
 	FieldTotalConns   = "totalConns"   // Connection count context
 	FieldTotalClients = "totalClients" // Connection count context
 	FieldBufferSize   = "bufferSize"   // Buffer-related metrics
 
-	// Network and connection fields
+	// Network and connection fields.
 	FieldRemoteAddr = "remoteAddr" // Client remote address
 	FieldUserAgent  = "userAgent"  // HTTP User-Agent header
 	FieldOrigin     = "origin"     // WebSocket origin header
 
-	// WebSocket close fields
+	// WebSocket close fields.
 	FieldCloseCode = "closeCode" // WebSocket close code
 	FieldCloseText = "closeText" // WebSocket close text
 
-	// Configuration fields
+	// Configuration fields.
 	FieldReadBufferSize    = "readBufferSize"    // WebSocket read buffer size
 	FieldWriteBufferSize   = "writeBufferSize"   // WebSocket write buffer size
 	FieldHandshakeTimeout  = "handshakeTimeout"  // WebSocket handshake timeout
@@ -38,6 +38,10 @@ const (
 	FieldNewReadSize       = "newReadSize"       // New read buffer size
 	FieldNewWriteSize      = "newWriteSize"      // New write buffer size
 
-	// Server and endpoint fields
+	// Server and endpoint fields.
 	FieldEndpoint = "endpoint" // HTTP endpoint path
+
+	// File system and data fields.
+	FieldPath  = "path"  // File system path
+	FieldBytes = "bytes" // Data size in bytes
 )

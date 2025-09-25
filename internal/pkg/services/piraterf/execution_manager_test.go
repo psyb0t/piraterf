@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/common-go/env"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/gorpitx"
@@ -26,7 +26,7 @@ func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	// Create a mock hub
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 
 	// Create ExecutionManager with mock RPITX
 	rpitx := gorpitx.GetInstance()
@@ -58,7 +58,7 @@ func TestExecutionManager_StopStreaming_NormalClose(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	// Create a mock hub
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 
 	// Create ExecutionManager with mock RPITX
 	rpitx := gorpitx.GetInstance()
@@ -85,7 +85,7 @@ func TestExecutionManager_StopStreaming_MultipleCallsSafe(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	// Create a mock hub
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 
 	// Create ExecutionManager with mock RPITX
 	rpitx := gorpitx.GetInstance()
@@ -108,7 +108,7 @@ func TestExecutionManager_StreamOutput_ContextCancellation(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	// Create a mock hub
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 
 	// Create ExecutionManager with mock RPITX
 	rpitx := gorpitx.GetInstance()
@@ -161,7 +161,7 @@ func TestExecutionManager_IsExpectedTermination(t *testing.T) {
 	// Set ENV=dev to avoid root check
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	rpitx := gorpitx.GetInstance()
 	em := newExecutionManager(rpitx, hub)
 
@@ -289,7 +289,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			rpitx := gorpitx.GetInstance()
 			em := newExecutionManager(rpitx, hub)
 
@@ -297,7 +297,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			em.setState(tt.initialState)
 
 			// Create a mock client
-			client := &websocket.Client{}
+			client := &wshub.Client{}
 
 			// Call startExecution
 			err := em.startExecution(
@@ -373,7 +373,7 @@ func TestExecutionManager_StopExecution(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			rpitx := gorpitx.GetInstance()
 			em := newExecutionManager(rpitx, hub)
 
@@ -381,7 +381,7 @@ func TestExecutionManager_StopExecution(t *testing.T) {
 			em.setState(tt.initialState)
 
 			// Create a mock client
-			client := &websocket.Client{}
+			client := &wshub.Client{}
 
 			// Call stopExecution
 			err := em.stopExecution(client)
@@ -405,7 +405,7 @@ func TestExecutionManager_ValidateTimeout(t *testing.T) {
 	// Set ENV=dev to avoid root check
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	rpitx := gorpitx.GetInstance()
 	em := newExecutionManager(rpitx, hub)
 
@@ -444,7 +444,7 @@ func TestExecutionManager_ValidateTimeout(t *testing.T) {
 func TestSendStoppedEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()
@@ -460,7 +460,7 @@ func TestSendStoppedEvent(t *testing.T) {
 func TestSendError(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()
@@ -475,7 +475,7 @@ func TestSendError(t *testing.T) {
 func TestSendOutputEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()
@@ -488,7 +488,7 @@ func TestSendOutputEvent(t *testing.T) {
 }
 
 func TestExecutionManagerStreamOutput(t *testing.T) {
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()
@@ -519,7 +519,7 @@ func TestExecutionManagerStreamOutput(t *testing.T) {
 }
 
 func TestExecutionManagerSendStoppedEvent(t *testing.T) {
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()
@@ -542,7 +542,7 @@ func TestExecutionManagerSendStoppedEvent(t *testing.T) {
 }
 
 func TestProcessOutputChannels(t *testing.T) {
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	rpitx := gorpitx.GetInstance()

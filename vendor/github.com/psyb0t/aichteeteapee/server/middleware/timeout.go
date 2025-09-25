@@ -12,7 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// timeoutResponseWriter wraps http.ResponseWriter to prevent concurrent writes during timeout
+// timeoutResponseWriter wraps http.ResponseWriter to prevent concurrent
+// writes during timeout.
 type timeoutResponseWriter struct {
 	BaseResponseWriter
 	mu      *sync.Mutex
@@ -48,13 +49,13 @@ func (tw *timeoutResponseWriter) Write(data []byte) (int, error) {
 }
 
 const (
-	// Default timeout durations
+	// Default timeout durations.
 	DefaultTimeout = 10 * time.Second
 	ShortTimeout   = 5 * time.Second
 	LongTimeout    = 30 * time.Second
 )
 
-// TimeoutConfig holds configuration for timeout middleware
+// TimeoutConfig holds configuration for timeout middleware.
 type TimeoutConfig struct {
 	Timeout time.Duration
 }
@@ -85,7 +86,8 @@ func WithLongTimeout() TimeoutOption {
 	}
 }
 
-// TimeoutMiddleware sets a timeout for the request context and handles timeout responses
+// TimeoutMiddleware sets a timeout for the request context and handles
+// timeout responses
 //
 //nolint:funlen // Timeout handling logic requires length
 func Timeout(opts ...TimeoutOption) Middleware {
@@ -143,7 +145,10 @@ func Timeout(opts ...TimeoutOption) Middleware {
 						"timeout": config.Timeout.String(),
 					}).Info("request timeout exceeded, returning gateway timeout")
 
-					w.Header().Set(aichteeteapee.HeaderNameContentType, aichteeteapee.ContentTypeJSON)
+					w.Header().Set(
+						aichteeteapee.HeaderNameContentType,
+						aichteeteapee.ContentTypeJSON,
+					)
 					w.WriteHeader(http.StatusGatewayTimeout)
 
 					// Create a gateway timeout error response
@@ -155,7 +160,9 @@ func Timeout(opts ...TimeoutOption) Middleware {
 					if responseBytes, err := json.Marshal(timeoutError); err == nil {
 						_, _ = w.Write(responseBytes)
 					} else {
-						_, _ = w.Write([]byte(`{"code":"GATEWAY_TIMEOUT","message":"Gateway timeout"}`))
+						_, _ = w.Write(
+							[]byte(`{"code":"GATEWAY_TIMEOUT","message":"Gateway timeout"}`),
+						)
 					}
 				}
 

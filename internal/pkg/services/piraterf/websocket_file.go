@@ -6,18 +6,19 @@ import (
 	"path"
 	"time"
 
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/common-go/constants"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	eventTypeFileRename        websocket.EventType = "file.rename"
-	eventTypeFileRenameSuccess websocket.EventType = "file.rename.success"
-	eventTypeFileRenameError   websocket.EventType = "file.rename.error"
-	eventTypeFileDelete        websocket.EventType = "file.delete"
-	eventTypeFileDeleteSuccess websocket.EventType = "file.delete.success"
-	eventTypeFileDeleteError   websocket.EventType = "file.delete.error"
+	eventTypeFileRename        dabluveees.EventType = "file.rename"
+	eventTypeFileRenameSuccess dabluveees.EventType = "file.rename.success"
+	eventTypeFileRenameError   dabluveees.EventType = "file.rename.error"
+	eventTypeFileDelete        dabluveees.EventType = "file.delete"
+	eventTypeFileDeleteSuccess dabluveees.EventType = "file.delete.success"
+	eventTypeFileDeleteError   dabluveees.EventType = "file.delete.error"
 )
 
 type fileRenameMessage struct {
@@ -56,9 +57,9 @@ type fileDeleteErrorMessageData struct {
 }
 
 func (s *PIrateRF) handleFileRename(
-	_ websocket.Hub,
-	_ *websocket.Client,
-	event *websocket.Event,
+	_ wshub.Hub,
+	_ *wshub.Client,
+	event *dabluveees.Event,
 ) error {
 	logger := logrus.WithFields(logrus.Fields{
 		constants.FieldEventType: event.Type,
@@ -155,9 +156,9 @@ func (s *PIrateRF) validateFileRenameRequest(
 }
 
 func (s *PIrateRF) handleFileDelete(
-	_ websocket.Hub,
-	_ *websocket.Client,
-	event *websocket.Event,
+	_ wshub.Hub,
+	_ *wshub.Client,
+	event *dabluveees.Event,
 ) error {
 	logger := logrus.WithFields(logrus.Fields{
 		constants.FieldEventType: event.Type,
@@ -206,7 +207,7 @@ func (s *PIrateRF) handleFileDelete(
 
 // Event sending functions for file operations.
 func (s *PIrateRF) sendFileRenameSuccessEvent(filePath, newName string) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeFileRenameSuccess,
 		fileRenameSuccessMessageData{
 			FileName:  filePath,
@@ -219,7 +220,7 @@ func (s *PIrateRF) sendFileRenameSuccessEvent(filePath, newName string) {
 func (s *PIrateRF) sendFileRenameErrorEvent(
 	filePath, newName, errorType, message string,
 ) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeFileRenameError,
 		fileRenameErrorMessageData{
 			FileName:  filePath,
@@ -232,7 +233,7 @@ func (s *PIrateRF) sendFileRenameErrorEvent(
 }
 
 func (s *PIrateRF) sendFileDeleteSuccessEvent(filePath string) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeFileDeleteSuccess,
 		fileDeleteSuccessMessageData{
 			FileName:  filePath,
@@ -244,7 +245,7 @@ func (s *PIrateRF) sendFileDeleteSuccessEvent(filePath string) {
 func (s *PIrateRF) sendFileDeleteErrorEvent(
 	filePath, errorType, message string,
 ) {
-	s.websocketHub.BroadcastToAll(websocket.NewEvent(
+	s.websocketHub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeFileDeleteError,
 		fileDeleteErrorMessageData{
 			FileName:  filePath,

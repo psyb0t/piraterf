@@ -8,7 +8,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// CORSConfig holds configuration for CORS middleware
+// CORSConfig holds configuration for CORS middleware.
 type CORSConfig struct {
 	AllowedOrigins   []string
 	AllowedMethods   []string
@@ -21,7 +21,7 @@ type CORSConfig struct {
 
 type CORSOption func(*CORSConfig)
 
-// WithAllowedOrigins sets the allowed origins
+// WithAllowedOrigins sets the allowed origins.
 func WithAllowedOrigins(origins ...string) CORSOption {
 	return func(c *CORSConfig) {
 		c.AllowedOrigins = origins
@@ -29,42 +29,42 @@ func WithAllowedOrigins(origins ...string) CORSOption {
 	}
 }
 
-// WithAllowedMethods sets the allowed HTTP methods
+// WithAllowedMethods sets the allowed HTTP methods.
 func WithAllowedMethods(methods ...string) CORSOption {
 	return func(c *CORSConfig) {
 		c.AllowedMethods = methods
 	}
 }
 
-// WithAllowedHeaders sets the allowed headers
+// WithAllowedHeaders sets the allowed headers.
 func WithAllowedHeaders(headers ...string) CORSOption {
 	return func(c *CORSConfig) {
 		c.AllowedHeaders = headers
 	}
 }
 
-// WithExposedHeaders sets the exposed headers
+// WithExposedHeaders sets the exposed headers.
 func WithExposedHeaders(headers ...string) CORSOption {
 	return func(c *CORSConfig) {
 		c.ExposedHeaders = headers
 	}
 }
 
-// WithMaxAge sets the max age for preflight requests
+// WithMaxAge sets the max age for preflight requests.
 func WithMaxAge(age int) CORSOption {
 	return func(c *CORSConfig) {
 		c.MaxAge = age
 	}
 }
 
-// WithAllowCredentials enables credentials support
+// WithAllowCredentials enables credentials support.
 func WithAllowCredentials(allow bool) CORSOption {
 	return func(c *CORSConfig) {
 		c.AllowCredentials = allow
 	}
 }
 
-// WithAllowAllOrigins allows all origins (sets Access-Control-Allow-Origin: *)
+// WithAllowAllOrigins allows all origins (sets Access-Control-Allow-Origin: *).
 func WithAllowAllOrigins() CORSOption {
 	return func(c *CORSConfig) {
 		c.AllowAllOrigins = true
@@ -72,14 +72,21 @@ func WithAllowAllOrigins() CORSOption {
 	}
 }
 
-// CORSMiddleware handles Cross-Origin Resource Sharing with configurable options
+// CORSMiddleware handles Cross-Origin Resource Sharing with configurable
+// options
 //
-//nolint:cyclop,funlen // Multiple if statements for header configuration is acceptable
+// Multiple if statements for header configuration is acceptable
+//
+//nolint:cyclop,funlen
 func CORS(opts ...CORSOption) Middleware {
 	config := &CORSConfig{
-		AllowedOrigins:   []string{},
-		AllowedMethods:   strings.Split(aichteeteapee.GetDefaultCORSAllowMethods(), ", "),
-		AllowedHeaders:   strings.Split(aichteeteapee.GetDefaultCORSAllowHeaders(), ", "),
+		AllowedOrigins: []string{},
+		AllowedMethods: strings.Split(
+			aichteeteapee.GetDefaultCORSAllowMethods(), ", ",
+		),
+		AllowedHeaders: strings.Split(
+			aichteeteapee.GetDefaultCORSAllowHeaders(), ", ",
+		),
 		ExposedHeaders:   []string{},
 		MaxAge:           aichteeteapee.DefaultCORSMaxAge,
 		AllowCredentials: false,

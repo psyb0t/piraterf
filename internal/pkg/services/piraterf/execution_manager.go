@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
+	_ "github.com/psyb0t/aichteeteapee/server/dabluvee-es/wsunixbridge"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
@@ -32,7 +34,7 @@ const (
 
 type executionManager struct {
 	rpitx            *gorpitx.RPITX
-	hub              websocket.Hub
+	hub              wshub.Hub
 	state            atomic.Int32
 	initiatingClient atomic.Value // stores uuid.UUID
 	stopRequested    atomic.Bool  // tracks if stop was requested
@@ -46,7 +48,7 @@ type executionManager struct {
 
 func newExecutionManager(
 	rpitx *gorpitx.RPITX,
-	hub websocket.Hub,
+	hub wshub.Hub,
 ) *executionManager {
 	return &executionManager{
 		rpitx: rpitx,
@@ -59,7 +61,7 @@ func (em *executionManager) startExecution(
 	moduleName gorpitx.ModuleName,
 	args json.RawMessage,
 	timeout int,
-	client *websocket.Client,
+	client *wshub.Client,
 	callback func() error,
 ) error {
 	// Atomic state transition - only allow if idle
@@ -99,7 +101,7 @@ func (em *executionManager) startExecution(
 	return nil
 }
 
-func (em *executionManager) stopExecution(_ *websocket.Client) error {
+func (em *executionManager) stopExecution(_ *wshub.Client) error {
 	currentState := executionState(em.state.Load())
 
 	// Idempotent - return success for already stopped or stopping
@@ -138,7 +140,7 @@ func (em *executionManager) executeModule(
 	moduleName gorpitx.ModuleName,
 	args json.RawMessage,
 	timeout time.Duration,
-	client *websocket.Client,
+	client *wshub.Client,
 	callback func() error,
 ) {
 	defer em.cleanupAfterExecution(client, callback)
@@ -151,7 +153,7 @@ func (em *executionManager) executeModule(
 	em.handleExecutionResult(err, client)
 }
 
-func (em *executionManager) cleanupAfterExecution(client *websocket.Client, callback func() error) {
+func (em *executionManager) cleanupAfterExecution(client *wshub.Client, callback func() error) {
 	logrus.WithField("clientID", client.ID()).
 		Debug("executeModule finished, setting state to idle")
 
@@ -168,7 +170,7 @@ func (em *executionManager) cleanupAfterExecution(client *websocket.Client, call
 func (em *executionManager) logExecutionStart(
 	moduleName gorpitx.ModuleName,
 	timeout time.Duration,
-	client *websocket.Client,
+	client *wshub.Client,
 ) {
 	logrus.WithFields(logrus.Fields{
 		"moduleName": moduleName,
@@ -204,7 +206,7 @@ func (em *executionManager) runExecution(
 	return <-execDone
 }
 
-func (em *executionManager) handleExecutionResult(err error, client *websocket.Client) {
+func (em *executionManager) handleExecutionResult(err error, client *wshub.Client) {
 	logrus.WithFields(logrus.Fields{
 		"error":    err,
 		"clientID": client.ID(),
@@ -373,7 +375,7 @@ func (em *executionManager) sendStartedEvent(
 	args json.RawMessage,
 	clientID uuid.UUID,
 ) {
-	em.hub.BroadcastToAll(websocket.NewEvent(
+	em.hub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeRPITXExecutionStarted,
 		rpitxExecutionStartedMessageData{
 			ModuleName:         moduleName,
@@ -393,7 +395,7 @@ func (em *executionManager) sendStoppedEvent(stoppingClientID uuid.UUID) {
 		}
 	}
 
-	em.hub.BroadcastToAll(websocket.NewEvent(
+	em.hub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeRPITXExecutionStopped,
 		rpitxExecutionStoppedMessageData{
 			InitiatingClientID: initiatingClientID.String(),
@@ -415,7 +417,7 @@ func (em *executionManager) sendErrorEvent(errorType, message string) {
 		"message":   message,
 	}).Error("RPITX execution error occurred")
 
-	em.hub.BroadcastToAll(websocket.NewEvent(
+	em.hub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeRPITXExecutionError,
 		rpitxExecutionErrorMessageData{
 			Error:     errorType,
@@ -426,7 +428,7 @@ func (em *executionManager) sendErrorEvent(errorType, message string) {
 }
 
 func (em *executionManager) sendOutputEvent(outputType, line string) {
-	em.hub.BroadcastToAll(websocket.NewEvent(
+	em.hub.BroadcastToAll(dabluveees.NewEvent(
 		eventTypeRPITXExecutionOutputLine,
 		rpitxExecutionOutputLineMessageData{
 			Type:      outputType,

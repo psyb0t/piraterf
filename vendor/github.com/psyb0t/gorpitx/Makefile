@@ -7,15 +7,19 @@ dep: ## Get project dependencies
 	@go mod tidy
 	@go mod vendor
 
-lint: ## Lint all Golang files
+lint: ## Lint all Golang files and shell scripts
 	@echo "Linting all Go files..."
 	@go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
 	@go tool golangci-lint run --timeout=30m0s ./...
+	@echo "Checking shell scripts..."
+	@shellcheck scripts/*.sh
 
-lint-fix: ## Lint all Golang files and fix
+lint-fix: ## Lint and fix Golang files, check shell scripts
 	@echo "Linting all Go files..."
 	@go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -fix -test ./...
 	@go tool golangci-lint run --fix --timeout=30m0s ./...
+	@echo "Checking shell scripts (no auto-fix available)..."
+	@shellcheck scripts/*.sh
 
 test: ## Run all tests
 	@echo "Running all tests..."

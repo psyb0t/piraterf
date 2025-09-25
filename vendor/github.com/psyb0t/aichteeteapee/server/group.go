@@ -39,7 +39,9 @@ func (g *Group) Group(
 	middlewares ...middleware.Middleware,
 ) *Group {
 	// Combine parent middlewares with new ones
-	combined := make([]middleware.Middleware, 0, len(g.middlewares)+len(middlewares))
+	combined := make(
+		[]middleware.Middleware, 0, len(g.middlewares)+len(middlewares),
+	)
 	combined = append(combined, g.middlewares...)
 	combined = append(combined, middlewares...)
 
@@ -51,7 +53,7 @@ func (g *Group) Group(
 	}
 }
 
-// Handle registers a handler for the given method and pattern
+// Handle registers a handler for the given method and pattern.
 func (g *Group) Handle(
 	method, pattern string,
 	handler http.Handler,
@@ -61,7 +63,9 @@ func (g *Group) Handle(
 	route := buildRoute(method, fullPath)
 
 	// Combine group middlewares with route-specific ones
-	allMiddlewares := make([]middleware.Middleware, 0, len(g.middlewares)+len(middlewares))
+	allMiddlewares := make(
+		[]middleware.Middleware, 0, len(g.middlewares)+len(middlewares),
+	)
 	allMiddlewares = append(allMiddlewares, g.middlewares...)
 	allMiddlewares = append(allMiddlewares, middlewares...)
 
@@ -72,7 +76,7 @@ func (g *Group) Handle(
 	g.mux.Handle(route, finalHandler)
 }
 
-// HandleFunc is a convenience method for registering http.HandlerFunc
+// HandleFunc is a convenience method for registering http.HandlerFunc.
 func (g *Group) HandleFunc(
 	method, pattern string,
 	handler http.HandlerFunc,
@@ -166,7 +170,8 @@ func (g *Group) OPTIONS(
 
 // Helper functions for path manipulation
 
-// cleanPrefix normalizes a URL prefix by removing trailing slashes and cleaning the path.
+// cleanPrefix normalizes a URL prefix by removing trailing slashes
+// and cleaning the path.
 // Returns empty string for root paths ("" or "/").
 func cleanPrefix(prefix string) string {
 	if prefix == "" || prefix == "/" {
@@ -181,7 +186,8 @@ func cleanPrefix(prefix string) string {
 	return strings.TrimSuffix(cleaned, "/")
 }
 
-// joinPaths combines a base path with a sub path, ensuring proper slash handling.
+// joinPaths combines a base path with a sub path, ensuring proper
+// slash handling.
 // Returns the base path if sub is empty or root.
 func joinPaths(
 	base, sub string,
@@ -204,8 +210,9 @@ func joinPaths(
 	return result
 }
 
-// buildRoute constructs a complete route pattern by combining HTTP method and path.
-// Returns just the path if method is empty, ensuring path defaults to "/" if empty.
+// buildRoute constructs a complete route pattern by combining HTTP
+// method and path.
+// Returns just the path if method is empty, ensuring path defaults to "/".
 func buildRoute(
 	method, path string,
 ) string {

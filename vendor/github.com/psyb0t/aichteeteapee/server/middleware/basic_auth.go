@@ -9,7 +9,7 @@ import (
 	"github.com/psyb0t/aichteeteapee"
 )
 
-// BasicAuthConfig holds configuration for basic auth middleware
+// BasicAuthConfig holds configuration for basic auth middleware.
 type BasicAuthConfig struct {
 	Realm           string
 	Users           map[string]string // username -> password mapping for users
@@ -17,12 +17,13 @@ type BasicAuthConfig struct {
 	Validator       func(username, password string) bool
 	SkipPaths       map[string]bool
 	UseConstantTime bool // Use constant-time comparison to prevent timing attacks
-	SendChallenge   bool // Whether to send WWW-Authenticate header (triggers browser popup)
+	SendChallenge   bool
+	// Whether to send WWW-Authenticate header (triggers browser popup)
 }
 
 type BasicAuthOption func(*BasicAuthConfig)
 
-// WithBasicAuthUsers sets username/password pairs
+// WithBasicAuthUsers sets username/password pairs.
 func WithBasicAuthUsers(users map[string]string) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		if c.Users == nil {
@@ -33,14 +34,14 @@ func WithBasicAuthUsers(users map[string]string) BasicAuthOption {
 	}
 }
 
-// WithBasicAuthRealm sets the authentication realm
+// WithBasicAuthRealm sets the authentication realm.
 func WithBasicAuthRealm(realm string) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		c.Realm = realm
 	}
 }
 
-// WithBasicAuthUnauthorizedMessage sets the unauthorized response message
+// WithBasicAuthUnauthorizedMessage sets the unauthorized response message.
 func WithBasicAuthUnauthorizedMessage(
 	message string,
 ) BasicAuthOption {
@@ -49,14 +50,16 @@ func WithBasicAuthUnauthorizedMessage(
 	}
 }
 
-// WithBasicAuthValidator sets a custom validation function
-func WithBasicAuthValidator(validator func(username, password string) bool) BasicAuthOption {
+// WithBasicAuthValidator sets a custom validation function.
+func WithBasicAuthValidator(
+	validator func(username, password string) bool,
+) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		c.Validator = validator
 	}
 }
 
-// WithBasicAuthSkipPaths sets paths to skip authentication
+// WithBasicAuthSkipPaths sets paths to skip authentication.
 func WithBasicAuthSkipPaths(paths ...string) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		if c.SkipPaths == nil {
@@ -69,21 +72,24 @@ func WithBasicAuthSkipPaths(paths ...string) BasicAuthOption {
 	}
 }
 
-// WithConstantTimeComparison enables constant-time string comparison to prevent timing attacks
+// WithConstantTimeComparison enables constant-time string comparison
+// to prevent timing attacks.
 func WithConstantTimeComparison(enable bool) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		c.UseConstantTime = enable
 	}
 }
 
-// WithBasicAuthChallenge controls whether to send WWW-Authenticate header (browser popup)
+// WithBasicAuthChallenge controls whether to send WWW-Authenticate
+// header (browser popup).
 func WithBasicAuthChallenge(sendChallenge bool) BasicAuthOption {
 	return func(c *BasicAuthConfig) {
 		c.SendChallenge = sendChallenge
 	}
 }
 
-// BasicAuthMiddleware provides HTTP Basic Authentication with configurable options
+// BasicAuthMiddleware provides HTTP Basic Authentication
+// with configurable options
 //
 
 func BasicAuth(opts ...BasicAuthOption) Middleware {
@@ -130,7 +136,7 @@ func BasicAuth(opts ...BasicAuthOption) Middleware {
 	}
 }
 
-// authenticateUser performs user authentication with the given config
+// authenticateUser performs user authentication with the given config.
 func authenticateUser(config *BasicAuthConfig, user, pass string) bool {
 	// Use custom validator if provided
 	if config.Validator != nil {
@@ -144,7 +150,7 @@ func authenticateUser(config *BasicAuthConfig, user, pass string) bool {
 	return authenticateWithUsers(config, user, pass)
 }
 
-// authenticateWithUsers performs authentication against the user map
+// authenticateWithUsers performs authentication against the user map.
 func authenticateWithUsers(config *BasicAuthConfig, user, pass string) bool {
 	if config.UseConstantTime {
 		return constantTimeAuth(config.Users, user, pass)
@@ -155,7 +161,8 @@ func authenticateWithUsers(config *BasicAuthConfig, user, pass string) bool {
 	return exists && pass == expectedPassword
 }
 
-// constantTimeAuth performs constant-time authentication to prevent timing attacks
+// constantTimeAuth performs constant-time authentication
+// to prevent timing attacks.
 func constantTimeAuth(users map[string]string, user, pass string) bool {
 	expectedPassword, exists := users[user]
 	if !exists {
@@ -171,7 +178,7 @@ func constantTimeAuth(users map[string]string, user, pass string) bool {
 	return exists && passwordMatch
 }
 
-// unauthorized sends an unauthorized response
+// unauthorized sends an unauthorized response.
 func unauthorized(w http.ResponseWriter, config *BasicAuthConfig) {
 	if config.SendChallenge {
 		w.Header().Set(

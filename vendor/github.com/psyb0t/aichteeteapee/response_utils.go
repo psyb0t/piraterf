@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// WriteJSON writes a JSON response with the given status code
+// WriteJSON writes a JSON response with the given status code.
 func WriteJSON(
 	w http.ResponseWriter,
 	statusCode int,

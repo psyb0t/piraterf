@@ -33,7 +33,7 @@ docker run --rm \
     sh -c "apk add --no-cache gcc musl-dev && \
         GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0 go build -a \
         -ldflags '-extldflags \"-static\" -X main.appName=$APP_NAME' \
-        -o ./build/$APP_NAME ./cmd/... && \
+        -o ./build/$APP_NAME ./cmd/main.go && \
         chown \$USER_UID:\$USER_GID ./build/$APP_NAME"
 
 # Pack deployment archive

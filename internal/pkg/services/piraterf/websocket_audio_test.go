@@ -7,7 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/psyb0t/aichteeteapee/server/websocket"
+	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
+	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/env"
 	"github.com/sirupsen/logrus"
@@ -22,7 +23,7 @@ func init() {
 func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -35,7 +36,7 @@ func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 func TestSendAudioPlaylistCreateErrorEvent(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
-	hub := websocket.NewHub("test")
+	hub := wshub.NewHub("test")
 	defer hub.Close()
 
 	service := &PIrateRF{websocketHub: hub}
@@ -72,7 +73,7 @@ func TestValidatePlaylistRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			defer hub.Close()
 
 			tempDir := t.TempDir()
@@ -165,7 +166,7 @@ func TestHandleAudioPlaylistCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hub := websocket.NewHub("test")
+			hub := wshub.NewHub("test")
 			defer hub.Close()
 
 			mockCmd := commander.NewMock()
@@ -180,13 +181,13 @@ func TestHandleAudioPlaylistCreate(t *testing.T) {
 				},
 			}
 
-			event := &websocket.Event{
+			event := &dabluveees.Event{
 				Type: "audioPlaylistCreate",
 				ID:   uuid.New(),
 				Data: json.RawMessage(tt.eventData),
 			}
 
-			client := &websocket.Client{}
+			client := &wshub.Client{}
 
 			// Test that handleAudioPlaylistCreate doesn't panic
 			if tt.eventData == `{invalid json` {

@@ -24,10 +24,11 @@ type Config struct {
 	TLSKeyFile          string        `env:"HTTP_SERVER_TLSKEYFILE"`
 }
 
-// parseConfig parses the server configuration from environment variables
+// parseConfig parses the server configuration from environment variables.
 func parseConfig() (Config, error) {
 	cfg := Config{}
 
+	//nolint:lll
 	gonfiguration.SetDefaults(map[string]any{
 		aichteeteapee.EnvVarNameHTTPServerListenAddress:       aichteeteapee.DefaultHTTPServerListenAddress,
 		aichteeteapee.EnvVarNameHTTPServerReadTimeout:         aichteeteapee.DefaultHTTPServerReadTimeout,

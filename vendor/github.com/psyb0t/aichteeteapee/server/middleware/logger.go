@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// LoggerConfig holds configuration for logger middleware
+// LoggerConfig holds configuration for logger middleware.
 type LoggerConfig struct {
 	Logger         *logrus.Logger
 	LogLevel       logrus.Level
@@ -24,28 +24,28 @@ type LoggerConfig struct {
 
 type LoggerOption func(*LoggerConfig)
 
-// WithLogger sets the logger instance
+// WithLogger sets the logger instance.
 func WithLogger(logger *logrus.Logger) LoggerOption {
 	return func(c *LoggerConfig) {
 		c.Logger = logger
 	}
 }
 
-// WithLogLevel sets the log level for requests
+// WithLogLevel sets the log level for requests.
 func WithLogLevel(level logrus.Level) LoggerOption {
 	return func(c *LoggerConfig) {
 		c.LogLevel = level
 	}
 }
 
-// WithLogMessage sets the log message
+// WithLogMessage sets the log message.
 func WithLogMessage(message string) LoggerOption {
 	return func(c *LoggerConfig) {
 		c.Message = message
 	}
 }
 
-// WithSkipPaths sets paths to skip logging
+// WithSkipPaths sets paths to skip logging.
 func WithSkipPaths(paths ...string) LoggerOption {
 	return func(c *LoggerConfig) {
 		if c.SkipPaths == nil {
@@ -58,7 +58,7 @@ func WithSkipPaths(paths ...string) LoggerOption {
 	}
 }
 
-// WithExtraFields adds extra fields to all log entries
+// WithExtraFields adds extra fields to all log entries.
 func WithExtraFields(fields map[string]any) LoggerOption {
 	return func(c *LoggerConfig) {
 		if c.ExtraFields == nil {
@@ -69,14 +69,14 @@ func WithExtraFields(fields map[string]any) LoggerOption {
 	}
 }
 
-// WithIncludeQuery enables/disables query parameter logging
+// WithIncludeQuery enables/disables query parameter logging.
 func WithIncludeQuery(include bool) LoggerOption {
 	return func(c *LoggerConfig) {
 		c.IncludeQuery = include
 	}
 }
 
-// WithIncludeHeaders enables header logging
+// WithIncludeHeaders enables header logging.
 func WithIncludeHeaders(headers ...string) LoggerOption {
 	return func(c *LoggerConfig) {
 		c.IncludeHeaders = len(headers) > 0
@@ -84,7 +84,8 @@ func WithIncludeHeaders(headers ...string) LoggerOption {
 	}
 }
 
-// LoggerMiddleware logs HTTP requests with structured logging and configurable options
+// LoggerMiddleware logs HTTP requests with structured logging and configurable
+// options
 //
 //nolint:funlen // Long function due to comprehensive logging configuration
 func Logger(opts ...LoggerOption) Middleware {
@@ -157,7 +158,7 @@ func Logger(opts ...LoggerOption) Middleware {
 	}
 }
 
-// loggerResponseWriter wraps http.ResponseWriter to capture status code safely
+// loggerResponseWriter wraps http.ResponseWriter to capture status code safely.
 type loggerResponseWriter struct {
 	BaseResponseWriter
 	statusCode    int
