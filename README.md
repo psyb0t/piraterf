@@ -8,7 +8,6 @@
 - [🚀 Quick Setup Guide](#-quick-setup-guide)
 - [📡 Transmission Modes Explained](#-transmission-modes-explained)
 - [🛠️ Development Commands](#️-development-commands)
-- [🔧 Configuration](#-configuration)
 - [📁 Project Structure](#-project-structure)
 - [🏴‍☠️ Legal and Safety Notice](#️-legal-and-safety-notice)
 - [📡 Standard Operating Frequencies](#-standard-operating-frequencies)
@@ -142,7 +141,7 @@ Full FM broadcasting with RDS support:
 
 - **Frequency**: Transmission frequency in MHz
 - **Audio File**: Upload MP3/WAV/FLAC/OGG or select processed files
-  > **Upload Process**: Files automatically converted via FFmpeg to 48kHz/16-bit/mono WAV format and saved to `/files/audio/uploads/`
+  > **Upload Process**: Files automatically converted via FFmpeg to 48kHz/16-bit/mono WAV format and saved to `./files/audio/uploads/`
 - **Playlist Builder**: UI tool to combine multiple audio files and SFX into a single WAV
 - **RDS Settings**:
   - **PI Code**: 4-character station identifier
@@ -211,7 +210,7 @@ Binary frequency shift keying for data transmission:
 - **Input Type**: Text or file mode
   - **Text Mode**: Direct text input
   - **File Mode**: Upload data files (any format)
-    > **Upload Process**: Files moved as-is (no conversion) to `/files/data/uploads/` preserving original extension
+    > **Upload Process**: Files moved as-is (no conversion) to `./files/data/uploads/` preserving original extension
 - **Baud Rate**: Transmission speed (default 50 baud for reliability)
 
 **Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, binary chaos over the airwaves
@@ -277,7 +276,7 @@ Slow Scan Television image transmission:
 
 - **Frequency**: Transmission frequency in Hz
 - **Picture File**: Upload or select image file
-  > **Upload Process**: Images converted via ImageMagick to RGB 320x256 format (.rgb extension) for SSTV transmission, saved to `/files/images/uploads/` (spectrum paint .Y files also available if previously uploaded)
+  > **Upload Process**: Images converted via ImageMagick to RGB 320x256 format (.rgb extension) for SSTV transmission, saved to `./files/images/uploads/` (spectrum paint .Y files also available if previously uploaded)
 
 **Applications:** Image sharing over amateur radio, visual communication, amateur radio experimentation, sending pictures through the ether
 
@@ -289,7 +288,7 @@ Convert images to RF spectrum art:
 
 - **Frequency**: Base transmission frequency in Hz
 - **Picture File**: Upload or select image file
-  > **Upload Process**: Images converted via ImageMagick to YUV format (.Y extension) for spectrum paint AND RGB 320x256 format (.rgb extension) for SSTV, both saved to `/files/images/uploads/`
+  > **Upload Process**: Images converted via ImageMagick to YUV format (.Y extension) for spectrum paint AND RGB 320x256 format (.rgb extension) for SSTV, both saved to `./files/images/uploads/`
 - **Excursion**: Frequency deviation in Hz (default 100000)
 
 **Applications:** RF art, spectrum visualization, testing, spectrum analyzer demonstrations, educational purposes, turning images into radio waves
