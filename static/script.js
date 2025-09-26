@@ -433,18 +433,7 @@ class PIrateRFController {
       this.validatePlaylistCreation()
     );
 
-    // Close modal when clicking outside
-    this.fileEditModal.addEventListener("click", (e) => {
-      if (e.target === this.fileEditModal) {
-        this.closeEditModal();
-      }
-    });
-
-    this.playlistModal.addEventListener("click", (e) => {
-      if (e.target === this.playlistModal) {
-        this.closePlaylistModal();
-      }
-    });
+    // Modal click handlers removed - modals only close via buttons
 
     // File upload events
     this.fileSelectBtn.addEventListener("click", () =>
@@ -532,9 +521,15 @@ class PIrateRFController {
 
     // SPECTRUMPAINT image control buttons
     this.refreshImageBtn.addEventListener("click", () => this.loadImageFiles());
-    this.editImageBtn.addEventListener("click", () =>
-      this.openImageEditModal()
-    );
+    this.editImageBtn.addEventListener("click", () => {
+      const selectedFile = this.pictureFileInput.value;
+      if (selectedFile) {
+        const fileName = selectedFile.split('/').pop();
+        this.openFileEditModal("image", fileName, "imageUploads");
+      } else {
+        this.log("❌ No spectrum paint image file selected", "system");
+      }
+    });
     this.imageSelectBtn.addEventListener("click", () => this.imageFile.click());
 
     // PICHIRP module form events
@@ -631,9 +626,15 @@ class PIrateRFController {
 
     // PISSTV image control buttons
     this.refreshPisstvImageBtn.addEventListener("click", () => this.loadImageFiles());
-    this.editPisstvImageBtn.addEventListener("click", () =>
-      this.openImageEditModal()
-    );
+    this.editPisstvImageBtn.addEventListener("click", () => {
+      const selectedFile = this.pisstvPictureFileInput.value;
+      if (selectedFile) {
+        const fileName = selectedFile.split('/').pop();
+        this.openFileEditModal("image", fileName, "imageUploads");
+      } else {
+        this.log("❌ No SSTV image file selected", "system");
+      }
+    });
     this.pisstvImageSelectBtn.addEventListener("click", () => this.imageFile.click());
 
     // PIRTTY module form events
@@ -911,7 +912,10 @@ class PIrateRFController {
         break;
       case "spectrumpaint":
         this.spectrumpaintForm.classList.remove("hidden");
-        this.loadImageFiles(false);
+        // Get saved filename from state and extract just the filename
+        const savedSpectrumFile = this.state.spectrumpaint?.pictureFile;
+        const spectrumFilename = savedSpectrumFile ? savedSpectrumFile.split('/').pop() : null;
+        this.loadImageFiles(spectrumFilename);
         break;
       case "pichirp":
         this.pichirpForm.classList.remove("hidden");
@@ -924,7 +928,10 @@ class PIrateRFController {
         break;
       case "pisstv":
         this.pisstvForm.classList.remove("hidden");
-        this.loadImageFiles(false);
+        // Get saved filename from state and extract just the filename
+        const savedPisstvFile = this.state.pisstv?.pictureFile;
+        const pisstvFilename = savedPisstvFile ? savedPisstvFile.split('/').pop() : null;
+        this.loadImageFiles(pisstvFilename);
         break;
       case "pirtty":
         this.pirttyForm.classList.remove("hidden");
@@ -1207,12 +1214,13 @@ class PIrateRFController {
     this.editFskFileBtn.disabled = !hasSelection;
   }
 
-  async loadDataFiles(selectLatest = true) {
+  async loadDataFiles(selectFilename = null) {
     return this.loadFiles({
       endpoint: window.PIrateRFConfig.paths.dataUploadFiles,
       selectElement: this.fskFileInput,
       fileTypes: [], // No filter, accept all files
-      selectLatest,
+      selectLatest: !selectFilename,
+      selectFilename,
       savedStateKey: 'fsk',
       onChangeCallback: () => this.onFskFileChange(),
       noFilesText: "No data files",
@@ -1267,21 +1275,38 @@ class PIrateRFController {
       return;
     }
 
+    // Clear previous modal state first
+    this.currentEditFile = null;
+    this.currentEditDirectory = null;
+    this.currentFileExtension = null;
+    this.editFileName.value = "";
+
     // Set modal title and placeholder based on file type
     const config = {
-      audio: { title: "Edit Audio File", placeholder: "filename.wav" },
-      image: { title: "Edit Image File", placeholder: "filename.Y" },
-      data: { title: "Edit Data File", placeholder: "filename.txt" }
+      audio: { title: "Edit Audio File", placeholder: "filename" },
+      image: { title: "Edit Image File", placeholder: "filename" },
+      data: { title: "Edit Data File", placeholder: "filename" }
     };
 
     const modalConfig = config[fileType] || { title: "Edit File", placeholder: "filename" };
 
+    // Extract extension from the actual filename
+    const lastDotIndex = selectedFile.lastIndexOf('.');
+    let fileExtension = "";
+    let displayName = selectedFile;
+
+    if (lastDotIndex > 0 && lastDotIndex < selectedFile.length - 1) {
+      fileExtension = selectedFile.substring(lastDotIndex);
+      displayName = selectedFile.substring(0, lastDotIndex);
+    }
+
     this.fileEditModalTitle.textContent = modalConfig.title;
     this.editFileName.placeholder = modalConfig.placeholder;
-    this.editFileName.value = selectedFile;
+    this.editFileName.value = displayName;
 
     this.currentEditFile = selectedFile;
     this.currentEditDirectory = directory;
+    this.currentFileExtension = fileExtension;
     this.fileEditModal.style.display = "flex";
   }
 
@@ -1296,27 +1321,6 @@ class PIrateRFController {
     }
   }
 
-  openImageEditModal() {
-    // For spectrum paint images (pictureFileInput)
-    const selectedFile = this.pictureFileInput.value;
-    if (selectedFile) {
-      // Extract filename with extension preserved
-      const fileName = selectedFile.split('/').pop();
-      this.openFileEditModal("image", fileName, "imageUploads");
-      return;
-    }
-
-    // For PISSTV images (pisstvPictureFileInput)
-    const pisstvSelectedFile = this.pisstvPictureFileInput.value;
-    if (pisstvSelectedFile) {
-      // Extract filename with extension preserved
-      const fileName = pisstvSelectedFile.split('/').pop();
-      this.openFileEditModal("image", fileName, "imageUploads");
-      return;
-    }
-
-    this.log("❌ No image file selected", "system");
-  }
 
   openAudioEditModal() {
     const selectedFile = this.audioInput.value;
@@ -2201,12 +2205,13 @@ class PIrateRFController {
     }
   }
 
-  async loadAudioFiles(selectLatest = true) {
+  async loadAudioFiles(selectFilename = null) {
     return this.loadFiles({
       endpoint: window.PIrateRFConfig.paths.audioUploadFiles,
       selectElement: this.audioInput,
       fileTypes: ['.wav'],
-      selectLatest,
+      selectLatest: !selectFilename,
+      selectFilename,
       savedStateKey: 'audio',
       onChangeCallback: () => this.onAudioFileChange(),
       noFilesText: "No audio files",
@@ -2216,14 +2221,15 @@ class PIrateRFController {
     });
   }
 
-  async loadImageFiles(selectLatest = true) {
+  async loadImageFiles(selectFilename = null) {
     // Load spectrum paint images (.Y files)
     await this.loadFiles({
       endpoint: window.PIrateRFConfig.paths.imageUploadFiles,
       selectElement: this.pictureFileInput,
       fileTypes: ['.Y'],
-      selectLatest,
-      savedStateKey: selectLatest ? null : 'spectrumpaint',
+      selectLatest: !selectFilename,
+      selectFilename: selectFilename && selectFilename.endsWith('.Y') ? selectFilename : null,
+      savedStateKey: selectFilename ? null : 'spectrumpaint',
       onChangeCallback: () => this.onImageFileChange(),
       noFilesText: "No .Y image files",
       debugPrefix: "spectrum paint images",
@@ -2236,8 +2242,9 @@ class PIrateRFController {
       endpoint: window.PIrateRFConfig.paths.imageUploadFiles,
       selectElement: this.pisstvPictureFileInput,
       fileTypes: ['.rgb'],
-      selectLatest,
-      savedStateKey: selectLatest ? null : 'pisstv',
+      selectLatest: !selectFilename,
+      selectFilename: selectFilename && selectFilename.endsWith('.rgb') ? selectFilename : null,
+      savedStateKey: selectFilename ? null : 'pisstv',
       onChangeCallback: () => this.onPisstvImageFileChange(),
       noFilesText: "No .rgb image files",
       debugPrefix: "PISSTV images",
@@ -2286,26 +2293,14 @@ class PIrateRFController {
     this.fileEditModal.style.display = "flex";
   }
 
-  closeModal(modalType) {
-    switch (modalType) {
-      case "audio":
-        this.fileEditModal.style.display = "none";
-        this.currentEditFile = null;
-        this.editFileName.value = "";
-        break;
-      case "image":
-        this.fileEditModal.style.display = "none";
-        this.currentEditFile = null;
-        this.editFileName.value = "";
-        break;
-      case "playlist":
-        this.playlistModal.style.display = "none";
-        break;
-    }
-  }
 
   closeEditModal() {
-    this.closeModal("audio");
+    // Reset all modal state regardless of type
+    this.fileEditModal.style.display = "none";
+    this.currentEditFile = null;
+    this.currentEditDirectory = null;
+    this.currentFileExtension = null;
+    this.editFileName.value = "";
   }
 
   renameFile() {
@@ -2315,7 +2310,16 @@ class PIrateRFController {
       return;
     }
 
-    if (newFileName === this.currentEditFile) {
+    // Add the extension back to the new filename
+    const finalFileName = this.currentFileExtension ? newFileName + this.currentFileExtension : newFileName;
+
+    // Remove extension from current file for comparison
+    let currentNameWithoutExtension = this.currentEditFile;
+    if (this.currentFileExtension && this.currentEditFile.endsWith(this.currentFileExtension)) {
+      currentNameWithoutExtension = this.currentEditFile.slice(0, -this.currentFileExtension.length);
+    }
+
+    if (newFileName === currentNameWithoutExtension) {
       // No change, just close
       this.closeEditModal();
       return;
@@ -2342,7 +2346,7 @@ class PIrateRFController {
       type: "file.rename",
       data: {
         filePath: filePath, // Full path to current file
-        newName: newFileName, // Just the new filename
+        newName: finalFileName, // Just the new filename with extension
       },
       id: this.generateUUID(),
     };
@@ -2409,9 +2413,7 @@ class PIrateRFController {
     this.closeEditModal();
 
     // Refresh the dropdown and select the renamed file
-    this.loadAudioFiles().then(() => {
-      const fileDir = data.fileName.split("/").slice(0, -1).join("/");
-      this.audioInput.value = `${fileDir}/${data.newName}`;
+    this.loadAudioFiles(data.newName).then(() => {
       this.validateForm();
       this.saveState();
     });
@@ -2450,9 +2452,7 @@ class PIrateRFController {
     this.closeEditModal();
 
     // Refresh the dropdown and select the renamed file
-    this.loadDataFiles().then(() => {
-      const fileDir = data.fileName.split("/").slice(0, -1).join("/");
-      this.fskFileInput.value = `${fileDir}/${data.newName}`;
+    this.loadDataFiles(data.newName).then(() => {
       this.validateForm();
       this.saveState();
     });
@@ -2482,9 +2482,6 @@ class PIrateRFController {
 
   // This function is defined earlier (line 1252) with unified modal support
 
-  closeImageEditModal() {
-    this.closeModal("image");
-  }
 
   renameImageFile() {
     const newFileName = this.editFileName.value.trim();
@@ -2493,9 +2490,18 @@ class PIrateRFController {
       return;
     }
 
-    if (newFileName === this.currentEditFile) {
+    // Add the extension back to the new filename
+    const finalFileName = this.currentFileExtension ? newFileName + this.currentFileExtension : newFileName;
+
+    // Remove extension from current file for comparison
+    let currentNameWithoutExtension = this.currentEditFile;
+    if (this.currentFileExtension && this.currentEditFile.endsWith(this.currentFileExtension)) {
+      currentNameWithoutExtension = this.currentEditFile.slice(0, -this.currentFileExtension.length);
+    }
+
+    if (newFileName === currentNameWithoutExtension) {
       // No change, just close
-      this.closeImageEditModal();
+      this.closeEditModal();
       return;
     }
 
@@ -2508,7 +2514,7 @@ class PIrateRFController {
       type: "file.rename",
       data: {
         filePath: this.pictureFileInput.value, // Full path to current file (same as audio pattern)
-        newName: newFileName, // Just the new filename
+        newName: finalFileName, // Just the new filename with extension
       },
     };
 
@@ -2557,12 +2563,11 @@ class PIrateRFController {
       `✅ Image file renamed from ${data.fileName} to ${data.newName}`,
       "system"
     );
-    this.closeImageEditModal();
+
+    this.closeEditModal();
 
     // Refresh the dropdown and select the renamed file
-    this.loadImageFiles().then(() => {
-      const fileDir = data.fileName.split("/").slice(0, -1).join("/");
-      this.pictureFileInput.value = `${fileDir}/${data.newName}`;
+    this.loadImageFiles(data.newName).then(() => {
       this.validateForm();
       this.saveState();
     });
@@ -2577,14 +2582,14 @@ class PIrateRFController {
     this.debug("onImageFileDeleteSuccess called");
     this.hideLoadingScreen();
     this.log(`✅ Image file deleted: ${data.fileName}`, "system");
-    this.closeImageEditModal();
+    this.closeEditModal();
     this.loadImageFiles();
   }
 
   onImageFileDeleteError(data) {
     this.hideLoadingScreen();
     this.log(`❌ Failed to delete image file: ${data.message}`, "system");
-    this.closeImageEditModal();
+    this.closeEditModal();
     // Refresh the dropdown to show current state
     this.loadImageFiles();
   }
@@ -2597,7 +2602,7 @@ class PIrateRFController {
   }
 
   closePlaylistModal() {
-    this.closeModal("playlist");
+    this.playlistModal.style.display = "none";
   }
 
   async loadPlaylistFiles() {
@@ -3073,6 +3078,7 @@ class PIrateRFController {
       selectElement,
       fileTypes = [],
       selectLatest = true,
+      selectFilename = null,
       savedStateKey,
       onChangeCallback,
       noFilesText = "No files",
@@ -3124,7 +3130,18 @@ class PIrateRFController {
         });
 
         // Handle selection
-        if (selectLatest) {
+        if (selectFilename) {
+          // Try to select the specific filename
+          const targetOption = Array.from(selectElement.options).find(option =>
+            option.textContent === selectFilename
+          );
+          if (targetOption) {
+            selectElement.value = targetOption.value;
+          } else {
+            // If not found, select the first one
+            selectElement.selectedIndex = 0;
+          }
+        } else if (selectLatest) {
           selectElement.selectedIndex = 0;
         } else if (savedStateKey) {
           this.selectSavedOrFirstFile(selectElement, savedStateKey, onChangeCallback);
