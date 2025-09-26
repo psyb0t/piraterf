@@ -102,7 +102,9 @@ func (s *PIrateRF) parseExecutionMessage(
 	return &msg, nil
 }
 
-func (s *PIrateRF) handleModuleValidationError(err error, moduleName gorpitx.ModuleName, logger *logrus.Entry) error {
+func (s *PIrateRF) handleModuleValidationError(
+	err error, moduleName gorpitx.ModuleName, logger *logrus.Entry,
+) error {
 	logger.WithError(err).
 		WithField("module", moduleName).
 		Error("Module validation failed - unsupported module")
@@ -133,7 +135,9 @@ func (s *PIrateRF) processModuleExecution(
 	case gorpitx.ModuleNamePOCSAG:
 		return s.handlePOCSAGExecution(msg, finalTimeout, client, logger)
 	default:
-		return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, finalTimeout, client, nil)
+		return s.executionManager.startExecution(
+			s.serviceCtx, msg.ModuleName, finalArgs, finalTimeout, client, nil,
+		)
 	}
 }
 
@@ -143,7 +147,9 @@ func (s *PIrateRF) handlePIFMRDSExecution(
 	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
-	processedTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(*msg, finalTimeout, logger)
+	processedTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(
+		*msg, finalTimeout, logger,
+	)
 	if err != nil {
 		logger.WithError(err).Error("Audio processing failed")
 
@@ -152,7 +158,9 @@ func (s *PIrateRF) handlePIFMRDSExecution(
 
 	callback := s.createCleanupCallback(cleanupPath, logger)
 
-	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, finalArgs, processedTimeout, client, callback)
+	return s.executionManager.startExecution(
+		s.serviceCtx, msg.ModuleName, finalArgs, processedTimeout, client, callback,
+	)
 }
 
 func (s *PIrateRF) handleSPECTRUMPAINTExecution(
@@ -168,7 +176,9 @@ func (s *PIrateRF) handleSPECTRUMPAINTExecution(
 		return ctxerrors.Wrap(err, "image processing failed")
 	}
 
-	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, modifiedArgs, finalTimeout, client, nil)
+	return s.executionManager.startExecution(
+		s.serviceCtx, msg.ModuleName, modifiedArgs, finalTimeout, client, nil,
+	)
 }
 
 func (s *PIrateRF) handlePICHIRPExecution(
@@ -179,7 +189,9 @@ func (s *PIrateRF) handlePICHIRPExecution(
 ) error {
 	logger.Debug("Processing PICHIRP execution request")
 
-	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil)
+	return s.executionManager.startExecution(
+		s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil,
+	)
 }
 
 func (s *PIrateRF) handlePOCSAGExecution(
@@ -190,17 +202,23 @@ func (s *PIrateRF) handlePOCSAGExecution(
 ) error {
 	logger.Debug("Processing POCSAG execution request")
 
-	return s.executionManager.startExecution(s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil)
+	return s.executionManager.startExecution(
+		s.serviceCtx, msg.ModuleName, msg.Args, finalTimeout, client, nil,
+	)
 }
 
-func (s *PIrateRF) createCleanupCallback(cleanupPath string, logger *logrus.Entry) func() error {
+func (s *PIrateRF) createCleanupCallback(
+	cleanupPath string, logger *logrus.Entry,
+) func() error {
 	if cleanupPath == "" {
 		return nil
 	}
 
 	return func() error {
 		if err := os.Remove(cleanupPath); err != nil {
-			logger.WithError(err).WithField("path", cleanupPath).Warn("Failed to cleanup temporary audio file")
+			logger.WithError(err).WithField("path", cleanupPath).Warn(
+				"Failed to cleanup temporary audio file",
+			)
 
 			return ctxerrors.Wrap(err, "failed to remove temporary audio file")
 		}
@@ -474,7 +492,9 @@ func (s *PIrateRF) generateSilenceFilePath() string {
 	return "/tmp/" + playlistID + "_with_silence" + constants.FileExtensionWAV
 }
 
-func (s *PIrateRF) addSilenceToAudio(audioFile, silenceAudioPath string, logger *logrus.Entry) error {
+func (s *PIrateRF) addSilenceToAudio(
+	audioFile, silenceAudioPath string, logger *logrus.Entry,
+) error {
 	logger.WithFields(logrus.Fields{
 		"originalAudio": audioFile,
 		"silenceFile":   silenceAudioPath,

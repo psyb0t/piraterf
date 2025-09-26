@@ -5,13 +5,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (s *PIrateRF) handleLiveAudioConnection(connection *wsunixbridge.Connection) error {
+func (s *PIrateRF) handleLiveAudioConnection(
+	connection *wsunixbridge.Connection,
+) error {
 	logger := logrus.WithFields(logrus.Fields{
 		"connectionID": connection.ID,
 		"remoteAddr":   connection.Conn.RemoteAddr(),
 	})
 
-	logger.Info("Live audio WebSocket connection established - client will receive init event with writer socket path")
+	logger.Info(
+		"Live audio WebSocket connection established - client will receive init event with writer socket path",
+	)
 
 	return nil
 }
