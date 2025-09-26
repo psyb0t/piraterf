@@ -141,7 +141,8 @@ Full FM broadcasting with RDS support:
 **Configuration Options:**
 
 - **Frequency**: Transmission frequency in MHz
-- **Audio File**: Upload MP3/WAV/FLAC/OGG (auto-converted to 48kHz/16-bit/mono WAV) or select already processed WAV files
+- **Audio File**: Upload MP3/WAV/FLAC/OGG or select processed files
+  > **Upload Process**: Files automatically converted via FFmpeg to 48kHz/16-bit/mono WAV format and saved to `/files/audio/uploads/`
 - **Playlist Builder**: UI tool to combine multiple audio files and SFX into a single WAV
 - **RDS Settings**:
   - **PI Code**: 4-character station identifier
@@ -210,6 +211,7 @@ Binary frequency shift keying for data transmission:
 - **Input Type**: Text or file mode
   - **Text Mode**: Direct text input
   - **File Mode**: Upload data files (any format)
+    > **Upload Process**: Files moved as-is (no conversion) to `/files/data/uploads/` preserving original extension
 - **Baud Rate**: Transmission speed (default 50 baud for reliability)
 
 **Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, binary chaos over the airwaves
@@ -275,6 +277,7 @@ Slow Scan Television image transmission:
 
 - **Frequency**: Transmission frequency in Hz
 - **Picture File**: Upload or select image file
+  > **Upload Process**: Images converted via ImageMagick to RGB 320x256 format (.rgb extension) for SSTV transmission, saved to `/files/images/uploads/` (spectrum paint .Y files also available if previously uploaded)
 
 **Applications:** Image sharing over amateur radio, visual communication, amateur radio experimentation, sending pictures through the ether
 
@@ -286,6 +289,7 @@ Convert images to RF spectrum art:
 
 - **Frequency**: Base transmission frequency in Hz
 - **Picture File**: Upload or select image file
+  > **Upload Process**: Images converted via ImageMagick to YUV format (.Y extension) for spectrum paint AND RGB 320x256 format (.rgb extension) for SSTV, both saved to `/files/images/uploads/`
 - **Excursion**: Frequency deviation in Hz (default 100000)
 
 **Applications:** RF art, spectrum visualization, testing, spectrum analyzer demonstrations, educational purposes, turning images into radio waves
@@ -311,36 +315,6 @@ make ssh              # SSH into Pi
 make pi-reboot        # Reboot Pi
 make uninstall        # Remove from Pi
 ```
-
-## 🔧 Configuration
-
-### Pi Settings (scripts/pi_config.sh)
-
-```bash
-PI_USER="pi"                    # Pi username
-PI_HOST="piraterf.local"        # Pi hostname/IP
-PI_PASS="raspberry"             # Pi password
-
-AP_SSID="🏴‍☠️📡"               # WiFi AP name
-AP_PASSWORD="piraterf123"       # WiFi AP password
-AP_CHANNEL="7"                  # WiFi channel (1-14)
-AP_COUNTRY="US"                 # Country code (US/UK/DE/etc)
-```
-
-### Audio Processing Pipeline
-
-1. **Upload**: MP3/WAV/FLAC/OGG files supported
-2. **Conversion**: Auto-convert to 48kHz/16-bit/mono WAV using Sox
-3. **Storage**: Organized in `/files/audio/uploads/` and `/files/audio/sfx/`
-4. **Playlists**: Support for intro/outro tracks and repeat modes
-
-### Image Processing
-
-1. **Upload**: JPEG/PNG/GIF formats supported
-2. **Dual conversion**:
-   - YUV format for Spectrum Paint
-   - RGB 320x256 for SSTV transmission
-3. **Storage**: Both formats saved in `/files/images/uploads/`
 
 ## 📁 Project Structure
 
