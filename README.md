@@ -147,7 +147,7 @@ Full FM broadcasting with RDS support:
   - **PI Code**: 4-character station identifier
   - **PS Name**: 8-character station name
   - **Radio Text**: 64-character scrolling message
-- **Play Mode**: Toggle between "play once" and "play continuously"
+- **Play Mode**: Toggle between "play once" and "loop"
 - **Intro/Outro**: Intro and outro SFX tracks
 - **PPM Clock Correction**: Fine-tune frequency accuracy
 - **Timeout**: Auto-stop after specified seconds (0 = no timeout)

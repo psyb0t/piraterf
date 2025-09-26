@@ -2903,7 +2903,7 @@ class PIrateRFController {
       // Switch to continuous mode
       this.playModeToggle.classList.remove("active");
       this.playModeToggle.textContent = "🔁";
-      this.playModeToggle.title = "Play continuously";
+      this.playModeToggle.title = "Loop";
     } else {
       // Switch to play once mode
       this.playModeToggle.classList.add("active");
@@ -3437,7 +3437,7 @@ class PIrateRFController {
       } else {
         this.playModeToggle.classList.remove("active");
         this.playModeToggle.textContent = "🔁";
-        this.playModeToggle.title = "Play continuously";
+        this.playModeToggle.title = "Loop";
       }
     }
 
