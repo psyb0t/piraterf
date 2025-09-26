@@ -153,7 +153,7 @@ Full FM broadcasting with RDS support:
 - **Timeout**: Auto-stop after specified seconds (0 = no timeout)
 - **Microphone Recording**: Record audio directly through browser interface and save as WAV
 
-**Applications:** Underground radio broadcasting, music streaming, podcasting, community radio, event broadcasting, spreading the signal
+**Applications:** Underground radio broadcasting, music streaming, podcasting, community radio, pirate radio stations, rickrolling entire neighborhoods
 
 ### 🎙️ Live Microphone Broadcast
 
@@ -171,7 +171,7 @@ Real-time microphone streaming with configurable modulation:
 - **Gain**: Audio gain multiplier (default 1.0)
 - **Real-time processing**: Browser captures microphone, streams via WebSocket into unix socket that gets piped to rpitx
 
-**Applications:** Live commentary, emergency communications, amateur radio nets, real-time broadcasting, voice communication, instant chaos
+**Applications:** Live commentary, emergency communications, amateur radio nets, real-time broadcasting, broadcast your burps, go live on radio while in the moshpit
 
 ### 📟 FT8
 
@@ -186,7 +186,7 @@ Ultra-weak signal digital mode for HF DX:
 - **Time Slot**: Choose 15-second transmission slot (0, 1, or 2)
 - **Repeat Mode**: Continuous transmission every 15 seconds
 
-**Applications:** Long-range DX contacts, weak signal wizardry, intercontinental communication, amateur radio experimentation
+**Applications:** Long-range DX contacts, weak signal communication, intercontinental contacts, confusing the fuck out of contesters
 
 ### 📠 RTTY
 
@@ -198,7 +198,7 @@ Classic digital text communication:
 - **Space Frequency**: FSK space frequency offset (default 170 Hz)
 - **Message**: Text to transmit
 
-**Applications:** Digital text communication, bulletins, casual digital chat, amateur radio messaging, old-school data transmission
+**Applications:** Digital text communication, news bulletins, teletype messaging, sending ASCII art over RTTY
 
 ### 📊 FSK
 
@@ -213,7 +213,7 @@ Binary frequency shift keying for data transmission:
     > **Upload Process**: Files moved as-is (no conversion) to `./files/data/uploads/` preserving original extension
 - **Baud Rate**: Transmission speed (default 50 baud for reliability)
 
-**Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, binary chaos over the airwaves
+**Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, sending porn like back in the dialup days
 
 ### 📱 POCSAG
 
@@ -230,7 +230,7 @@ Digital pager messaging system:
 - **Debug Mode**: Enable debug output
 - **Multiple Messages**: Support for batch message transmission
 
-**Applications:** Emergency communications, alerting systems, pager messaging, notification systems, 90s nostalgia trips
+**Applications:** Emergency paging systems, alert notifications, pager messaging, mass notification chaos, 90s nostalgia bombing
 
 ### 📻 Morse Code
 
@@ -242,7 +242,7 @@ Traditional CW transmission:
 - **Rate**: Transmission speed in dits per minute (default 20)
 - **Message**: Text to convert to Morse code
 
-**Applications:** Emergency communications, amateur radio tradition, CW practice, beacon transmissions, old-school dots and dashes
+**Applications:** Morse code practice, beacon transmissions, emergency communications, sending dirty messages in CW, beacon spam
 
 ### 🎛️ Carrier Wave
 
@@ -254,7 +254,7 @@ Simple carrier generation for testing:
 - **Exit Immediate**: Option to exit without killing carrier
 - **PPM Clock Correction**: Fine-tune frequency accuracy
 
-**Applications:** Antenna tuning, SWR measurements, transmitter testing, filter alignment, RF circuit testing, carrier wave madness
+**Applications:** Antenna tuning, transmitter testing, SWR measurements, dead carrier trolling, RF circuit testing
 
 ### 🌊 Frequency Sweep
 
@@ -266,7 +266,7 @@ Automated frequency sweeps for RF analysis:
 - **Bandwidth**: Sweep bandwidth in Hz (default 1 MHz)
 - **Sweep Duration**: Time for complete sweep in seconds (default 5.0)
 
-**Applications:** Antenna analysis, filter testing, spectrum analysis, RF circuit characterization, frequency sweeping mayhem
+**Applications:** Antenna analysis, filter testing, frequency response measurements, wobbulating like a maniac, antenna torture testing
 
 ### 📺 SSTV
 
@@ -278,7 +278,7 @@ Slow Scan Television image transmission:
 - **Picture File**: Upload or select image file
   > **Upload Process**: Images converted via ImageMagick to RGB 320x256 format (.rgb extension) for SSTV transmission, saved to `./files/images/uploads/` (spectrum paint .Y files also available if previously uploaded)
 
-**Applications:** Image sharing over amateur radio, visual communication, amateur radio experimentation, sending pictures through the ether
+**Applications:** Image transmission over radio, amateur radio SSTV, visual communication, cock pic broadcasting - look at that big ass rooster
 
 ### 🎨 Spectrum Paint
 
@@ -291,7 +291,7 @@ Convert images to RF spectrum art:
   > **Upload Process**: Images converted via ImageMagick to YUV format (.Y extension) for spectrum paint AND RGB 320x256 format (.rgb extension) for SSTV, both saved to `./files/images/uploads/`
 - **Excursion**: Frequency deviation in Hz (default 100000)
 
-**Applications:** RF art, spectrum visualization, testing, spectrum analyzer demonstrations, educational purposes, turning images into radio waves
+**Applications:** RF spectrum art, spectrum visualization, signal analysis demonstrations, drawing dick pics on waterfalls, spectrum graffiti
 
 ## 🛠️ Development Commands
 
