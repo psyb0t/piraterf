@@ -2,8 +2,6 @@ module github.com/psyb0t/piraterf
 
 go 1.24.6
 
-replace github.com/psyb0t/gorpitx => ../gorpitx
-
 require (
 	github.com/google/uuid v1.6.0
 	github.com/psyb0t/aichteeteapee v0.0.0-20250925010250-59e5acd982fa
@@ -11,7 +9,7 @@ require (
 	github.com/psyb0t/common-go v0.0.0-20250922043457-a771ef735af8
 	github.com/psyb0t/ctxerrors v0.2.0
 	github.com/psyb0t/gonfiguration v1.3.1
-	github.com/psyb0t/gorpitx v0.0.0-00010101000000-000000000000
+	github.com/psyb0t/gorpitx v0.0.0-20250925164946-01d87c6d902b
 	github.com/psyb0t/logrus-configurator v1.1.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1

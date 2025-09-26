@@ -446,8 +446,12 @@ PIrateRF supports the full amateur radio spectrum. Here are common frequencies f
 
 This project is licensed under WTFPL (Do What The Fuck You Want To Public License).
 
----
-
 **🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
 _Remember: With great RF power comes great responsibility. Always operate legally and don't be a dick to other operators._
+
+---
+
+_Built with spite using https://github.com/psyb0t/servicepack_
+
+---
