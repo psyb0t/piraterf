@@ -162,7 +162,7 @@ clone_device() {
     log_warning "This may take a while depending on SD card size..."
     log_info "Prepare for some fucking copying action!"
 
-    if ! sudo dd if="$selected_device" of="$output_file" bs=4M status=progress; then
+    if ! sudo dd if="$selected_device" of="$output_file" bs=512k status=progress conv=sync; then
         log_error "DD failed! Check permissions and device access."
         exit 1
     fi
