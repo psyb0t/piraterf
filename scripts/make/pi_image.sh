@@ -59,20 +59,49 @@ detect_fucking_rpi_devices() {
                 size=$(lsblk -n -o SIZE "$device" 2>/dev/null | head -1 | tr -d ' ')
             fi
 
-            # Check partition labels
+            # Check partition labels and types (more robust detection)
             for partition in ${device}*; do
                 if [[ -b "$partition" ]]; then
                     local label=$(lsblk -n -o LABEL "$partition" 2>/dev/null)
                     local fstype=$(lsblk -n -o FSTYPE "$partition" 2>/dev/null)
+                    local ptype=$(lsblk -n -o PARTTYPE "$partition" 2>/dev/null)
 
-                    if [[ "$label" == "rootfs" ]] || [[ "$fstype" == "ext4" && "$partition" =~ (2|p2)$ ]]; then
+                    # Check for rootfs partition (ext4 on partition 2, or specific label/type)
+                    if [[ "$label" == "rootfs" ]] ||
+                       [[ "$fstype" == "ext4" && "$partition" =~ (2|p2)$ ]] ||
+                       [[ "$ptype" == "0fc63daf-8483-4772-8e79-3d69d8477de4" ]]; then
                         has_rootfs=true
                     fi
-                    if [[ "$label" == "bootfs" ]] || [[ "$fstype" == "vfat" && "$partition" =~ (1|p1)$ ]]; then
+
+                    # Check for bootfs partition (vfat on partition 1, or specific label/type)
+                    if [[ "$label" == "bootfs" ]] ||
+                       [[ "$fstype" == "vfat" && "$partition" =~ (1|p1)$ ]] ||
+                       [[ "$fstype" == "fat32" && "$partition" =~ (1|p1)$ ]] ||
+                       [[ "$ptype" == "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ]]; then
                         has_bootfs=true
                     fi
                 fi
             done
+
+            # If filesystem detection fails, try blkid as fallback
+            if [[ ! $has_rootfs || ! $has_bootfs ]]; then
+                for partition in ${device}*; do
+                    if [[ -b "$partition" ]]; then
+                        local blkid_info=$(sudo blkid "$partition" 2>/dev/null || true)
+
+                        # Check for typical Pi patterns in blkid output
+                        if [[ "$blkid_info" =~ LABEL=\"rootfs\" ]] ||
+                           [[ "$blkid_info" =~ TYPE=\"ext4\" && "$partition" =~ (2|p2)$ ]]; then
+                            has_rootfs=true
+                        fi
+
+                        if [[ "$blkid_info" =~ LABEL=\"bootfs\" ]] ||
+                           [[ "$blkid_info" =~ TYPE=\"vfat\" && "$partition" =~ (1|p1)$ ]]; then
+                            has_bootfs=true
+                        fi
+                    fi
+                done
+            fi
 
             if $has_rootfs && $has_bootfs; then
                 devices+=("$device")
@@ -140,20 +169,17 @@ clone_device() {
     log_section "Cloning $selected_device to $output_file"
 
     # Unmount any existing partitions to avoid conflicts
-    log_info "Unmounting any existing partitions from $selected_device..."
-    local current_user=$(whoami)
-    for mount_point in /media/$current_user/rootfs /media/$current_user/bootfs; do
-        if mountpoint -q "$mount_point" 2>/dev/null; then
-            log_info "Unmounting $mount_point"
-            sudo umount "$mount_point" 2>/dev/null || true
-        fi
-    done
+    log_info "Unmounting any mounted partitions from $selected_device..."
 
-    # Also unmount any direct device partitions
+    # Check if any partitions are mounted and unmount them
     for partition in ${selected_device}*; do
-        if [[ -b "$partition" ]] && mountpoint -q "$partition" 2>/dev/null; then
-            log_info "Unmounting partition $partition"
-            sudo umount "$partition" 2>/dev/null || true
+        if [[ -b "$partition" ]]; then
+            # Get mount point if partition is mounted
+            local mount_point=$(findmnt -n -o TARGET "$partition" 2>/dev/null || true)
+            if [[ -n "$mount_point" ]]; then
+                log_info "Unmounting $partition from $mount_point"
+                sudo umount "$partition" 2>/dev/null || true
+            fi
         fi
     done
 
