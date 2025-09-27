@@ -11,7 +11,7 @@ class PIrateRFController {
       modulename: "pifmrds",
 
       pifmrds: {
-        freq: "431",
+        freq: "87.9",
         audio: "",
         pi: "",
         ps: "",
@@ -24,31 +24,31 @@ class PIrateRFController {
       },
 
       morse: {
-        freq: "431000000",
+        freq: "7058000",
         rate: "20",
         message: "HACK THE PLANET",
       },
 
       tune: {
-        freq: "431000000",
+        freq: "144500000",
         exitImmediate: false,
         ppm: "",
       },
 
       spectrumpaint: {
-        frequency: "431000000",
+        frequency: "144500000",
         pictureFile: "",
         excursion: "50000",
       },
 
       pichirp: {
-        frequency: "431000000",
+        frequency: "144500000",
         bandwidth: "1000000",
         time: "5.0",
       },
 
       pocsag: {
-        frequency: "431000000",
+        frequency: "152000000",
         baudRate: "1200",
         functionBits: "3",
         numericMode: false,
