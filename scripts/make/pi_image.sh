@@ -76,7 +76,9 @@ detect_fucking_rpi_devices() {
                        [[ "$fstype" == "ext4" && "$partition" =~ (2|p2)$ ]] ||
                        [[ "$ptype" == "0fc63daf-8483-4772-8e79-3d69d8477de4" ]]; then
                         has_rootfs=true
-                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found rootfs partition: $partition"
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found rootfs partition: $partition (label='$label' fstype='$fstype')"
+                    else
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: $partition not rootfs - label:'$label'!='rootfs', fstype:'$fstype'!='ext4' or pattern:'$partition' !~ (2|p2)$"
                     fi
 
                     # Check for bootfs partition (vfat on partition 1, or specific label/type)
@@ -85,7 +87,9 @@ detect_fucking_rpi_devices() {
                        [[ "$fstype" == "fat32" && "$partition" =~ (1|p1)$ ]] ||
                        [[ "$ptype" == "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ]]; then
                         has_bootfs=true
-                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found bootfs partition: $partition"
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found bootfs partition: $partition (label='$label' fstype='$fstype')"
+                    else
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: $partition not bootfs - label:'$label'!='bootfs', fstype:'$fstype'!='vfat' or pattern:'$partition' !~ (1|p1)$"
                     fi
                 fi
             done
