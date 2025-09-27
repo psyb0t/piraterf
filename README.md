@@ -287,7 +287,7 @@ Simple carrier generation for testing:
 
 ### 🌊 Frequency Sweep
 
-![Frequency Sweep](./assets/pichirp.png)
+![Frequency Sweep](./assets/freqsweep.png)
 
 Automated frequency sweeps for RF analysis:
 
@@ -348,6 +348,7 @@ make install          # Install systemd service
 make ssh              # SSH into Pi
 make pi-reboot        # Reboot Pi
 make uninstall        # Remove from Pi
+make pi-image         # Clone and shrink Pi SD card image
 ```
 
 ## 📁 Project Structure
