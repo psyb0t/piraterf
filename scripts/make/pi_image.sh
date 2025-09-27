@@ -50,7 +50,7 @@ detect_fucking_rpi_devices() {
     shopt -s nullglob  # Don't expand globs that don't match anything
     for device in /dev/sd* /dev/mmcblk*; do
         [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Checking device: $device"
-        if [[ -b "$device" && ! "$device" =~ [0-9]$ ]]; then
+        if [[ -b "$device" && ! "$device" =~ (p?[0-9]+)$ ]]; then
             [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Valid block device: $device"
             # Check partitions for this device
             local has_rootfs=false
