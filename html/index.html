@@ -89,16 +89,16 @@
           <label for="moduleSelect" class="required">Module</label>
           <select id="moduleSelect">
             <option value="pifmrds" selected>FM Station</option>
+            <option value="audiosock-broadcast">Live Microphone Broadcast</option>
+            <option value="pift8">FT8</option>
+            <option value="pirtty">RTTY</option>
+            <option value="fsk">FSK</option>
+            <option value="pocsag">POCSAG</option>
             <option value="morse">Morse Code</option>
             <option value="tune">Carrier Wave</option>
             <option value="pichirp">Frequency Sweep</option>
-            <option value="spectrumpaint">Spectrum Paint</option>
-            <option value="pocsag">POCSAG</option>
-            <option value="pift8">FT8</option>
             <option value="pisstv">SSTV</option>
-            <option value="pirtty">RTTY</option>
-            <option value="fsk">FSK</option>
-            <option value="audiosock-broadcast">Live Microphone Broadcast</option>
+            <option value="spectrumpaint">Spectrum Paint</option>
           </select>
         </div>
 
@@ -1029,9 +1029,9 @@ TEST MESSAGE</textarea
           </div>
 
           <div class="form-group">
-            <label for="audioSockBroadcastCsdrPreset">CSDR Preset</label>
+            <label for="audioSockBroadcastModulation">Modulation</label>
             <select
-              id="audioSockBroadcastCsdrPreset"
+              id="audioSockBroadcastModulation"
               data-module-name="audiosock-broadcast"
               data-field-name="modulation"
             >

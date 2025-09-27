@@ -1,5 +1,7 @@
 # 🏴‍☠️ PIrateRF - Software-Defined Radio Transmission Platform
 
+![PIrateRF](./assets/piraterf.png)
+
 **PIrateRF** transforms your **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. Control everything from FM broadcasts to digital modes through your browser - hack the airwaves from anywhere! 📡⚡
 
 ## 📋 Table of Contents
@@ -28,7 +30,7 @@
 - **📺 SSTV** - Slow Scan Television image transmission
 - **🎨 Spectrum Paint** - Convert images to RF spectrum art
 
-All controlled through a **standalone WiFi access point** - connect any device and start transmitting like the RF rebel you were meant to be!
+All controlled through a **standalone WiFi access point** - connect any device and start transmitting like the RF rebel you were meant to be! Perfect for international waters operations and regions with more... flexible spectrum policies.
 
 ## 🚀 Quick Setup Guide
 
@@ -146,6 +148,8 @@ Connect multiple devices to the PIrateRF access point and all access the web int
 
 ### 🎵 FM Station
 
+![FM Station](./assets/fmstation.png)
+
 Full FM broadcasting with RDS support:
 
 **Configuration Options:**
@@ -168,6 +172,8 @@ Full FM broadcasting with RDS support:
 
 ### 🎙️ Live Microphone Broadcast
 
+![Live Microphone Broadcast](./assets/livemic.png)
+
 Real-time microphone streaming with configurable modulation:
 
 **Configuration Options:**
@@ -186,6 +192,8 @@ Real-time microphone streaming with configurable modulation:
 
 ### 📟 FT8
 
+![FT8](./assets/ft8.png)
+
 Ultra-weak signal digital mode for HF DX:
 
 **Configuration Options:**
@@ -201,6 +209,8 @@ Ultra-weak signal digital mode for HF DX:
 
 ### 📠 RTTY
 
+![RTTY](./assets/rtty.png)
+
 Classic digital text communication:
 
 **Configuration Options:**
@@ -212,6 +222,8 @@ Classic digital text communication:
 **Applications:** Digital text communication, news bulletins, teletype messaging, sending ASCII art over RTTY
 
 ### 📊 FSK
+
+![FSK](./assets/fsk.png)
 
 Binary frequency shift keying for data transmission:
 
@@ -227,6 +239,8 @@ Binary frequency shift keying for data transmission:
 **Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, sending porn like back in the dialup days
 
 ### 📱 POCSAG
+
+![POCSAG](./assets/pocsag.png)
 
 Digital pager messaging system:
 
@@ -245,6 +259,8 @@ Digital pager messaging system:
 
 ### 📻 Morse Code
 
+![Morse Code](./assets/morse.png)
+
 Traditional CW transmission:
 
 **Configuration Options:**
@@ -256,6 +272,8 @@ Traditional CW transmission:
 **Applications:** Morse code practice, beacon transmissions, emergency communications, sending dirty messages in CW, beacon spam
 
 ### 🎛️ Carrier Wave
+
+![Carrier Wave](./assets/carrier.png)
 
 Simple carrier generation for testing:
 
@@ -269,6 +287,8 @@ Simple carrier generation for testing:
 
 ### 🌊 Frequency Sweep
 
+![Frequency Sweep](./assets/pichirp.png)
+
 Automated frequency sweeps for RF analysis:
 
 **Configuration Options:**
@@ -281,6 +301,8 @@ Automated frequency sweeps for RF analysis:
 
 ### 📺 SSTV
 
+![SSTV](./assets/sstv.png)
+
 Slow Scan Television image transmission:
 
 **Configuration Options:**
@@ -292,6 +314,8 @@ Slow Scan Television image transmission:
 **Applications:** Image transmission over radio, amateur radio SSTV, visual communication, cock pic broadcasting - look at that big ass rooster
 
 ### 🎨 Spectrum Paint
+
+![Spectrum Paint](./assets/spectrumpaint.png)
 
 Convert images to RF spectrum art:
 
@@ -381,7 +405,7 @@ piraterf/
 - **Protocol development**: Test encoding/decoding without external transmission
 - **Educational use**: Learn about modulation, filtering, and signal processing safely indoors
 
-**PIrateRF is designed for legal amateur radio experimentation and education - including safe indoor testing without external antennas. Users are responsible for compliance with all local RF regulations and licensing requirements.**
+**PIrateRF is designed for amateur radio experimentation and education - including safe indoor testing without external antennas. Built for engineers who understand that good RF practices matter more than arbitrary administrative boundaries. Users are responsible for compliance with all local RF regulations and licensing requirements.**
 
 ## 📡 Standard Operating Frequencies
 

@@ -74,18 +74,18 @@ class PIrateRFController {
       },
 
       pisstv: {
-        frequency: "434000000",
+        frequency: "14233000",
         pictureFile: "",
       },
 
       pirtty: {
-        frequency: "14080000",
+        frequency: "14075000",
         spaceFrequency: "",
         message: "",
       },
 
       fsk: {
-        frequency: "144390000",
+        frequency: "144500000",
         inputType: "text",
         text: "",
         file: "",
@@ -93,7 +93,7 @@ class PIrateRFController {
       },
 
       "audiosock-broadcast": {
-        frequency: "144500000",
+        frequency: "27225000",
         sampleRate: "",
         bufferSize: "4096",
         modulation: "FM",
@@ -272,7 +272,7 @@ class PIrateRFController {
     this.audioSockBroadcastFreqInput = document.getElementById("audioSockBroadcastFreq");
     this.audioSockBroadcastSampleRateInput = document.getElementById("audioSockBroadcastSampleRate");
     this.audioSockBroadcastBufferSizeInput = document.getElementById("audioSockBroadcastBufferSize");
-    this.audioSockBroadcastCsdrPresetInput = document.getElementById("audioSockBroadcastCsdrPreset");
+    this.audioSockBroadcastModulationInput = document.getElementById("audioSockBroadcastModulation");
     this.audioSockBroadcastGainInput = document.getElementById("audioSockBroadcastGain");
     this.fskDataFile = document.getElementById("fskDataFile");
 
@@ -700,7 +700,7 @@ class PIrateRFController {
       this.saveState();
       this.validateForm();
     });
-    this.audioSockBroadcastCsdrPresetInput.addEventListener("change", () => {
+    this.audioSockBroadcastModulationInput.addEventListener("change", () => {
       this.saveState();
       this.validateForm();
     });
@@ -3341,7 +3341,7 @@ class PIrateRFController {
     this.state["audiosock-broadcast"].frequency = this.audioSockBroadcastFreqInput.value;
     this.state["audiosock-broadcast"].sampleRate = this.audioSockBroadcastSampleRateInput.value;
     this.state["audiosock-broadcast"].bufferSize = this.audioSockBroadcastBufferSizeInput.value;
-    this.state["audiosock-broadcast"].modulation = this.audioSockBroadcastCsdrPresetInput.value;
+    this.state["audiosock-broadcast"].modulation = this.audioSockBroadcastModulationInput.value;
     this.state["audiosock-broadcast"].gain = this.audioSockBroadcastGainInput.value;
 
     this.debug("💾 Saving FSK state:", this.state.fsk);
@@ -3647,8 +3647,8 @@ class PIrateRFController {
       this.audioSockBroadcastSampleRateInput.value = this.state["audiosock-broadcast"].sampleRate;
     if (this.state["audiosock-broadcast"].bufferSize && this.audioSockBroadcastBufferSizeInput)
       this.audioSockBroadcastBufferSizeInput.value = this.state["audiosock-broadcast"].bufferSize;
-    if (this.state["audiosock-broadcast"].modulation && this.audioSockBroadcastCsdrPresetInput)
-      this.audioSockBroadcastCsdrPresetInput.value = this.state["audiosock-broadcast"].modulation;
+    if (this.state["audiosock-broadcast"].modulation && this.audioSockBroadcastModulationInput)
+      this.audioSockBroadcastModulationInput.value = this.state["audiosock-broadcast"].modulation;
     if (this.state["audiosock-broadcast"].gain && this.audioSockBroadcastGainInput)
       this.audioSockBroadcastGainInput.value = this.state["audiosock-broadcast"].gain;
 
@@ -3717,8 +3717,8 @@ class PIrateRFController {
       if (this.audioSockBroadcastSampleRateInput.value && this.audioSockBroadcastSampleRateInput.value.trim() !== "") {
         this.pendingAudioSockArgs.sampleRate = parseInt(this.audioSockBroadcastSampleRateInput.value);
       }
-      if (this.audioSockBroadcastCsdrPresetInput.value && this.audioSockBroadcastCsdrPresetInput.value.trim() !== "") {
-        this.pendingAudioSockArgs.modulation = this.audioSockBroadcastCsdrPresetInput.value.trim();
+      if (this.audioSockBroadcastModulationInput.value && this.audioSockBroadcastModulationInput.value.trim() !== "") {
+        this.pendingAudioSockArgs.modulation = this.audioSockBroadcastModulationInput.value.trim();
       }
       if (this.audioSockBroadcastGainInput.value && this.audioSockBroadcastGainInput.value.trim() !== "") {
         this.pendingAudioSockArgs.gain = parseFloat(this.audioSockBroadcastGainInput.value);
@@ -3742,8 +3742,8 @@ class PIrateRFController {
     }
 
     // Add optional modulation if provided
-    if (this.audioSockBroadcastCsdrPresetInput.value && this.audioSockBroadcastCsdrPresetInput.value.trim() !== "") {
-      args.modulation = this.audioSockBroadcastCsdrPresetInput.value.trim();
+    if (this.audioSockBroadcastModulationInput.value && this.audioSockBroadcastModulationInput.value.trim() !== "") {
+      args.modulation = this.audioSockBroadcastModulationInput.value.trim();
     }
 
     // Add optional gain if provided
