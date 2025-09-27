@@ -8,7 +8,7 @@
 include Makefile.servicepack
 
 .PHONY: tls pi-setup-deps pi-setup-ap pi-setup-branding \
-	pi-reboot ssh deploy uninstall install pi
+	pi-reboot ssh deploy uninstall install pi pi-image
 
 build: ## Build the fucking PIrateRF beast
 	@./$(SCRIPTS_DIR)/make/build.sh
@@ -46,3 +46,6 @@ install: ## Install the fucking PIrateRF to the bastard Pi
 
 pi: ## Complete setup of the fkin' Pi
 	@./$(SCRIPTS_DIR)/make/pi.sh
+
+pi-image: ## Clone and shrink the fucking Pi SD card images for chaos distribution
+	@./$(SCRIPTS_DIR)/make/pi_image.sh
