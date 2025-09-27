@@ -66,11 +66,14 @@ detect_fucking_rpi_devices() {
                     local fstype=$(lsblk -n -o FSTYPE "$partition" 2>/dev/null)
                     local ptype=$(lsblk -n -o PARTTYPE "$partition" 2>/dev/null)
 
+                    [[ "$DEBUG" == "true" ]] && log_info "DEBUG: $partition - label='$label' fstype='$fstype' ptype='$ptype'"
+
                     # Check for rootfs partition (ext4 on partition 2, or specific label/type)
                     if [[ "$label" == "rootfs" ]] ||
                        [[ "$fstype" == "ext4" && "$partition" =~ (2|p2)$ ]] ||
                        [[ "$ptype" == "0fc63daf-8483-4772-8e79-3d69d8477de4" ]]; then
                         has_rootfs=true
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found rootfs partition: $partition"
                     fi
 
                     # Check for bootfs partition (vfat on partition 1, or specific label/type)
@@ -79,9 +82,12 @@ detect_fucking_rpi_devices() {
                        [[ "$fstype" == "fat32" && "$partition" =~ (1|p1)$ ]] ||
                        [[ "$ptype" == "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ]]; then
                         has_bootfs=true
+                        [[ "$DEBUG" == "true" ]] && log_info "DEBUG: Found bootfs partition: $partition"
                     fi
                 fi
             done
+
+            [[ "$DEBUG" == "true" ]] && log_info "DEBUG: $device - has_rootfs=$has_rootfs has_bootfs=$has_bootfs"
 
             # If filesystem detection fails, try blkid as fallback
             if [[ ! $has_rootfs || ! $has_bootfs ]]; then
