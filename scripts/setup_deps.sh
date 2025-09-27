@@ -20,7 +20,6 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo -e "${GREEN}📡 Pi Zero W Dependencies Installation - Let's fucking transmit! 📡${NC}"
-echo "Installing rpitx for RF signal generation and sox for audio conversion..."
 
 # Check if directory exists first before doing any system updates
 if [ -d "$INSTALL_DIR" ]; then
@@ -47,6 +46,7 @@ sudo apt-get install -y \
     sox \
     libsox-fmt-all \
     ffmpeg \
+    imagemagick \
     openssl \
     minimodem \
     pulseaudio \
