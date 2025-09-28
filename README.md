@@ -36,7 +36,7 @@ All controlled through a **standalone WiFi access point** - connect any device a
 
 ### Prerequisites
 
-- **Raspberry Pi Zero W** with SD card (4GB+ - system uses ~2.5GB, rest is for your audio/image/data files)
+- **Raspberry Pi Zero W** with 4GB+ SD card
 
 ### Option 1: Pre-Built Image (Recommended)
 
