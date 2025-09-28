@@ -38,6 +38,25 @@ All controlled through a **standalone WiFi access point** - connect any device a
 
 - **Raspberry Pi Zero W** with SD card (4GB+ - system uses ~2.5GB, rest is for your audio/image/data files)
 
+### Option 1: Pre-Built Image (Recommended)
+
+Skip all the build bullshit and get straight to RF chaos:
+
+1. **Download** the pre-built image: [PIrateRF Image v2025-09-28](https://archive.org/download/piraterf-2025-09-28-20-50-48-20250928181521/piraterf_2025-09-28_20-50-48.img)
+2. **Flash** to SD card using:
+   - **Raspberry Pi Imager** (recommended): Select "Use custom image" and choose the downloaded `.img` file
+   - **Command line**: `sudo dd if=piraterf_2025-09-28_20-50-48.img of=/dev/sdX bs=4M status=progress` (replace `/dev/sdX` with your SD card)
+3. **Boot** the Pi Zero W and connect to WiFi: "🏴‍☠️📡" (password: "FUCKER!!!")
+4. **Open browser**: `https://piraterf.local` and start transmitting immediately!
+
+**Default Settings:**
+
+- **WiFi AP**: SSID "🏴‍☠️📡", Password "FUCKER!!!"
+- **SSH Access**: User `fucker`, Password `FUCKER`, Hostname `piraterf.local`
+- **Web Interface**: https://piraterf.local
+
+### Option 2: Manual Build Setup
+
 ### 🚨 IMPORTANT: Pi Zero Setup First!
 
 **Before you do ANYTHING else**, get your fucking Pi Zero W connected and accessible via SSH. Follow this tutorial that actually works:
