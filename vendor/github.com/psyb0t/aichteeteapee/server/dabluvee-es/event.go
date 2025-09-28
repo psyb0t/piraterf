@@ -24,8 +24,9 @@ type Event struct {
 	Type EventType       `json:"type"`
 	Data json.RawMessage `json:"data"`
 	// Unix timestamp (seconds) - SET BY SENDER
-	Timestamp int64             `json:"timestamp"`
-	Metadata  *EventMetadataMap `json:"metadata"` // For rooms, userID, etc.
+	Timestamp   int64             `json:"timestamp"`
+	Metadata    *EventMetadataMap `json:"metadata"`    // For rooms, userID, etc.
+	TriggeredBy *uuid.UUID        `json:"triggeredBy"` // ID of triggering event
 }
 
 // NewEvent creates a new event with current unix timestamp
@@ -50,16 +51,17 @@ func NewEvent(eventType EventType, data any) *Event {
 	}
 
 	return &Event{
-		ID:        eventID,
-		Type:      eventType,
-		Data:      rawData,
-		Timestamp: time.Now().Unix(), // Server sets timestamp when server sends
-		Metadata:  newEventMetadataMap(),
+		ID:          eventID,
+		Type:        eventType,
+		Data:        rawData,
+		Timestamp:   time.Now().Unix(), // Server sets timestamp when server sends
+		Metadata:    newEventMetadataMap(),
+		TriggeredBy: nil, // Not triggered by another event by default
 	}
 }
 
-// WithMetadata adds metadata to an event (chainable).
-func (e Event) WithMetadata(key string, value any) Event {
+// SetMetadata adds metadata to an event (chainable).
+func (e Event) SetMetadata(key string, value any) Event {
 	if e.Metadata == nil {
 		e.Metadata = newEventMetadataMap()
 	}
@@ -69,9 +71,16 @@ func (e Event) WithMetadata(key string, value any) Event {
 	return e
 }
 
-// WithTimestamp sets a specific unix timestamp (chainable).
-func (e Event) WithTimestamp(unixTimestamp int64) Event {
+// SetTimestamp sets a specific unix timestamp (chainable).
+func (e Event) SetTimestamp(unixTimestamp int64) Event {
 	e.Timestamp = unixTimestamp
+
+	return e
+}
+
+// SetTriggeredBy sets the ID of the triggering event (chainable).
+func (e Event) SetTriggeredBy(triggerEventID uuid.UUID) Event {
+	e.TriggeredBy = &triggerEventID
 
 	return e
 }

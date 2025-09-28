@@ -70,7 +70,12 @@ func TestProcessAudioModifications(t *testing.T) {
 
 		err = json.Unmarshal(finalArgs, &modifiedArgsMap)
 		require.NoError(t, err)
-		assert.Contains(t, modifiedArgsMap["audio"].(string), "_with_silence", "Args should point to silence file")
+
+		if audioVal, ok := modifiedArgsMap["audio"].(string); ok {
+			assert.Contains(t, audioVal, "_with_silence", "Args should point to silence file")
+		} else {
+			t.Errorf("Expected string value for 'audio' key, got %T", modifiedArgsMap["audio"])
+		}
 	})
 }
 
@@ -143,7 +148,8 @@ func TestHandleRPITXExecutionStop(t *testing.T) {
 	}
 
 	require.NotPanics(t, func() {
-		service.handleRPITXExecutionStop(hub, client, event)
+		err := service.handleRPITXExecutionStop(hub, client, event)
+		assert.NoError(t, err)
 	})
 }
 

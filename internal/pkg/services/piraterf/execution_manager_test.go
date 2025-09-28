@@ -331,7 +331,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 			// Cleanup - stop any started execution
 			if finalState == executionStateExecuting {
-				em.stopExecution(client)
+				_ = em.stopExecution(client)
 				// Wait for stop to complete
 				time.Sleep(100 * time.Millisecond)
 			}
@@ -586,7 +586,7 @@ func TestProcessOutputChannels(t *testing.T) {
 
 			if tt.name == "context cancelled should return false" {
 				// Cancel context for this test
-				testCtx, testCancel := context.WithCancel(context.Background())
+				testCtx, testCancel := context.WithCancel(ctx)
 				testCancel() // Cancel immediately
 
 				result := em.processOutputChannels(testCtx)

@@ -41,7 +41,9 @@ func TestCopyFileStream(t *testing.T) {
 			name: "destination directory doesn't exist",
 			setupSrc: func() string {
 				srcFile := filepath.Join(tempDir, "source.txt")
-				os.WriteFile(srcFile, []byte("test content"), 0o644)
+				if err := os.WriteFile(srcFile, []byte("test content"), 0o644); err != nil {
+					t.Fatalf("Failed to write test file: %v", err)
+				}
 
 				return srcFile
 			},
@@ -57,7 +59,9 @@ func TestCopyFileStream(t *testing.T) {
 			name: "successful copy",
 			setupSrc: func() string {
 				srcFile := filepath.Join(tempDir, "source_success.txt")
-				os.WriteFile(srcFile, []byte("test content for success"), 0o644)
+				if err := os.WriteFile(srcFile, []byte("test content for success"), 0o644); err != nil {
+					t.Fatalf("Failed to write test file: %v", err)
+				}
 
 				return srcFile
 			},
@@ -344,7 +348,11 @@ func TestImageConversionPostprocessor(t *testing.T) {
 					assert.True(t, exists, "Result should contain key %s", key)
 
 					if key == "converted" && expectedValue == true {
-						assert.True(t, actualValue.(bool))
+						if boolVal, ok := actualValue.(bool); ok {
+							assert.True(t, boolVal)
+						} else {
+							t.Errorf("Expected bool value for 'converted' key, got %T", actualValue)
+						}
 					} else {
 						assert.Equal(t, expectedValue, actualValue)
 					}

@@ -179,7 +179,9 @@ func TestHandleFileRename(t *testing.T) {
 			if tt.setupFile && tt.fileName != "" {
 				renamedPath := filepath.Join(tempDir, "renamed_file.txt")
 				if _, err := os.Stat(renamedPath); err == nil {
-					os.Remove(renamedPath)
+					if err := os.Remove(renamedPath); err != nil {
+						t.Logf("Failed to remove renamed file: %v", err)
+					}
 				}
 			}
 		})

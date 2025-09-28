@@ -850,14 +850,7 @@ body.executing .stop-btn {
 
 .log-entry {
   margin-bottom: 5px;
-  opacity: 0;
-  animation: fadeIn 0.5s ease forwards;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+  opacity: 1;
 }
 
 .log-send {

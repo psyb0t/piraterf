@@ -6,10 +6,6 @@ import (
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 )
 
-// EventHandler processes events with access to the hub, client, and event,
-// and returns an error if processing fails.
-type EventHandler func(hub Hub, client *Client, event *dabluveees.Event) error
-
 // Hub interface is implemented in hub.go
 
 type EventHandlersMap struct {

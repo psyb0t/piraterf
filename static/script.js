@@ -6,6 +6,13 @@ class PIrateRFController {
     this.currentAudioPath = null;
     this.currentPlayButton = null;
 
+    // Heartbeat system
+    this.heartbeatInterval = null;
+    this.heartbeatTimeout = null;
+    this.pendingHeartbeats = new Map(); // Track pending heartbeats by event ID
+    this.heartbeatIntervalMs = 5000; // Send heartbeat every 5 seconds
+    this.heartbeatTimeoutMs = 5000; // 5 second timeout
+
     // Initialize centralized state object
     this.state = {
       modulename: "pifmrds",
@@ -111,6 +118,134 @@ class PIrateRFController {
       this.restoreState();
     });
     this.connect();
+  }
+
+  // Generate a UUID v4 for event IDs
+  generateEventId() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // Start heartbeat mechanism
+  startHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+
+    this.heartbeatInterval = setInterval(() => {
+      this.sendHeartbeat();
+    }, this.heartbeatIntervalMs);
+
+    this.debug("🫀 Heartbeat started");
+  }
+
+  // Stop heartbeat mechanism
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+
+    // Clear any pending heartbeat timeouts
+    this.pendingHeartbeats.forEach((timeoutId) => {
+      clearTimeout(timeoutId);
+    });
+    this.pendingHeartbeats.clear();
+
+    this.debug("🫀 Heartbeat stopped");
+  }
+
+  // Send echo request as heartbeat
+  sendHeartbeat() {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    const eventId = this.generateEventId();
+
+    const message = {
+      id: eventId,
+      type: "echo.request",
+      data: null
+    };
+
+    // Set up timeout for this heartbeat
+    const timeoutId = setTimeout(() => {
+      this.onHeartbeatTimeout(eventId);
+    }, this.heartbeatTimeoutMs);
+
+    this.pendingHeartbeats.set(eventId, timeoutId);
+
+    if (this.isDebugMode) {
+      this.debug("🫀 HEARTBEAT SENT: " + JSON.stringify(message, null, 2));
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  // Handle heartbeat echo reply
+  handleHeartbeatReply(message) {
+    const triggeredBy = message.triggeredBy;
+    if (!triggeredBy) {
+      return;
+    }
+
+    // Clear the timeout for this heartbeat
+    const timeoutId = this.pendingHeartbeats.get(triggeredBy);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      this.pendingHeartbeats.delete(triggeredBy);
+
+      if (this.isDebugMode) {
+        this.debug("🫀 HEARTBEAT RECEIVED: " + JSON.stringify(message, null, 2));
+      }
+    }
+  }
+
+  // Handle heartbeat timeout
+  onHeartbeatTimeout(eventId) {
+    this.pendingHeartbeats.delete(eventId);
+
+    this.log("💀 Heartbeat timeout - connection lost", "system");
+    this.titleEl.className = "title disconnected";
+    this.statusText.textContent = "💀 Connection lost";
+
+    this.showErrorNotification(
+      "💀 Connection lost - server not responding",
+      "heartbeat-timeout"
+    );
+
+    // Clean up execution state first since stopExecution() will fail on disconnected socket
+    if (this.isExecuting) {
+      this.setExecutionMode(false);
+    }
+
+    // Stop execution and clean up UI
+    this.stopExecution();
+    this.stopHeartbeat();
+
+    // Disable all controls
+    this.setControlsEnabled(false);
+
+    // Try to reconnect after a delay
+    setTimeout(() => this.connect(), 3000);
+  }
+
+  // Enable/disable all UI controls
+  setControlsEnabled(enabled) {
+    this.startBtn.disabled = !enabled;
+    this.moduleSelect.disabled = !enabled;
+
+    // Disable all form inputs
+    const inputs = this.controlPanel.querySelectorAll('input, select, textarea, button');
+    inputs.forEach(input => {
+      if (input !== this.startBtn && input !== this.stopBtn) {
+        input.disabled = !enabled;
+      }
+    });
   }
 
   // Build a proper file path using env.js config
@@ -736,10 +871,19 @@ class PIrateRFController {
         this.titleEl.className = "title connected";
         this.statusText.textContent = "Idle";
         this.clearWebSocketErrors(); // Clear any WebSocket error notifications
+        this.setControlsEnabled(true);
+        this.startHeartbeat(); // Start heartbeat on connection
       };
 
       this.ws.onclose = (event) => {
         this.titleEl.className = "title disconnected";
+        this.stopHeartbeat(); // Stop heartbeat on disconnect
+        this.setControlsEnabled(false);
+
+        // Clean up execution state if we were executing
+        if (this.isExecuting) {
+          this.setExecutionMode(false);
+        }
 
         // Only show disconnected status if we were actually connected
         if (this.wasConnected) {
@@ -762,6 +906,11 @@ class PIrateRFController {
       };
 
       this.ws.onerror = (error) => {
+        // Clean up execution state if we were executing
+        if (this.isExecuting) {
+          this.setExecutionMode(false);
+        }
+
         if (!this.wasConnected) {
           this.statusText.textContent = "❌ Connection failed";
           this.showErrorNotification(
@@ -877,6 +1026,9 @@ class PIrateRFController {
         break;
       case "audio.playlist.create.error":
         this.onPlaylistCreateError(message.data);
+        break;
+      case "echo.reply":
+        this.handleHeartbeatReply(message);
         break;
     }
   }

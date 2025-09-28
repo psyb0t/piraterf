@@ -4,7 +4,7 @@ go 1.24.6
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/psyb0t/aichteeteapee v0.0.0-20250925010250-59e5acd982fa
+	github.com/psyb0t/aichteeteapee v0.0.0-20250928152930-d3ba84c52d38
 	github.com/psyb0t/commander v0.4.1
 	github.com/psyb0t/common-go v0.0.0-20250922043457-a771ef735af8
 	github.com/psyb0t/ctxerrors v0.2.0

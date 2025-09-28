@@ -141,7 +141,7 @@ func (m *testMockCommander) Start(
 		// Return a successful mock process
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+		proc, _ := mock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}
@@ -161,7 +161,7 @@ func (m *testMockCommander) Start(
 		// Return a successful mock process
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+		proc, _ := mock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}
@@ -197,7 +197,7 @@ func (m *testMockCommander) Start(
 		// Return a successful mock process
 		mock := commander.NewMock()
 		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(context.Background(), "dummy", []string{})
+		proc, _ := mock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}

@@ -688,7 +688,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/psyb0t/aichteeteapee v0.0.0-20250925010250-59e5acd982fa
+# github.com/psyb0t/aichteeteapee v0.0.0-20250928152930-d3ba84c52d38
 ## explicit; go 1.24.6
 github.com/psyb0t/aichteeteapee
 github.com/psyb0t/aichteeteapee/server
