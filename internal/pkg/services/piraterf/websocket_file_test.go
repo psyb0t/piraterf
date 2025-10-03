@@ -39,7 +39,12 @@ func TestSendFileRenameErrorEvent(t *testing.T) {
 	service := &PIrateRF{websocketHub: hub}
 
 	require.NotPanics(t, func() {
-		service.sendFileRenameErrorEvent("/old/path.txt", "newname.txt", "error_type", "test error")
+		service.sendFileRenameErrorEvent(
+			"/old/path.txt",
+			"newname.txt",
+			"error_type",
+			"test error",
+		)
 	})
 }
 
@@ -65,7 +70,11 @@ func TestSendFileDeleteErrorEvent(t *testing.T) {
 	service := &PIrateRF{websocketHub: hub}
 
 	require.NotPanics(t, func() {
-		service.sendFileDeleteErrorEvent("/deleted/file.txt", "error_type", "test error")
+		service.sendFileDeleteErrorEvent(
+			"/deleted/file.txt",
+			"error_type",
+			"test error",
+		)
 	})
 }
 
@@ -79,7 +88,7 @@ func TestValidateFileRenameRequest(t *testing.T) {
 
 	// Create test file for this test
 	testFile := filepath.Join(tempDir, "test_2s.mp3")
-	err := os.WriteFile(testFile, []byte("fake mp3 content"), 0o644)
+	err := os.WriteFile(testFile, []byte("fake mp3 content"), 0o600)
 	require.NoError(t, err)
 
 	service := &PIrateRF{
@@ -145,11 +154,18 @@ func TestHandleFileRename(t *testing.T) {
 			var originalFilePath string
 			if tt.setupFile && tt.fileName != "" {
 				originalFilePath = filepath.Join(tempDir, tt.fileName)
-				err := os.WriteFile(originalFilePath, []byte("test content"), 0o644)
+				err := os.WriteFile(
+					originalFilePath,
+					[]byte("test content"),
+					0o600,
+				)
 				require.NoError(t, err)
 
 				// Update event data with actual file path
-				tt.eventData = fmt.Sprintf(`{"filePath": "%s", "newName": "renamed_file.txt"}`, originalFilePath)
+				tt.eventData = fmt.Sprintf(
+					`{"filePath": "%s", "newName": "renamed_file.txt"}`,
+					originalFilePath,
+				)
 			}
 
 			event := &dabluveees.Event{
@@ -229,7 +245,7 @@ func TestHandleFileDelete(t *testing.T) {
 			// Setup test file if needed
 			if tt.setupFile && tt.fileName != "" {
 				filePath := filepath.Join(tempDir, tt.fileName)
-				err := os.WriteFile(filePath, []byte("test content"), 0o644)
+				err := os.WriteFile(filePath, []byte("test content"), 0o600)
 				require.NoError(t, err)
 
 				// Update event data with actual file path

@@ -35,6 +35,7 @@ func (s *PIrateRF) setupHTTPServer() error {
 	return nil
 }
 
+//nolint:funlen
 func (s *PIrateRF) getHTTPServerRouter() (*server.Router, error) {
 	// Ensure upload directory exists before setting up routes
 	if err := s.ensureUploadDirExists(); err != nil {
@@ -104,9 +105,12 @@ func (s *PIrateRF) getHTTPServerRouter() (*server.Router, error) {
 						Handler: wshub.UpgradeHandler(s.websocketHub),
 					},
 					{
-						Method:  http.MethodGet,
-						Path:    "/wsunix",
-						Handler: wsunixbridge.NewUpgradeHandler(s.config.UploadDir, s.handleLiveAudioConnection),
+						Method: http.MethodGet,
+						Path:   "/wsunix",
+						Handler: wsunixbridge.NewUpgradeHandler(
+							s.config.UploadDir,
+							s.handleLiveAudioConnection,
+						),
 					},
 				},
 			},

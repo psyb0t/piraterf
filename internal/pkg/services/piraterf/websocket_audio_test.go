@@ -16,6 +16,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const invalidJSONData = `{invalid json`
+
 func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
@@ -52,8 +54,10 @@ func TestValidatePlaylistRequest(t *testing.T) {
 		expectError bool
 	}{
 		{
-			name:        "valid request",
-			eventData:   json.RawMessage(`{"files": ["/files/test_2s.mp3", "/files/test_3s.wav"]}`),
+			name: "valid request",
+			eventData: json.RawMessage(
+				`{"files": ["/files/test_2s.mp3", "/files/test_3s.wav"]}`,
+			),
 			expectError: false,
 		},
 		{
@@ -77,11 +81,11 @@ func TestValidatePlaylistRequest(t *testing.T) {
 
 			// Create test files for this test
 			testFile1 := filepath.Join(tempDir, "test_2s.mp3")
-			err := os.WriteFile(testFile1, []byte("fake mp3 content"), 0o644)
+			err := os.WriteFile(testFile1, []byte("fake mp3 content"), 0o600)
 			require.NoError(t, err)
 
 			testFile2 := filepath.Join(tempDir, "test_3s.wav")
-			err = os.WriteFile(testFile2, []byte("fake wav content"), 0o644)
+			err = os.WriteFile(testFile2, []byte("fake wav content"), 0o600)
 			require.NoError(t, err)
 
 			service := &PIrateRF{
@@ -153,7 +157,7 @@ func TestHandleAudioPlaylistCreate(t *testing.T) {
 	}{
 		{
 			name:      "invalid JSON data",
-			eventData: `{invalid json`,
+			eventData: invalidJSONData,
 		},
 		{
 			name:      "missing files in request",
@@ -187,7 +191,7 @@ func TestHandleAudioPlaylistCreate(t *testing.T) {
 			client := &wshub.Client{}
 
 			// Test that handleAudioPlaylistCreate doesn't panic
-			if tt.eventData == `{invalid json` {
+			if tt.eventData == invalidJSONData {
 				// Invalid JSON should succeed but send error event
 				err := service.handleAudioPlaylistCreate(hub, client, event)
 				assert.NoError(t, err)

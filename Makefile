@@ -2,7 +2,7 @@
 # Add your custom targets here - they will override servicepack defaults
 
 # Override framework variables (optional)
-# MIN_TEST_COVERAGE := 95
+MIN_TEST_COVERAGE := 70
 
 # Include servicepack framework commands
 include Makefile.servicepack

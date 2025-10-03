@@ -11,7 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// fileConversionPostprocessor handles file processing based on module name from form data.
+// fileConversionPostprocessor handles file processing based on module name
+// from form data.
 func (s *PIrateRF) fileConversionPostprocessor(
 	response map[string]any,
 	request *http.Request,
@@ -37,7 +38,8 @@ func (s *PIrateRF) fileConversionPostprocessor(
 	}
 }
 
-// dataFilePostprocessor moves uploaded files to the data directory for FSK module.
+// dataFilePostprocessor moves uploaded files to the data directory
+// for FSK module.
 func (s *PIrateRF) dataFilePostprocessor(
 	response map[string]any,
 ) (map[string]any, error) {
@@ -58,7 +60,11 @@ func (s *PIrateRF) dataFilePostprocessor(
 
 	// Move file to data directory
 	if err := moveFile(filePath, destPath); err != nil {
-		return response, ctxerrors.Wrapf(err, "failed to move file to data directory: %s", destPath)
+		return response, ctxerrors.Wrapf(
+			err,
+			"failed to move file to data directory: %s",
+			destPath,
+		)
 	}
 
 	// Update response with new path and mark as moved

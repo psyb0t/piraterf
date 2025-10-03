@@ -6,4 +6,5 @@ const (
 	ToolWkhtmltoimage = "wkhtmltoimage"
 	ToolConvert       = "convert"
 	ToolSudo          = "sudo"
+	ToolSox           = "sox"
 )

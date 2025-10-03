@@ -41,7 +41,7 @@ func TestCopyFileStream(t *testing.T) {
 			name: "destination directory doesn't exist",
 			setupSrc: func() string {
 				srcFile := filepath.Join(tempDir, "source.txt")
-				if err := os.WriteFile(srcFile, []byte("test content"), 0o644); err != nil {
+				if err := os.WriteFile(srcFile, []byte("test content"), 0o600); err != nil {
 					t.Fatalf("Failed to write test file: %v", err)
 				}
 
@@ -59,7 +59,8 @@ func TestCopyFileStream(t *testing.T) {
 			name: "successful copy",
 			setupSrc: func() string {
 				srcFile := filepath.Join(tempDir, "source_success.txt")
-				if err := os.WriteFile(srcFile, []byte("test content for success"), 0o644); err != nil {
+				content := []byte("test content for success")
+				if err := os.WriteFile(srcFile, content, 0o600); err != nil {
 					t.Fatalf("Failed to write test file: %v", err)
 				}
 
@@ -110,7 +111,7 @@ func TestMoveFile(t *testing.T) {
 			setupFiles: func(tempDir string) (string, string) {
 				source := filepath.Join(tempDir, "source.txt")
 				dest := filepath.Join(tempDir, "dest.txt")
-				err := os.WriteFile(source, []byte("test content"), 0o644)
+				err := os.WriteFile(source, []byte("test content"), 0o600)
 				require.NoError(t, err)
 
 				return source, dest
@@ -175,7 +176,7 @@ func TestConvertImageToYUV(t *testing.T) {
 
 			// Create required directory structure
 			imagesUploadsDir := filepath.Join(tempDir, "images", "uploads")
-			err := os.MkdirAll(imagesUploadsDir, 0o755)
+			err := os.MkdirAll(imagesUploadsDir, 0o750)
 			require.NoError(t, err)
 
 			var mockCmd commander.Commander
@@ -251,9 +252,19 @@ func TestImageConversionPostprocessor(t *testing.T) {
 			},
 			setupFiles: func(tempDir string) string {
 				// Create PNG file in temp directory for testing
-				pngContent := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x32, 0x08, 0x02, 0x00, 0x00, 0x00, 0x91, 0x5C, 0x8F, 0x96, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, 0x78, 0xDA, 0x63, 0xF8, 0x0F, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x18, 0xDD, 0x8D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82}
+				pngContent := []byte{
+					0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+					0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+					0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x32,
+					0x08, 0x02, 0x00, 0x00, 0x00, 0x91, 0x5C, 0x8F,
+					0x96, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
+					0x54, 0x78, 0xDA, 0x63, 0xF8, 0x0F, 0x00, 0x00,
+					0x01, 0x00, 0x01, 0x00, 0x18, 0xDD, 0x8D, 0xB4,
+					0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44,
+					0xAE, 0x42, 0x60, 0x82,
+				}
 				testFile := filepath.Join(tempDir, "test_red_100x50.png")
-				if err := os.WriteFile(testFile, pngContent, 0o644); err != nil {
+				if err := os.WriteFile(testFile, pngContent, 0o600); err != nil {
 					return ""
 				}
 
@@ -286,7 +297,7 @@ func TestImageConversionPostprocessor(t *testing.T) {
 
 			// Create required directory structure
 			imagesUploadsDir := filepath.Join(tempDir, "images", "uploads")
-			err := os.MkdirAll(imagesUploadsDir, 0o755)
+			err := os.MkdirAll(imagesUploadsDir, 0o750)
 			require.NoError(t, err)
 
 			// Create a custom mock commander that creates output files
@@ -294,7 +305,8 @@ func TestImageConversionPostprocessor(t *testing.T) {
 				MockCommander: *commander.NewMock(),
 			}
 
-			// Set up mock for convert with exact argument count and patterns (YUV conversion)
+			// Set up mock for convert with exact argument count
+			// and patterns (YUV conversion)
 			mockCmd.ExpectWithMatchers("convert",
 				commander.Any(),                   // input path
 				commander.Exact("-resize"),        // -resize
@@ -435,7 +447,7 @@ func TestHandleYFile(t *testing.T) {
 
 	// Create images uploads directory
 	imagesDir := filepath.Join(tempDir, "images", "uploads")
-	err := os.MkdirAll(imagesDir, 0o755)
+	err := os.MkdirAll(imagesDir, 0o750)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -449,7 +461,7 @@ func TestHandleYFile(t *testing.T) {
 			name: "Y file already in correct directory",
 			setupFile: func() string {
 				yFile := filepath.Join(imagesDir, "test.Y")
-				err := os.WriteFile(yFile, []byte("test Y content"), 0o644)
+				err := os.WriteFile(yFile, []byte("test Y content"), 0o600)
 				require.NoError(t, err)
 
 				return yFile
@@ -462,10 +474,10 @@ func TestHandleYFile(t *testing.T) {
 			name: "Y file in wrong directory",
 			setupFile: func() string {
 				wrongDir := filepath.Join(tempDir, "wrong")
-				err := os.MkdirAll(wrongDir, 0o755)
+				err := os.MkdirAll(wrongDir, 0o750)
 				require.NoError(t, err)
 				yFile := filepath.Join(wrongDir, "test.Y")
-				err = os.WriteFile(yFile, []byte("test Y content"), 0o644)
+				err = os.WriteFile(yFile, []byte("test Y content"), 0o600)
 				require.NoError(t, err)
 
 				return yFile

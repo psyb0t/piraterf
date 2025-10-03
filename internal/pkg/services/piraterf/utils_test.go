@@ -11,5 +11,5 @@ func copyFile(src, dst string) error {
 		return err
 	}
 
-	return os.WriteFile(dst, input, 0o644)
+	return os.WriteFile(dst, input, 0o600)
 }

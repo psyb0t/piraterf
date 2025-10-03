@@ -228,7 +228,14 @@ func TestExecutionManager_IsExpectedTermination(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			em.stopRequested.Store(tt.stopRequested)
 			result := em.isExpectedTermination(tt.err)
-			assert.Equal(t, tt.expected, result, "isExpectedTermination should return %v for %s", tt.expected, tt.name)
+			assert.Equal(
+				t,
+				tt.expected,
+				result,
+				"isExpectedTermination should return %v for %s",
+				tt.expected,
+				tt.name,
+			)
 		})
 	}
 }
@@ -247,31 +254,37 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 		expectedState executionState
 	}{
 		{
-			name:          "start with invalid args returns to idle",
-			initialState:  executionStateIdle,
-			moduleName:    gorpitx.ModuleNamePIFMRDS,
-			args:          json.RawMessage(`{"freq": 88.0}`), // Missing required audio field
-			timeout:       10,
-			expectError:   false,
-			expectedState: executionStateIdle, // Returns to idle after validation failure
+			name:         "start with invalid args returns to idle",
+			initialState: executionStateIdle,
+			moduleName:   gorpitx.ModuleNamePIFMRDS,
+			// Missing required audio field
+			args:        json.RawMessage(`{"freq": 88.0}`),
+			timeout:     10,
+			expectError: false,
+			// Returns to idle after validation failure
+			expectedState: executionStateIdle,
 		},
 		{
-			name:          "start while already executing",
-			initialState:  executionStateExecuting,
-			moduleName:    gorpitx.ModuleNamePIFMRDS,
-			args:          json.RawMessage(`{"freq": 88.0}`),
-			timeout:       10,
-			expectError:   false,                   // Function returns nil but broadcasts error
-			expectedState: executionStateExecuting, // State unchanged
+			name:         "start while already executing",
+			initialState: executionStateExecuting,
+			moduleName:   gorpitx.ModuleNamePIFMRDS,
+			args:         json.RawMessage(`{"freq": 88.0}`),
+			timeout:      10,
+			// Function returns nil but broadcasts error
+			expectError: false,
+			// State unchanged
+			expectedState: executionStateExecuting,
 		},
 		{
-			name:          "start while stopping",
-			initialState:  executionStateStopping,
-			moduleName:    gorpitx.ModuleNamePIFMRDS,
-			args:          json.RawMessage(`{"freq": 88.0}`),
-			timeout:       10,
-			expectError:   false,                  // Function returns nil but broadcasts error
-			expectedState: executionStateStopping, // State unchanged
+			name:         "start while stopping",
+			initialState: executionStateStopping,
+			moduleName:   gorpitx.ModuleNamePIFMRDS,
+			args:         json.RawMessage(`{"freq": 88.0}`),
+			timeout:      10,
+			// Function returns nil but broadcasts error
+			expectError: false,
+			// State unchanged
+			expectedState: executionStateStopping,
 		},
 		{
 			name:         "start with invalid file returns to idle",
@@ -285,19 +298,24 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			expectedState: executionStateIdle, // Returns to idle
 		},
 		{
-			name:          "start PICHIRP execution",
-			initialState:  executionStateIdle,
-			moduleName:    gorpitx.ModuleNamePICHIRP,
-			args:          json.RawMessage(`{"frequency": 100000000, "bandwidth": 1000000, "time": 5.0}`),
+			name:         "start PICHIRP execution",
+			initialState: executionStateIdle,
+			moduleName:   gorpitx.ModuleNamePICHIRP,
+			args: json.RawMessage(
+				`{"frequency": 100000000, "bandwidth": 1000000, "time": 5.0}`,
+			),
 			timeout:       10,
 			expectError:   false,
 			expectedState: executionStateExecuting,
 		},
 		{
-			name:          "start POCSAG execution",
-			initialState:  executionStateIdle,
-			moduleName:    gorpitx.ModuleNamePOCSAG,
-			args:          json.RawMessage(`{"frequency": 431000000, "baudRate": 1200, "messages": [{"address": 123456, "message": "TEST MESSAGE"}]}`),
+			name:         "start POCSAG execution",
+			initialState: executionStateIdle,
+			moduleName:   gorpitx.ModuleNamePOCSAG,
+			args: json.RawMessage(
+				`{"frequency": 431000000, "baudRate": 1200, ` +
+					`"messages": [{"address": 123456, "message": "TEST MESSAGE"}]}`,
+			),
 			timeout:       10,
 			expectError:   false,
 			expectedState: executionStateExecuting,
@@ -337,14 +355,21 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 			// Check final state
 			finalState := executionState(em.state.Load())
-			if tt.expectedState == executionStateExecuting && finalState != executionStateExecuting {
-				// If we expected executing but didn't get it, wait a bit longer for async operations
+			if tt.expectedState == executionStateExecuting &&
+				finalState != executionStateExecuting {
+				// If we expected executing but didn't get it,
+				// wait a bit longer for async operations
 				time.Sleep(100 * time.Millisecond)
 
 				finalState = executionState(em.state.Load())
 			}
 
-			assert.Equal(t, tt.expectedState, finalState, "Final state should match expected")
+			assert.Equal(
+				t,
+				tt.expectedState,
+				finalState,
+				"Final state should match expected",
+			)
 
 			// Cleanup - stop any started execution
 			if finalState == executionStateExecuting {
@@ -411,7 +436,12 @@ func TestExecutionManager_StopExecution(t *testing.T) {
 
 			// Check final state
 			finalState := executionState(em.state.Load())
-			assert.Equal(t, tt.expectedState, finalState, "Final state should match expected")
+			assert.Equal(
+				t,
+				tt.expectedState,
+				finalState,
+				"Final state should match expected",
+			)
 
 			hub.Close()
 		})
@@ -451,7 +481,12 @@ func TestExecutionManager_ValidateTimeout(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := em.validateTimeout(tt.timeout)
-			assert.Equal(t, tt.expected, result, "validateTimeout should return correct duration")
+			assert.Equal(
+				t,
+				tt.expected,
+				result,
+				"validateTimeout should return correct duration",
+			)
 		})
 	}
 

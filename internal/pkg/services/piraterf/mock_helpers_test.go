@@ -7,20 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/psyb0t/commander"
+	"github.com/psyb0t/common-go/constants"
 	"github.com/psyb0t/ctxerrors"
 )
 
 // Simple mock helpers for compatibility across test files.
 
-func newMockProcess() commander.Process {
-	mock := commander.NewMock()
-	proc, _ := mock.Start(context.Background(), "test", []string{})
-
-	return proc
-}
-
-// fileCreatingMockCommander is a wrapper around MockCommander that creates
-// output files for ffmpeg and convert commands to simulate successful conversion.
 type fileCreatingMockCommander struct {
 	commander.MockCommander
 }
@@ -42,11 +34,12 @@ func (m *fileCreatingMockCommander) Start(
 	if name == "ffmpeg" && len(args) >= 10 {
 		outputPath := args[len(args)-1] // Last argument is output path
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return proc, err
 		}
 		// Create the output file to simulate ffmpeg success
-		if err := os.WriteFile(outputPath, []byte("fake wav content"), 0o644); err != nil {
+		wavContent := []byte("fake wav content")
+		if err := os.WriteFile(outputPath, wavContent, 0o600); err != nil {
 			return proc, err
 		}
 	}
@@ -55,7 +48,7 @@ func (m *fileCreatingMockCommander) Start(
 	if name == "convert" && len(args) >= 11 {
 		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return proc, err
 		}
 
@@ -64,103 +57,130 @@ func (m *fileCreatingMockCommander) Start(
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
 
 		yFilePath := basePath + ".Y"
-		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0o644); err != nil {
+
+		yContent := []byte("fake Y channel content")
+		if err := os.WriteFile(yFilePath, yContent, 0o600); err != nil {
 			return proc, err
 		}
 
 		// Optionally create .U and .V files too for completeness
 		uFilePath := basePath + ".U"
-		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0o644); err != nil {
+
+		uContent := []byte("fake U channel content")
+		if err := os.WriteFile(uFilePath, uContent, 0o600); err != nil {
 			return proc, err
 		}
 
 		vFilePath := basePath + ".V"
-		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0o644); err != nil {
+
+		vContent := []byte("fake V channel content")
+		if err := os.WriteFile(vFilePath, vContent, 0o600); err != nil {
 			return proc, err
 		}
 	}
 
 	// If this is a sox command, create output files when needed
-	if name == "sox" && len(args) >= 3 {
-		// For sox silence addition (audioFile, outputFile, "pad", "0", "2")
-		if len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
-			outputPath := args[1] // Second argument is output path
-			// Create the directory if it doesn't exist
-			if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
-				return proc, err
-			}
-			// Create the output file to simulate sox success
-			if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0o644); err != nil {
-				return proc, err
-			}
+	if name != constants.ToolSox || len(args) < 3 {
+		return proc, err
+	}
+
+	// For sox silence addition (audioFile, outputFile, "pad", "0", "2")
+	if len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
+		outputPath := args[1] // Second argument is output path
+		// Create the directory if it doesn't exist
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
+			return proc, err
 		}
-		// For sox playlist creation (multiple input files + output file)
-		if len(args) >= 4 {
-			// Check if this looks like a playlist creation (last arg is output, others are inputs or options)
-			lastArg := args[len(args)-1]
-			if filepath.Ext(lastArg) == ".wav" || filepath.Ext(lastArg) == ".mp3" {
-				// Create the directory if it doesn't exist
-				if err := os.MkdirAll(filepath.Dir(lastArg), 0o755); err != nil {
-					return proc, err
-				}
-				// Create the output file to simulate sox success
-				if err := os.WriteFile(lastArg, []byte("fake playlist audio"), 0o644); err != nil {
-					return proc, err
-				}
-			}
+		// Create the output file to simulate sox success
+		silenceContent := []byte("fake audio with silence")
+
+		err := os.WriteFile(outputPath, silenceContent, 0o600)
+		if err != nil {
+			return proc, err
 		}
+	}
+
+	// For sox playlist creation (multiple input files + output file)
+	if len(args) < 4 {
+		return proc, err
+	}
+
+	// Check if this looks like a playlist creation
+	// (last arg is output, others are inputs or options)
+	lastArg := args[len(args)-1]
+	if filepath.Ext(lastArg) != ".wav" && filepath.Ext(lastArg) != ".mp3" {
+		return proc, err
+	}
+
+	// Create the directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(lastArg), 0o750); err != nil {
+		return proc, err
+	}
+	// Create the output file to simulate sox success
+	playlistContent := []byte("fake playlist audio")
+
+	err = os.WriteFile(lastArg, playlistContent, 0o600)
+	if err != nil {
+		return proc, err
 	}
 
 	return proc, err
 }
 
-// testMockCommander handles sox and convert commands directly for testing.
 type testMockCommander struct {
 	tempDir string
 }
 
 //nolint:ireturn // Must return interface to satisfy commander contract
 func (m *testMockCommander) Start(
-	_ context.Context,
+	ctx context.Context,
 	name string,
 	args []string,
 	_ ...commander.Option,
 ) (commander.Process, error) {
 	// Handle sox silence addition: sox audioFile outputFile pad 0 2
-	if name == "sox" && len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
+	if name == constants.ToolSox && len(args) == 5 && args[2] == "pad" &&
+		args[3] == "0" && args[4] == "2" {
 		outputPath := args[1] // Second argument is output path
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return nil, err
 		}
 		// Create the output file to simulate sox success
-		if err := os.WriteFile(outputPath, []byte("fake audio with silence"), 0o644); err != nil {
+		silenceContent := []byte("fake audio with silence")
+
+		err := os.WriteFile(outputPath, silenceContent, 0o600)
+		if err != nil {
 			return nil, err
 		}
 		// Return a successful mock process
 		cmdMock := commander.NewMock()
 		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
+		proc, _ := cmdMock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}
 
-	// Handle sox playlist creation: sox file1 file2 file3 -r rate -b bits -c channels outputFile
-	if name == "sox" && len(args) >= 8 {
+	// Handle sox playlist creation:
+	// sox file1 file2 file3 -r rate -b bits -c channels outputFile
+	if name == constants.ToolSox && len(args) >= 8 {
 		// Find the output file (last argument)
 		outputPath := args[len(args)-1]
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return nil, err
 		}
 		// Create the output file to simulate sox success
-		if err := os.WriteFile(outputPath, []byte("fake playlist audio"), 0o644); err != nil {
+		playlistContent := []byte("fake playlist audio")
+
+		err := os.WriteFile(outputPath, playlistContent, 0o600)
+		if err != nil {
 			return nil, err
 		}
 		// Return a successful mock process
 		cmdMock := commander.NewMock()
 		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
+		proc, _ := cmdMock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}
@@ -169,7 +189,7 @@ func (m *testMockCommander) Start(
 	if name == "convert" && len(args) >= 11 {
 		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
 		// Create the directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return nil, err
 		}
 
@@ -178,25 +198,31 @@ func (m *testMockCommander) Start(
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
 
 		yFilePath := basePath + ".Y"
-		if err := os.WriteFile(yFilePath, []byte("fake Y channel content"), 0o644); err != nil {
+
+		yContent := []byte("fake Y channel content")
+		if err := os.WriteFile(yFilePath, yContent, 0o600); err != nil {
 			return nil, err
 		}
 
 		// Optionally create .U and .V files too for completeness
 		uFilePath := basePath + ".U"
-		if err := os.WriteFile(uFilePath, []byte("fake U channel content"), 0o644); err != nil {
+
+		uContent := []byte("fake U channel content")
+		if err := os.WriteFile(uFilePath, uContent, 0o600); err != nil {
 			return nil, err
 		}
 
 		vFilePath := basePath + ".V"
-		if err := os.WriteFile(vFilePath, []byte("fake V channel content"), 0o644); err != nil {
+
+		vContent := []byte("fake V channel content")
+		if err := os.WriteFile(vFilePath, vContent, 0o600); err != nil {
 			return nil, err
 		}
 
 		// Return a successful mock process
 		cmdMock := commander.NewMock()
 		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
+		proc, _ := cmdMock.Start(ctx, "dummy", []string{})
 
 		return proc, nil
 	}
@@ -204,7 +230,12 @@ func (m *testMockCommander) Start(
 	return nil, ctxerrors.New("unexpected command: " + name)
 }
 
-func (m *testMockCommander) Run(ctx context.Context, name string, args []string, opts ...commander.Option) error {
+func (m *testMockCommander) Run(
+	ctx context.Context,
+	name string,
+	args []string,
+	opts ...commander.Option,
+) error {
 	_, err := m.Start(ctx, name, args, opts...)
 
 	return err
@@ -217,7 +248,8 @@ func (m *testMockCommander) Output(
 	_ ...commander.Option,
 ) ([]byte, []byte, error) {
 	// Handle sox duration check: sox --info -D audioFile
-	if name == "sox" && len(args) == 3 && args[0] == "--info" && args[1] == "-D" {
+	if name == constants.ToolSox && len(args) == 3 && args[0] == "--info" &&
+		args[1] == "-D" {
 		if args[2] == ".fixtures/test_3s.wav" {
 			return []byte("3.000000"), []byte(""), nil
 		}
@@ -229,10 +261,18 @@ func (m *testMockCommander) Output(
 		return []byte("3.000000"), []byte(""), nil
 	}
 
-	return nil, nil, ctxerrors.New("unexpected command: " + name + " with args: " + fmt.Sprintf("%v", args))
+	return nil, nil, ctxerrors.New(
+		"unexpected command: " + name +
+			" with args: " + fmt.Sprintf("%v", args),
+	)
 }
 
-func (m *testMockCommander) CombinedOutput(ctx context.Context, name string, args []string, opts ...commander.Option) ([]byte, error) {
+func (m *testMockCommander) CombinedOutput(
+	ctx context.Context,
+	name string,
+	args []string,
+	opts ...commander.Option,
+) ([]byte, error) {
 	stdout, _, err := m.Output(ctx, name, args, opts...)
 
 	return stdout, err

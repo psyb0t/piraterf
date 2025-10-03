@@ -57,7 +57,7 @@ func TestRootHandler(t *testing.T) {
 		{
 			name:        "missing index.html returns 500 error",
 			requestPath: "/",
-			setupFiles: func(tempDir string) {
+			setupFiles: func(_ string) {
 				// Don't create index.html
 			},
 			expectedStatus: http.StatusInternalServerError,

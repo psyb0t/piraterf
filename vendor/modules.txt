@@ -699,7 +699,7 @@ github.com/psyb0t/aichteeteapee/server/middleware
 # github.com/psyb0t/commander v0.4.1
 ## explicit; go 1.24.6
 github.com/psyb0t/commander
-# github.com/psyb0t/common-go v0.0.0-20250922043457-a771ef735af8
+# github.com/psyb0t/common-go v0.0.0-20251003100840-a2e2f3f4d7d2
 ## explicit; go 1.24.6
 github.com/psyb0t/common-go/app-runner
 github.com/psyb0t/common-go/constants

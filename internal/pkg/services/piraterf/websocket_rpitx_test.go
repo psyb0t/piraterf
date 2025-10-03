@@ -103,7 +103,10 @@ func TestProcessAudioModifications(t *testing.T) {
 				"Args should point to silence file",
 			)
 		} else {
-			t.Errorf("Expected string value for 'audio' key, got %T", modifiedArgsMap["audio"])
+			t.Errorf(
+				"Expected string value for 'audio' key, got %T",
+				modifiedArgsMap["audio"],
+			)
 		}
 	})
 }
@@ -112,7 +115,8 @@ func TestGetAudioDurationWithSox(t *testing.T) {
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	mockCmd := commander.NewMock()
-	mockCmd.Expect("sox", "--info", "-D", "test.wav").ReturnOutput([]byte("3.500000"))
+	mockCmd.Expect("sox", "--info", "-D", "test.wav").
+		ReturnOutput([]byte("3.500000"))
 
 	service := &PIrateRF{
 		serviceCtx: context.Background(),

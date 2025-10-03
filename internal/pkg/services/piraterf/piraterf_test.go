@@ -24,24 +24,25 @@ func TestNew(t *testing.T) {
 		{
 			name: "successful service creation",
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("ENV", "dev")
 
 				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0o755))
+				require.NoError(t, os.MkdirAll("static", 0o750))
 				t.Cleanup(func() {
 					if err := os.RemoveAll("static"); err != nil {
 						t.Logf("Failed to remove static dir: %v", err)
 					}
 				})
 
-				require.NoError(t, os.MkdirAll("files", 0o755))
+				require.NoError(t, os.MkdirAll("files", 0o750))
 				t.Cleanup(func() {
 					if err := os.RemoveAll("files"); err != nil {
 						t.Logf("Failed to remove files dir: %v", err)
 					}
 				})
 
-				require.NoError(t, os.MkdirAll("uploads", 0o755))
+				require.NoError(t, os.MkdirAll("uploads", 0o750))
 				t.Cleanup(func() {
 					if err := os.RemoveAll("uploads"); err != nil {
 						t.Logf("Failed to remove uploads dir: %v", err)
@@ -50,6 +51,7 @@ func TestNew(t *testing.T) {
 			},
 			expectError: false,
 			validate: func(t *testing.T, service *PIrateRF) {
+				t.Helper()
 				assert.NotNil(t, service)
 				assert.Equal(t, ServiceName, service.Name())
 				assert.NotNil(t, service.config)
@@ -111,20 +113,34 @@ func TestNewWithConfig(t *testing.T) {
 				UploadDir: "./test_uploads",
 			},
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("ENV", "dev")
 
 				// Create required directories with custom paths
-				require.NoError(t, os.MkdirAll("test_static", 0o755))
-				t.Cleanup(func() { os.RemoveAll("test_static") })
+				require.NoError(t, os.MkdirAll("test_static", 0o750))
+				t.Cleanup(func() {
+					if err := os.RemoveAll("test_static"); err != nil {
+						t.Logf("Failed to remove test_static: %v", err)
+					}
+				})
 
-				require.NoError(t, os.MkdirAll("test_files", 0o755))
-				t.Cleanup(func() { os.RemoveAll("test_files") })
+				require.NoError(t, os.MkdirAll("test_files", 0o750))
+				t.Cleanup(func() {
+					if err := os.RemoveAll("test_files"); err != nil {
+						t.Logf("Failed to remove test_files: %v", err)
+					}
+				})
 
-				require.NoError(t, os.MkdirAll("test_uploads", 0o755))
-				t.Cleanup(func() { os.RemoveAll("test_uploads") })
+				require.NoError(t, os.MkdirAll("test_uploads", 0o750))
+				t.Cleanup(func() {
+					if err := os.RemoveAll("test_uploads"); err != nil {
+						t.Logf("Failed to remove test_uploads: %v", err)
+					}
+				})
 			},
 			expectError: false,
 			validate: func(t *testing.T, service *PIrateRF) {
+				t.Helper()
 				assert.NotNil(t, service)
 				assert.Equal(t, "./test_html", service.config.HTMLDir)
 				assert.Equal(t, "./test_static", service.config.StaticDir)
@@ -184,9 +200,14 @@ func TestPIrateRF_ensureUploadDirExists(t *testing.T) {
 				UploadDir: "./test_upload_dir",
 			},
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				// Ensure directory doesn't exist
-				os.RemoveAll("./test_upload_dir")
-				t.Cleanup(func() { os.RemoveAll("./test_upload_dir") })
+				_ = os.RemoveAll("./test_upload_dir")
+				t.Cleanup(func() {
+					if err := os.RemoveAll("./test_upload_dir"); err != nil {
+						t.Logf("Failed to remove test_upload_dir: %v", err)
+					}
+				})
 			},
 			expectError: false,
 		},
@@ -196,9 +217,14 @@ func TestPIrateRF_ensureUploadDirExists(t *testing.T) {
 				UploadDir: "./existing_upload_dir",
 			},
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				// Create directory first
-				require.NoError(t, os.MkdirAll("./existing_upload_dir", 0o755))
-				t.Cleanup(func() { os.RemoveAll("./existing_upload_dir") })
+				require.NoError(t, os.MkdirAll("./existing_upload_dir", 0o750))
+				t.Cleanup(func() {
+					if err := os.RemoveAll("./existing_upload_dir"); err != nil {
+						t.Logf("Failed to remove existing_upload_dir: %v", err)
+					}
+				})
 			},
 			expectError: false,
 		},
@@ -243,12 +269,18 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				FilesDir: "./test_files_dir",
 			},
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				// Ensure directories don't exist
-				os.RemoveAll("./test_files_dir")
-				t.Cleanup(func() { os.RemoveAll("./test_files_dir") })
+				_ = os.RemoveAll("./test_files_dir")
+				t.Cleanup(func() {
+					if err := os.RemoveAll("./test_files_dir"); err != nil {
+						t.Logf("Failed to remove test_files_dir: %v", err)
+					}
+				})
 			},
 			expectError: false,
 			validate: func(t *testing.T, config Config) {
+				t.Helper()
 				// Check base files directory
 				info, err := os.Stat(config.FilesDir)
 				assert.NoError(t, err)
@@ -279,7 +311,11 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				assert.True(t, info.IsDir())
 
 				// Check images uploads directory
-				imagesUploadsDir := path.Join(config.FilesDir, imagesFilesDir, uploadsSubdir)
+				imagesUploadsDir := path.Join(
+					config.FilesDir,
+					imagesFilesDir,
+					uploadsSubdir,
+				)
 				info, err = os.Stat(imagesUploadsDir)
 				assert.NoError(t, err)
 				assert.True(t, info.IsDir())
@@ -326,12 +362,18 @@ func TestPIrateRF_generateEnvJS(t *testing.T) {
 				FilesDir:  "./test_files",
 			},
 			setupFunc: func(t *testing.T) {
+				t.Helper()
 				// Create static directory
-				require.NoError(t, os.MkdirAll("./test_static", 0o755))
-				t.Cleanup(func() { os.RemoveAll("./test_static") })
+				require.NoError(t, os.MkdirAll("./test_static", 0o750))
+				t.Cleanup(func() {
+					if err := os.RemoveAll("./test_static"); err != nil {
+						t.Logf("Failed to remove test_static: %v", err)
+					}
+				})
 			},
 			expectError: false,
 			validate: func(t *testing.T, config Config) {
+				t.Helper()
 				envJSPath := path.Join(config.StaticDir, envJSFilename)
 
 				// Check file exists
@@ -377,17 +419,17 @@ func setupTestService(t *testing.T) *PIrateRF {
 	t.Setenv("ENV", "dev")
 
 	// Create required directories
-	require.NoError(t, os.MkdirAll("static", 0o755))
+	require.NoError(t, os.MkdirAll("static", 0o750))
 	t.Cleanup(func() {
 		_ = os.RemoveAll("static")
 	})
 
-	require.NoError(t, os.MkdirAll("files", 0o755))
+	require.NoError(t, os.MkdirAll("files", 0o750))
 	t.Cleanup(func() {
 		_ = os.RemoveAll("files")
 	})
 
-	require.NoError(t, os.MkdirAll("uploads", 0o755))
+	require.NoError(t, os.MkdirAll("uploads", 0o750))
 	t.Cleanup(func() {
 		_ = os.RemoveAll("uploads")
 	})

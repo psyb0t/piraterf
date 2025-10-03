@@ -30,7 +30,7 @@ func TestFileConversionPostprocessor(t *testing.T) {
 				"name":   "test_2s.mp3",
 				"module": "pifmrds",
 			},
-			setupFiles: func(tempDir string) string {
+			setupFiles: func(_ string) string {
 				return ".fixtures/test_2s.mp3"
 			},
 			expectError: false,
@@ -44,7 +44,7 @@ func TestFileConversionPostprocessor(t *testing.T) {
 				"path": ".fixtures/test_document.txt",
 				"name": "test_document.txt",
 			},
-			setupFiles: func(tempDir string) string {
+			setupFiles: func(_ string) string {
 				return ".fixtures/test_document.txt"
 			},
 			expectError: false,
@@ -60,7 +60,7 @@ func TestFileConversionPostprocessor(t *testing.T) {
 
 			// Create required directory structure
 			audioUploadsDir := filepath.Join(tempDir, "audio", "uploads")
-			err := os.MkdirAll(audioUploadsDir, 0o755)
+			err := os.MkdirAll(audioUploadsDir, 0o750)
 			require.NoError(t, err)
 
 			// Create a custom mock commander that creates output files
@@ -169,7 +169,7 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 				"path": ".fixtures/test_2s.mp3",
 				"name": "test_2s.mp3",
 			},
-			setupFiles: func(tempDir string) string {
+			setupFiles: func(_ string) string {
 				return ".fixtures/test_2s.mp3"
 			},
 			expectError:      false,
@@ -181,7 +181,7 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 				"path": ".fixtures/test_red_100x50.png",
 				"name": "test_red_100x50.png",
 			},
-			setupFiles: func(tempDir string) string {
+			setupFiles: func(_ string) string {
 				return ".fixtures/test_red_100x50.png"
 			},
 			expectError:      false,
@@ -195,7 +195,7 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 
 			// Create required directory structure
 			audioUploadsDir := filepath.Join(tempDir, "audio", "uploads")
-			err := os.MkdirAll(audioUploadsDir, 0o755)
+			err := os.MkdirAll(audioUploadsDir, 0o750)
 			require.NoError(t, err)
 
 			// Create a custom mock commander that creates output files
@@ -247,11 +247,9 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 				if tt.expectConversion {
 					assert.True(t, hasConverted, "Result should have 'converted' key")
 					assert.True(t, converted, "File should be marked as converted")
-				} else {
+				} else if hasConverted {
 					// Either no converted key or converted=false
-					if hasConverted {
-						assert.False(t, converted, "File should not be marked as converted")
-					}
+					assert.False(t, converted, "File should not be marked as converted")
 				}
 			}
 		})
@@ -285,7 +283,7 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 
 			// Create required directory structure
 			audioUploadsDir := filepath.Join(tempDir, "audio", "uploads")
-			err := os.MkdirAll(audioUploadsDir, 0o755)
+			err := os.MkdirAll(audioUploadsDir, 0o750)
 			require.NoError(t, err)
 
 			var mockCmd commander.Commander
@@ -419,7 +417,12 @@ func TestGetPlaylistOutputPath(t *testing.T) {
 			name:         "empty output directory",
 			playlistName: "test_playlist",
 			outputDir:    []string{""},
-			expectPath:   filepath.Join(tempDir, "audio", "uploads", "test_playlist.wav"),
+			expectPath: filepath.Join(
+				tempDir,
+				"audio",
+				"uploads",
+				"test_playlist.wav",
+			),
 		},
 	}
 
@@ -513,7 +516,12 @@ func TestCreatePlaylistFromFiles(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, outputPath)
-				assert.Contains(t, outputPath, ".wav", "Output path should contain .wav extension")
+				assert.Contains(
+					t,
+					outputPath,
+					".wav",
+					"Output path should contain .wav extension",
+				)
 			}
 		})
 	}

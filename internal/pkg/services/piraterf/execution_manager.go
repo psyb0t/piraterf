@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
+	// wsunixbridge registers itself as a WebSocket bridge.
 	_ "github.com/psyb0t/aichteeteapee/server/dabluvee-es/wsunixbridge"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/gorpitx"
@@ -352,8 +353,14 @@ func (em *executionManager) isExpectedTermination(err error) bool {
 	}
 
 	// Process cleanup errors after timeout are also expected
-	if err != nil && (strings.Contains(err.Error(), "process wait failed: exit status") ||
-		strings.Contains(err.Error(), "process failed after timeout stop")) {
+	if err != nil && (strings.Contains(
+		err.Error(),
+		"process wait failed: exit status",
+	) ||
+		strings.Contains(
+			err.Error(),
+			"process failed after timeout stop",
+		)) {
 		return true
 	}
 
