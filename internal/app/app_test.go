@@ -121,7 +121,8 @@ func TestApp_Run(t *testing.T) {
 				failingApp.config = cfg
 
 				// Add a service that returns an error
-				failingSvc := servicemanager.NewMockService("failing").WithRunError(assert.AnError)
+				failingSvc := servicemanager.NewMockService("failing").
+					WithRunError(assert.AnError)
 				failingApp.serviceManager.Add(failingSvc)
 
 				err := failingApp.Run(ctx)

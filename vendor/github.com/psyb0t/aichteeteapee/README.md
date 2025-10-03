@@ -5,12 +5,14 @@
 **aichteeteapee** is a batteries-included HTTP utilities library that gets you from `go mod init` to working server with minimal configuration. Built on the philosophy of sane defaults, zero boilerplate, and easy customization.
 
 Perfect for:
+
 - 🚀 **Rapid prototyping** with solid foundations
 - 🏗️ **Microservices** that need HTTP + WebSocket capabilities
 - 📡 **APIs** requiring file uploads, static serving, and real-time features
 - 🛠️ **Any Go project** that wants HTTP functionality without the fucking boilerplate
 
 ## Table of Contents
+
 - [Quick Start - Zero to Hero](#quick-start---zero-to-hero)
 - [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
@@ -24,6 +26,7 @@ Perfect for:
   - [Advanced Middleware Features](#advanced-middleware-features)
   - [Enhanced WebSocket Events](#enhanced-websocket-events)
 - [Security Warnings ⚠️](#security-warnings-️)
+- [TODO](#todo)
 - [License](#license)
 
 ## Quick Start - Zero to Hero
@@ -124,6 +127,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 ```
 
 That's it! You now have:
+
 - ✅ HTTP + HTTPS servers running
 - ✅ CORS, security headers, request logging
 - ✅ File uploads with processing hooks & filename options
@@ -187,18 +191,21 @@ srv, err := server.NewWithConfig(server.Config{
 ## Key Features
 
 ### 🎯 **Zero-Config Defaults**
+
 - **Secure defaults**: HTTPS, security headers, CORS, timeouts
 - **Graceful shutdown**: Proper resource cleanup and connection draining
 - **Structured logging**: Consistent field names with request tracing
 - **Health checks**: Built-in `/health` and `/echo` endpoints
 
 ### 🌐 **Advanced HTTP Server**
+
 - **Route groups**: Organize routes with shared middleware and configuration
 - **Static files**: Automatic serving with configurable directory indexing
 - **File uploads**: Built-in multipart handling with postprocessing hooks
 - **Middleware system**: Composable, reusable middleware with proper ordering
 
 ### 🛡️ **Built-in Middleware**
+
 - **CORS**: Cross-origin request handling for browser compatibility
 - **Basic Auth**: Simple authentication with configurable realms
 - **Security Headers**: HSTS, CSP, X-Frame-Options, and more
@@ -209,21 +216,25 @@ srv, err := server.NewWithConfig(server.Config{
 - **Content-Type Enforcement**: API protection with configurable types
 
 ### ⚡ **WebSocket Systems**
+
 > **Note**: WebSocket functionality lives in the `dabluveees` package - pronounced "dub-ell-vee-ess" (double-v-s = WS). More wordplay because memorable imports are better than boring ones.
 
 **WebSocket Hub** (for real-time applications):
+
 - **Multi-client management**: Automatic connection lifecycle handling
 - **Event-driven architecture**: Type-safe event system with JSON marshaling
 - **Broadcast capabilities**: Send to all clients, specific clients, or groups
 - **Connection metadata**: Per-connection data storage and retrieval
 
 **Unix Socket Bridge** (for external tool integration):
+
 - **Bidirectional bridge**: WebSocket ↔ Unix domain sockets
 - **External tool integration**: Shell scripts, CLI tools, other processes
 - **File-based communication**: Simple read/write operations
 - **Tool chaining**: Connect WebSocket apps to existing Unix toolchain
 
 ### 🛠️ **Developer Experience**
+
 - **Sane defaults**: Works out of the box, customize when needed
 - **File upload options**: UUID/DateTime/None filename prepending
 - **Event metadata system**: Thread-safe WebSocket event enrichment
@@ -473,29 +484,34 @@ const (
 **READ THIS SHIT CAREFULLY** - Security is not a fucking joke:
 
 ### 🔥 **CRITICAL - Authentication & Authorization**
+
 - **NEVER** run without authentication in production
 - **ALWAYS** validate user permissions before accessing resources
 - **USE** HTTPS in production - HTTP is not secure
 - **IMPLEMENT** proper session management and token validation
 
 ### 🔒 **File Upload Security**
+
 - **VALIDATE** file types and sizes - don't trust client data
 - **SCAN** uploads for malware before processing
 - **STORE** uploads outside web root to prevent direct access
 - **LIMIT** file extensions and use whitelist, not blacklist
 
 ### 🛡️ **Path Traversal Protection**
+
 - Library includes protection, but **ALWAYS** validate custom file paths
 - **NEVER** trust user input for file system operations
 - **USE** absolute paths and proper validation for file access
 
 ### 🚨 **WebSocket Security**
+
 - **AUTHENTICATE** WebSocket connections - they bypass normal HTTP auth
 - **VALIDATE** all event data - treat it as untrusted input
 - **IMPLEMENT** rate limiting for WebSocket messages
 - **MONITOR** connection counts to prevent DoS attacks
 
 ### 🔐 **Production Checklist**
+
 - [ ] HTTPS configured with valid certificates
 - [ ] Security headers properly configured
 - [ ] Authentication middleware on protected routes
@@ -503,6 +519,16 @@ const (
 - [ ] Proper error handling (don't leak internal info)
 - [ ] Request logging and monitoring in place
 - [ ] Rate limiting configured
+
+## TODO
+
+### WebSocket Hub Enhancements
+
+- [ ] **Connection Lifecycle Callbacks**: Add support for third-party apps to register "on connected" and "on disconnected" callbacks for WebSocket connections
+  - OnClientConnected callback when a new client connects
+  - OnClientDisconnected callback when a client disconnects
+  - OnConnectionEstablished callback for individual connections
+  - OnConnectionClosed callback for individual connections
 
 ## License
 

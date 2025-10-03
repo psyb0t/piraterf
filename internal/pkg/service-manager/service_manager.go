@@ -46,7 +46,7 @@ func ResetInstance() {
 	serviceManagerInstance = nil
 }
 
-// ClearServices clears all services from the service manager for testing purposes.
+// ClearServices clears all services from the service manager for testing.
 func (s *ServiceManager) ClearServices() {
 	s.servicesMutex.Lock()
 	defer s.servicesMutex.Unlock()

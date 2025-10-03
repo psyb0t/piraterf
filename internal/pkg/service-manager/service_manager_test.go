@@ -152,7 +152,7 @@ func TestServiceManager_Run(t *testing.T) {
 
 				return ctx, cancel
 			},
-			expectError: true, // Now expects error since no services means "no enabled services"
+			expectError: true, // No services means "no enabled services"
 			stopMethod:  "context",
 		},
 	}
@@ -180,7 +180,8 @@ func TestServiceManager_Run(t *testing.T) {
 			if !tt.expectError && len(tt.services) > 0 {
 				for _, svc := range tt.services {
 					if mockSvc, ok := svc.(*MockService); ok {
-						assert.True(t, mockSvc.WasRunCalled(), "Service %s should have Run called", mockSvc.name)
+						assert.True(t, mockSvc.WasRunCalled(),
+							"Service %s should have Run called", mockSvc.name)
 					}
 				}
 			}
@@ -233,8 +234,10 @@ func TestServiceManager_Stop(t *testing.T) {
 			stopTwice: true,
 		},
 		{
-			name:             "stop service with error",
-			services:         []Service{NewMockService("failing").WithStopError(errTestServiceStop)},
+			name: "stop service with error",
+			services: []Service{
+				NewMockService("failing").WithStopError(errTestServiceStop),
+			},
 			expectStopErrors: true,
 		},
 		{
@@ -252,7 +255,8 @@ func TestServiceManager_Stop(t *testing.T) {
 
 			ctx := context.Background()
 
-			// First run the services if there are any (so they get added to runningServices)
+			// First run the services if there are any
+			// (so they get added to runningServices)
 			if len(tt.services) > 0 {
 				runCtx, cancel := context.WithTimeout(ctx, 10*time.Millisecond)
 				defer cancel()
@@ -281,7 +285,8 @@ func TestServiceManager_Stop(t *testing.T) {
 			if len(tt.services) > 0 {
 				for _, svc := range tt.services {
 					if mockSvc, ok := svc.(*MockService); ok {
-						assert.True(t, mockSvc.WasStopCalled(), "Service %s should have Stop called", mockSvc.name)
+						assert.True(t, mockSvc.WasStopCalled(),
+							"Service %s should have Stop called", mockSvc.name)
 					}
 				}
 			}
@@ -301,7 +306,8 @@ func TestServiceManager_Stop(t *testing.T) {
 				// Services should NOT be stopped again due to sync.Once
 				for _, svc := range tt.services {
 					if mockSvc, ok := svc.(*MockService); ok {
-						assert.False(t, mockSvc.WasStopCalled(), "Service %s should NOT have Stop called again", mockSvc.name)
+						assert.False(t, mockSvc.WasStopCalled(),
+							"Service %s should NOT have Stop called again", mockSvc.name)
 					}
 				}
 			}

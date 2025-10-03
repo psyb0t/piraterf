@@ -119,7 +119,6 @@ linters:
       - builtin$
       - examples$
     rules:
-      # Exclude cyclop, funlen, and gocognit linters from test files
       - path: _test\.go
         linters:
           - cyclop
