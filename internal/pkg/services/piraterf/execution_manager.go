@@ -12,8 +12,6 @@ import (
 	"github.com/google/uuid"
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
-	// wsunixbridge registers itself as a WebSocket bridge.
-	_ "github.com/psyb0t/aichteeteapee/server/dabluvee-es/wsunixbridge"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
