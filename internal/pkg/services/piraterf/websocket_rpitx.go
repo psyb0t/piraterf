@@ -18,12 +18,24 @@ import (
 )
 
 const (
-	eventTypeRPITXExecutionStart      dabluveees.EventType = "rpitx.execution.start"
-	eventTypeRPITXExecutionStarted    dabluveees.EventType = "rpitx.execution.started"
-	eventTypeRPITXExecutionStop       dabluveees.EventType = "rpitx.execution.stop"
-	eventTypeRPITXExecutionStopped    dabluveees.EventType = "rpitx.execution.stopped"
-	eventTypeRPITXExecutionError      dabluveees.EventType = "rpitx.execution.error"
-	eventTypeRPITXExecutionOutputLine dabluveees.EventType = "rpitx.execution.output-line"
+	eventTypeRPITXExecutionStart = dabluveees.EventType(
+		"rpitx.execution.start",
+	)
+	eventTypeRPITXExecutionStarted = dabluveees.EventType(
+		"rpitx.execution.started",
+	)
+	eventTypeRPITXExecutionStop = dabluveees.EventType(
+		"rpitx.execution.stop",
+	)
+	eventTypeRPITXExecutionStopped = dabluveees.EventType(
+		"rpitx.execution.stopped",
+	)
+	eventTypeRPITXExecutionError = dabluveees.EventType(
+		"rpitx.execution.error",
+	)
+	eventTypeRPITXExecutionOutputLine = dabluveees.EventType(
+		"rpitx.execution.output-line",
+	)
 
 	// Audio duration rounding offset for converting float to int
 	// seconds.
@@ -474,7 +486,11 @@ func (s *PIrateRF) processPlayOnceSilence(
 	}
 
 	silenceAudioPath := s.generateSilenceFilePath()
-	if err := s.addSilenceToAudio(audioFile, silenceAudioPath, logger); err != nil {
+	if err := s.addSilenceToAudio(
+		audioFile,
+		silenceAudioPath,
+		logger,
+	); err != nil {
 		return audioFile, existingTempPath, modifiedArgs, err
 	}
 

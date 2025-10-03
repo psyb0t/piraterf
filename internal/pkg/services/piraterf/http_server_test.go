@@ -35,21 +35,23 @@ func TestRootHandler(t *testing.T) {
 		{
 			name:        "non-root path returns 404 JSON",
 			requestPath: "/style.css",
-			setupFiles: func(tempDir string) {
+			setupFiles: func(_ string) {
 				// Don't create the file - rootHandler only serves /
 			},
 			expectedStatus: http.StatusNotFound,
-			expectedBody:   "{\n  \"code\": \"FILE_NOT_FOUND\",\n  \"message\": \"File not found\"\n}\n",
+			expectedBody: "{\n  \"code\": \"FILE_NOT_FOUND\"," +
+				"\n  \"message\": \"File not found\"\n}\n",
 			expectedHeader: "application/json",
 		},
 		{
 			name:        "non-root JavaScript path returns 404 JSON",
 			requestPath: "/app.js",
-			setupFiles: func(tempDir string) {
+			setupFiles: func(_ string) {
 				// Don't create the file - rootHandler only serves /
 			},
 			expectedStatus: http.StatusNotFound,
-			expectedBody:   "{\n  \"code\": \"FILE_NOT_FOUND\",\n  \"message\": \"File not found\"\n}\n",
+			expectedBody: "{\n  \"code\": \"FILE_NOT_FOUND\"," +
+				"\n  \"message\": \"File not found\"\n}\n",
 			expectedHeader: "application/json",
 		},
 		{
@@ -73,7 +75,8 @@ func TestRootHandler(t *testing.T) {
 				require.NoError(t, err)
 			},
 			expectedStatus: http.StatusNotFound,
-			expectedBody:   "{\n  \"code\": \"FILE_NOT_FOUND\",\n  \"message\": \"File not found\"\n}\n",
+			expectedBody: "{\n  \"code\": \"FILE_NOT_FOUND\"," +
+				"\n  \"message\": \"File not found\"\n}\n",
 			expectedHeader: "application/json",
 		},
 	}
@@ -92,7 +95,11 @@ func TestRootHandler(t *testing.T) {
 			}
 
 			// Create HTTP request
-			req := httptest.NewRequest(http.MethodGet, "http://localhost"+tt.requestPath, nil)
+			req := httptest.NewRequest(
+				http.MethodGet,
+				"http://localhost"+tt.requestPath,
+				nil,
+			)
 			w := httptest.NewRecorder()
 
 			// Call the root handler

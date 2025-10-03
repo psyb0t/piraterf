@@ -16,12 +16,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
+func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	// Suppress debug logs in tests
 	logrus.SetLevel(logrus.WarnLevel)
-}
 
-func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	// Set ENV=dev to avoid root check
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
@@ -41,15 +39,24 @@ func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	close(em.outputChannels.stdout)
 	close(em.outputChannels.stderr)
 
-	// Now call stopStreaming - this should NOT panic even though channels are already closed
+	// Now call stopStreaming - this should NOT panic even though
+	// channels are already closed
 	require.NotPanics(t, func() {
 		em.stopStreaming()
 	}, "stopStreaming should not panic when channels are already closed")
 
 	// Verify channels are set to nil after cleanup
 	em.mu.RLock()
-	assert.Nil(t, em.outputChannels.stdout, "stdout channel should be nil after cleanup")
-	assert.Nil(t, em.outputChannels.stderr, "stderr channel should be nil after cleanup")
+	assert.Nil(
+		t,
+		em.outputChannels.stdout,
+		"stdout channel should be nil after cleanup",
+	)
+	assert.Nil(
+		t,
+		em.outputChannels.stderr,
+		"stderr channel should be nil after cleanup",
+	)
 	em.mu.RUnlock()
 }
 
@@ -75,8 +82,16 @@ func TestExecutionManager_StopStreaming_NormalClose(t *testing.T) {
 
 	// Verify channels are set to nil after cleanup
 	em.mu.RLock()
-	assert.Nil(t, em.outputChannels.stdout, "stdout channel should be nil after cleanup")
-	assert.Nil(t, em.outputChannels.stderr, "stderr channel should be nil after cleanup")
+	assert.Nil(
+		t,
+		em.outputChannels.stdout,
+		"stdout channel should be nil after cleanup",
+	)
+	assert.Nil(
+		t,
+		em.outputChannels.stderr,
+		"stderr channel should be nil after cleanup",
+	)
 	em.mu.RUnlock()
 }
 
@@ -247,7 +262,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			args:          json.RawMessage(`{"freq": 88.0}`),
 			timeout:       10,
 			expectError:   false,                   // Function returns nil but broadcasts error
-			expectedState: executionStateExecuting, // State remains unchanged
+			expectedState: executionStateExecuting, // State unchanged
 		},
 		{
 			name:          "start while stopping",
@@ -256,16 +271,18 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			args:          json.RawMessage(`{"freq": 88.0}`),
 			timeout:       10,
 			expectError:   false,                  // Function returns nil but broadcasts error
-			expectedState: executionStateStopping, // State remains unchanged
+			expectedState: executionStateStopping, // State unchanged
 		},
 		{
-			name:          "start with invalid file returns to idle",
-			initialState:  executionStateIdle,
-			moduleName:    gorpitx.ModuleNameSPECTRUMPAINT,
-			args:          json.RawMessage(`{"pictureFile": "/path/to/image.png"}`), // File doesn't exist
+			name:         "start with invalid file returns to idle",
+			initialState: executionStateIdle,
+			moduleName:   gorpitx.ModuleNameSPECTRUMPAINT,
+			args: json.RawMessage(
+				`{"pictureFile": "/path/to/image.png"}`,
+			), // File doesn't exist
 			timeout:       0,
 			expectError:   false,
-			expectedState: executionStateIdle, // Returns to idle after validation failure
+			expectedState: executionStateIdle, // Returns to idle
 		},
 		{
 			name:          "start PICHIRP execution",
@@ -306,7 +323,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 				tt.args,
 				tt.timeout,
 				client,
-				nil, // callback
+				nil,
 			)
 
 			if tt.expectError {

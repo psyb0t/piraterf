@@ -93,7 +93,7 @@ func (s *PIrateRF) audioConversionPostprocessor(
 	logrus.WithFields(logrus.Fields{
 		"original":  filePath,
 		"converted": convertedPath,
-	}).Info("Audio file converted successfully")
+	}).Info("Audio file converted")
 
 	return newResponse, nil
 }
@@ -172,7 +172,10 @@ func (s *PIrateRF) createPlaylistFromFiles(
 	return s.executePlaylistCreation(filePaths, outputPath)
 }
 
-func (s *PIrateRF) getPlaylistOutputPath(playlistName string, outputDir ...string) string {
+func (s *PIrateRF) getPlaylistOutputPath(
+	playlistName string,
+	outputDir ...string,
+) string {
 	playlistName = s.ensureWavExtension(playlistName)
 
 	if len(outputDir) > 0 && outputDir[0] != "" {
@@ -196,7 +199,10 @@ func (s *PIrateRF) ensureWavExtension(playlistName string) string {
 	return playlistName
 }
 
-func (s *PIrateRF) executePlaylistCreation(filePaths []string, outputPath string) (string, error) {
+func (s *PIrateRF) executePlaylistCreation(
+	filePaths []string,
+	outputPath string,
+) (string, error) {
 	ctx, cancel := context.WithTimeout(s.serviceCtx, audioPlaylistTimeout)
 	defer cancel()
 
@@ -218,7 +224,10 @@ func (s *PIrateRF) executePlaylistCreation(filePaths []string, outputPath string
 	return outputPath, nil
 }
 
-func (s *PIrateRF) buildSoxArgs(filePaths []string, outputPath string) []string {
+func (s *PIrateRF) buildSoxArgs(
+	filePaths []string,
+	outputPath string,
+) []string {
 	soxArgs := make([]string, 0, len(filePaths)+audioArgsReservedCount)
 	soxArgs = append(soxArgs, filePaths...)
 	soxArgs = append(soxArgs, "-r", audioSampleRate)

@@ -14,7 +14,7 @@ func (s *PIrateRF) handleLiveAudioConnection(
 	})
 
 	logger.Info(
-		"Live audio WebSocket connection established - client will receive init event with writer socket path",
+		"Live audio WebSocket connection established",
 	)
 
 	return nil

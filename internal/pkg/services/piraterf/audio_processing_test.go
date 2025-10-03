@@ -68,8 +68,9 @@ func TestFileConversionPostprocessor(t *testing.T) {
 				MockCommander: *commander.NewMock(),
 			}
 
-			// Set up mock for ffmpeg with exact argument count and patterns
-			// Expected args: "-i", inputPath, "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", "-y", outputPath
+			// Set up mock for ffmpeg with exact argument count
+			// Expected args: "-i", inputPath, "-ar", "48000", "-ac",
+			// "1", "-c:a", "pcm_s16le", "-y", outputPath
 			mockCmd.ExpectWithMatchers("ffmpeg",
 				commander.Exact("-i"),        // -i
 				commander.Any(),              // input path
@@ -113,24 +114,34 @@ func TestFileConversionPostprocessor(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
 
+			if !tt.expectError {
 				// Check specific expected results
 				for key, expectedValue := range tt.expectResult {
 					actualValue, exists := result[key]
 					assert.True(t, exists, "Result should contain key %s", key)
 
 					if key == "converted" && expectedValue == true {
-						if boolVal, ok := actualValue.(bool); ok {
-							assert.True(t, boolVal)
-						} else {
-							t.Errorf("Expected bool value for 'converted' key, got %T", actualValue)
+						boolVal, ok := actualValue.(bool)
+						if !ok {
+							t.Errorf(
+								"Expected bool for 'converted', got %T",
+								actualValue,
+							)
+
+							continue
 						}
-					} else {
-						assert.Equal(t, expectedValue, actualValue)
+
+						assert.True(t, boolVal)
+
+						continue
 					}
+
+					assert.Equal(t, expectedValue, actualValue)
 				}
 
-				// For non-audio files, check that path contains the filename
+				// For non-audio files, check path
 				if tt.name == "non-audio file unchanged" {
 					pathValue, exists := result["path"]
 					assert.True(t, exists, "Result should contain path")
@@ -228,7 +239,9 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
 
+			if !tt.expectError {
 				// Check if conversion happened as expected
 				converted, hasConverted := result["converted"].(bool)
 				if tt.expectConversion {
@@ -311,7 +324,8 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 				commander: mockCmd,
 			}
 
-			convertedPath, wasConverted, err := service.convertAudioFileWithFFmpeg(tt.inputFile)
+			convertedPath, wasConverted, err := service.
+				convertAudioFileWithFFmpeg(tt.inputFile)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -324,8 +338,12 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 
 				// Check that output path was constructed correctly
 				expectedBasename := filepath.Base(tt.inputFile)
-				expectedBasename = expectedBasename[:len(expectedBasename)-len(filepath.Ext(expectedBasename))]
-				expectedPath := filepath.Join(audioUploadsDir, expectedBasename+constants.FileExtensionWAV)
+				ext := filepath.Ext(expectedBasename)
+				expectedBasename = expectedBasename[:len(expectedBasename)-len(ext)]
+				expectedPath := filepath.Join(
+					audioUploadsDir,
+					expectedBasename+constants.FileExtensionWAV,
+				)
 				assert.Equal(t, expectedPath, convertedPath)
 			}
 		})
@@ -390,7 +408,12 @@ func TestGetPlaylistOutputPath(t *testing.T) {
 			name:         "without output directory",
 			playlistName: "test_playlist",
 			outputDir:    []string{},
-			expectPath:   filepath.Join(tempDir, "audio", "uploads", "test_playlist.wav"),
+			expectPath: filepath.Join(
+				tempDir,
+				"audio",
+				"uploads",
+				"test_playlist.wav",
+			),
 		},
 		{
 			name:         "empty output directory",
@@ -473,9 +496,16 @@ func TestCreatePlaylistFromFiles(t *testing.T) {
 			)
 
 			if len(tt.outputDir) > 0 {
-				outputPath, err = service.createPlaylistFromFiles(tt.playlistName, tt.filePaths, tt.outputDir[0])
+				outputPath, err = service.createPlaylistFromFiles(
+					tt.playlistName,
+					tt.filePaths,
+					tt.outputDir[0],
+				)
 			} else {
-				outputPath, err = service.createPlaylistFromFiles(tt.playlistName, tt.filePaths)
+				outputPath, err = service.createPlaylistFromFiles(
+					tt.playlistName,
+					tt.filePaths,
+				)
 			}
 
 			if tt.expectError {

@@ -16,11 +16,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	logrus.SetLevel(logrus.WarnLevel)
-}
-
 func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
+	logrus.SetLevel(logrus.WarnLevel)
 	t.Setenv(env.EnvVarName, env.EnvTypeDev)
 
 	hub := wshub.NewHub("test")

@@ -74,14 +74,15 @@ func (s *PIrateRF) imageConversionPostprocessor(
 	return newResponse, nil
 }
 
-// convertImageToFormats converts uploaded image files to both YUV and RGB formats
-// using ImageMagick convert command.
+// convertImageToFormats converts uploaded image files to both
+// YUV and RGB formats using ImageMagick convert command.
 // Returns: yuvPath, rgbPath, error.
 func (s *PIrateRF) convertImageToFormats(
 	inputPath string,
 	logger *logrus.Entry,
 ) (string, string, error) {
-	// Create a copy of the input file for RGB conversion since YUV will delete the original
+	// Create a copy of the input file for RGB conversion since YUV
+	// will delete the original
 	tempInputPath := inputPath + ".temp"
 	if err := s.copyFileForTemp(inputPath, tempInputPath); err != nil {
 		return "", "", ctxerrors.Wrapf(err, "failed to create temp copy")
@@ -96,7 +97,13 @@ func (s *PIrateRF) convertImageToFormats(
 		return "", "", err
 	}
 
-	rgbPath, err := s.convertImageToRGBFormat(tempInputPath, s.getImageRGBOutputPath(inputPath), logger)
+	rgbOutputPath := s.getImageRGBOutputPath(inputPath)
+
+	rgbPath, err := s.convertImageToRGBFormat(
+		tempInputPath,
+		rgbOutputPath,
+		logger,
+	)
 	if err != nil {
 		return "", "", err
 	}
@@ -104,8 +111,8 @@ func (s *PIrateRF) convertImageToFormats(
 	return yuvPath, rgbPath, nil
 }
 
-// convertImageToYUV converts uploaded image files to YUV format for SPECTRUMPAINT
-// using ImageMagick convert command.
+// convertImageToYUV converts uploaded image files to YUV format
+// for SPECTRUMPAINT using ImageMagick convert command.
 // Returns: convertedPath, error.
 func (s *PIrateRF) convertImageToYUV(
 	inputPath string,
@@ -128,14 +135,16 @@ func (s *PIrateRF) convertImageToYUV(
 
 func (s *PIrateRF) getImageOutputPath(inputPath string) string {
 	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
-	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+	base := filepath.Base(inputPath)
+	baseFilename := strings.TrimSuffix(base, filepath.Ext(inputPath))
 
 	return filepath.Join(imagesUploadsDir, baseFilename+".Y")
 }
 
 func (s *PIrateRF) getImageRGBOutputPath(inputPath string) string {
 	imagesUploadsDir := path.Join(s.config.FilesDir, imagesUploadsPath)
-	baseFilename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+	base := filepath.Base(inputPath)
+	baseFilename := strings.TrimSuffix(base, filepath.Ext(inputPath))
 
 	return filepath.Join(imagesUploadsDir, baseFilename+".rgb")
 }
@@ -154,7 +163,10 @@ func (s *PIrateRF) handleYFile(inputPath, outputPath string) (string, error) {
 	return outputPath, nil
 }
 
-func (s *PIrateRF) convertImageToYFormat(inputPath, outputPath string, logger *logrus.Entry) (string, error) {
+func (s *PIrateRF) convertImageToYFormat(
+	inputPath, outputPath string,
+	logger *logrus.Entry,
+) (string, error) {
 	tmpDir, tmpBasePath, err := s.createTempConversionDir()
 	if err != nil {
 		return "", err
@@ -175,7 +187,10 @@ func (s *PIrateRF) convertImageToYFormat(inputPath, outputPath string, logger *l
 	return outputPath, nil
 }
 
-func (s *PIrateRF) convertImageToRGBFormat(inputPath, outputPath string, logger *logrus.Entry) (string, error) {
+func (s *PIrateRF) convertImageToRGBFormat(
+	inputPath, outputPath string,
+	logger *logrus.Entry,
+) (string, error) {
 	ctx, cancel := context.WithTimeout(s.serviceCtx, audioConversionTimeout)
 	defer cancel()
 
@@ -214,13 +229,21 @@ func (s *PIrateRF) createTempConversionDir() (string, string, error) {
 	return tmpDir, tmpBasePath, nil
 }
 
-func (s *PIrateRF) cleanupTempDir(tmpDir string, logger *logrus.Entry) {
+func (s *PIrateRF) cleanupTempDir(
+	tmpDir string,
+	logger *logrus.Entry,
+) {
 	if removeErr := os.RemoveAll(tmpDir); removeErr != nil {
-		logger.WithError(removeErr).WithField("tmpDir", tmpDir).Warn("Failed to remove temporary directory")
+		logger.
+			WithError(removeErr).
+			WithField("tmpDir", tmpDir).
+			Warn("Failed to remove temporary directory")
 	}
 }
 
-func (s *PIrateRF) runImageMagickConversion(inputPath, tmpBasePath string) error {
+func (s *PIrateRF) runImageMagickConversion(
+	inputPath, tmpBasePath string,
+) error {
 	ctx, cancel := context.WithTimeout(s.serviceCtx, audioConversionTimeout)
 	defer cancel()
 
@@ -245,7 +268,9 @@ func (s *PIrateRF) runImageMagickConversion(inputPath, tmpBasePath string) error
 	return nil
 }
 
-func (s *PIrateRF) moveConvertedYFile(tmpBasePath, outputPath string) error {
+func (s *PIrateRF) moveConvertedYFile(
+	tmpBasePath, outputPath string,
+) error {
 	tmpYPath := tmpBasePath + ".Y"
 	if _, err := os.Stat(tmpYPath); err != nil {
 		return ctxerrors.Wrapf(err, "converted .Y file not found")
@@ -258,20 +283,30 @@ func (s *PIrateRF) moveConvertedYFile(tmpBasePath, outputPath string) error {
 	return nil
 }
 
-func (s *PIrateRF) cleanupOriginalFile(inputPath string, logger *logrus.Entry) {
+func (s *PIrateRF) cleanupOriginalFile(
+	inputPath string,
+	logger *logrus.Entry,
+) {
 	if removeErr := os.Remove(inputPath); removeErr != nil {
-		logger.WithError(removeErr).WithField("file", inputPath).Warn("Failed to remove original image file")
+		logger.
+			WithError(removeErr).
+			WithField("file", inputPath).
+			Warn("Failed to remove original image file")
 	}
 }
 
-func (s *PIrateRF) logConversionSuccess(inputPath, outputPath string, logger *logrus.Entry) {
+func (s *PIrateRF) logConversionSuccess(
+	inputPath, outputPath string,
+	logger *logrus.Entry,
+) {
 	logger.WithFields(logrus.Fields{
 		"original":  inputPath,
 		"converted": outputPath,
-	}).Info("Image converted to YUV format for SPECTRUMPAINT")
+	}).Info("Image converted to YUV")
 }
 
-// copyFileForTemp copies a file from src to dst using io.Copy for temporary file creation.
+// copyFileForTemp copies a file from src to dst using io.Copy
+// for temporary file creation.
 func (s *PIrateRF) copyFileForTemp(src, dst string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {

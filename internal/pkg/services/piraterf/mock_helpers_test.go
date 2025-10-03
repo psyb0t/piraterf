@@ -11,9 +11,6 @@ import (
 )
 
 // Simple mock helpers for compatibility across test files.
-func newMockCommander() *commander.MockCommander {
-	return commander.NewMock()
-}
 
 func newMockProcess() commander.Process {
 	mock := commander.NewMock()
@@ -28,6 +25,7 @@ type fileCreatingMockCommander struct {
 	commander.MockCommander
 }
 
+//nolint:ireturn // Must return interface to satisfy commander contract
 func (m *fileCreatingMockCommander) Start(
 	ctx context.Context,
 	name string,
@@ -121,11 +119,12 @@ type testMockCommander struct {
 	tempDir string
 }
 
+//nolint:ireturn // Must return interface to satisfy commander contract
 func (m *testMockCommander) Start(
-	ctx context.Context,
+	_ context.Context,
 	name string,
 	args []string,
-	opts ...commander.Option,
+	_ ...commander.Option,
 ) (commander.Process, error) {
 	// Handle sox silence addition: sox audioFile outputFile pad 0 2
 	if name == "sox" && len(args) == 5 && args[2] == "pad" && args[3] == "0" && args[4] == "2" {
@@ -139,9 +138,9 @@ func (m *testMockCommander) Start(
 			return nil, err
 		}
 		// Return a successful mock process
-		mock := commander.NewMock()
-		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(ctx, "dummy", []string{})
+		cmdMock := commander.NewMock()
+		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
+		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
 
 		return proc, nil
 	}
@@ -159,9 +158,9 @@ func (m *testMockCommander) Start(
 			return nil, err
 		}
 		// Return a successful mock process
-		mock := commander.NewMock()
-		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(ctx, "dummy", []string{})
+		cmdMock := commander.NewMock()
+		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
+		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
 
 		return proc, nil
 	}
@@ -195,9 +194,9 @@ func (m *testMockCommander) Start(
 		}
 
 		// Return a successful mock process
-		mock := commander.NewMock()
-		mock.Expect("dummy").ReturnOutput([]byte(""))
-		proc, _ := mock.Start(ctx, "dummy", []string{})
+		cmdMock := commander.NewMock()
+		cmdMock.Expect("dummy").ReturnOutput([]byte(""))
+		proc, _ := cmdMock.Start(context.Background(), "dummy", []string{})
 
 		return proc, nil
 	}
@@ -211,7 +210,12 @@ func (m *testMockCommander) Run(ctx context.Context, name string, args []string,
 	return err
 }
 
-func (m *testMockCommander) Output(ctx context.Context, name string, args []string, opts ...commander.Option) ([]byte, []byte, error) {
+func (m *testMockCommander) Output(
+	_ context.Context,
+	name string,
+	args []string,
+	_ ...commander.Option,
+) ([]byte, []byte, error) {
 	// Handle sox duration check: sox --info -D audioFile
 	if name == "sox" && len(args) == 3 && args[0] == "--info" && args[1] == "-D" {
 		if args[2] == ".fixtures/test_3s.wav" {

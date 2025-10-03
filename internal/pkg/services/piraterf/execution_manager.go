@@ -153,7 +153,10 @@ func (em *executionManager) executeModule(
 	em.handleExecutionResult(err, client)
 }
 
-func (em *executionManager) cleanupAfterExecution(client *wshub.Client, callback func() error) {
+func (em *executionManager) cleanupAfterExecution(
+	client *wshub.Client,
+	callback func() error,
+) {
 	logrus.WithField("clientID", client.ID()).
 		Debug("executeModule finished, setting state to idle")
 
@@ -206,7 +209,10 @@ func (em *executionManager) runExecution(
 	return <-execDone
 }
 
-func (em *executionManager) handleExecutionResult(err error, client *wshub.Client) {
+func (em *executionManager) handleExecutionResult(
+	err error,
+	client *wshub.Client,
+) {
 	logrus.WithFields(logrus.Fields{
 		"error":    err,
 		"clientID": client.ID(),

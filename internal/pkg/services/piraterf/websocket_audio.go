@@ -15,9 +15,15 @@ import (
 )
 
 const (
-	eventTypeAudioPlaylistCreate        dabluveees.EventType = "audio.playlist.create"
-	eventTypeAudioPlaylistCreateSuccess dabluveees.EventType = "audio.playlist.create.success"
-	eventTypeAudioPlaylistCreateError   dabluveees.EventType = "audio.playlist.create.error"
+	eventTypeAudioPlaylistCreate = dabluveees.EventType(
+		"audio.playlist.create",
+	)
+	eventTypeAudioPlaylistCreateSuccess = dabluveees.EventType(
+		"audio.playlist.create.success",
+	)
+	eventTypeAudioPlaylistCreateError = dabluveees.EventType(
+		"audio.playlist.create.error",
+	)
 )
 
 type audioPlaylistCreateMessage struct {

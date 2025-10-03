@@ -107,9 +107,9 @@ func TestMoveFile(t *testing.T) {
 	}{
 		{
 			name: "successful file move",
-			setupFiles: func(tempDir string) (source, dest string) {
-				source = filepath.Join(tempDir, "source.txt")
-				dest = filepath.Join(tempDir, "dest.txt")
+			setupFiles: func(tempDir string) (string, string) {
+				source := filepath.Join(tempDir, "source.txt")
+				dest := filepath.Join(tempDir, "dest.txt")
 				err := os.WriteFile(source, []byte("test content"), 0o644)
 				require.NoError(t, err)
 
@@ -119,9 +119,9 @@ func TestMoveFile(t *testing.T) {
 		},
 		{
 			name: "source file does not exist",
-			setupFiles: func(tempDir string) (source, dest string) {
-				source = filepath.Join(tempDir, "nonexistent.txt")
-				dest = filepath.Join(tempDir, "dest.txt")
+			setupFiles: func(tempDir string) (string, string) {
+				source := filepath.Join(tempDir, "nonexistent.txt")
+				dest := filepath.Join(tempDir, "dest.txt")
 
 				return source, dest
 			},
@@ -190,8 +190,10 @@ func TestConvertImageToYUV(t *testing.T) {
 					MockCommander: *commander.NewMock(),
 				}
 
-				// Set up mock for convert with exact argument count and patterns
-				// Expected args: inputPath, "-resize", "320x", "-flip", "-quantize", "YUV", "-dither", "FloydSteinberg", "-colors", "4", "-interlace", "partition", outputPath
+				// Set up mock for convert with exact argument count
+				// Expected args: inputPath, "-resize", "320x", "-flip",
+				// "-quantize", "YUV", "-dither", "FloydSteinberg",
+				// "-colors", "4", "-interlace", "partition", outputPath
 				mock.ExpectWithMatchers("convert",
 					commander.Any(),                   // input path
 					commander.Exact("-resize"),        // -resize
@@ -268,7 +270,7 @@ func TestImageConversionPostprocessor(t *testing.T) {
 				"path": ".fixtures/test_document.txt",
 				"name": "test_document.txt",
 			},
-			setupFiles: func(tempDir string) string {
+			setupFiles: func(_ string) string {
 				return ".fixtures/test_document.txt"
 			},
 			expectError: false,
@@ -341,24 +343,34 @@ func TestImageConversionPostprocessor(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
 
+			if !tt.expectError {
 				// Check specific expected results
 				for key, expectedValue := range tt.expectResult {
 					actualValue, exists := result[key]
 					assert.True(t, exists, "Result should contain key %s", key)
 
 					if key == "converted" && expectedValue == true {
-						if boolVal, ok := actualValue.(bool); ok {
-							assert.True(t, boolVal)
-						} else {
-							t.Errorf("Expected bool value for 'converted' key, got %T", actualValue)
+						boolVal, ok := actualValue.(bool)
+						if !ok {
+							t.Errorf(
+								"Expected bool for 'converted', got %T",
+								actualValue,
+							)
+
+							continue
 						}
-					} else {
-						assert.Equal(t, expectedValue, actualValue)
+
+						assert.True(t, boolVal)
+
+						continue
 					}
+
+					assert.Equal(t, expectedValue, actualValue)
 				}
 
-				// For non-image files, check that path contains the filename
+				// For non-image files, check path
 				if tt.name == "non-image file unchanged" {
 					pathValue, exists := result["path"]
 					assert.True(t, exists, "Result should contain path")

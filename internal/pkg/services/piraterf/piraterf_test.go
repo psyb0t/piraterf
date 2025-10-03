@@ -372,82 +372,43 @@ func TestPIrateRF_generateEnvJS(t *testing.T) {
 	}
 }
 
+func setupTestService(t *testing.T) *PIrateRF {
+	t.Helper()
+	t.Setenv("ENV", "dev")
+
+	// Create required directories
+	require.NoError(t, os.MkdirAll("static", 0o755))
+	t.Cleanup(func() {
+		_ = os.RemoveAll("static")
+	})
+
+	require.NoError(t, os.MkdirAll("files", 0o755))
+	t.Cleanup(func() {
+		_ = os.RemoveAll("files")
+	})
+
+	require.NoError(t, os.MkdirAll("uploads", 0o755))
+	t.Cleanup(func() {
+		_ = os.RemoveAll("uploads")
+	})
+
+	service, err := New()
+	require.NoError(t, err)
+
+	return service
+}
+
 func TestPIrateRF_Stop(t *testing.T) {
 	tests := []struct {
-		name      string
-		setupFunc func(t *testing.T) *PIrateRF
+		name string
 	}{
-		{
-			name: "stop service successfully",
-			setupFunc: func(t *testing.T) *PIrateRF {
-				t.Setenv("ENV", "dev")
-
-				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("static"); err != nil {
-						t.Logf("Failed to remove static dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("files", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("files"); err != nil {
-						t.Logf("Failed to remove files dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("uploads", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("uploads"); err != nil {
-						t.Logf("Failed to remove uploads dir: %v", err)
-					}
-				})
-
-				service, err := New()
-				require.NoError(t, err)
-
-				return service
-			},
-		},
-		{
-			name: "stop service multiple times (idempotent)",
-			setupFunc: func(t *testing.T) *PIrateRF {
-				t.Setenv("ENV", "dev")
-
-				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("static"); err != nil {
-						t.Logf("Failed to remove static dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("files", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("files"); err != nil {
-						t.Logf("Failed to remove files dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("uploads", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("uploads"); err != nil {
-						t.Logf("Failed to remove uploads dir: %v", err)
-					}
-				})
-
-				service, err := New()
-				require.NoError(t, err)
-
-				return service
-			},
-		},
+		{name: "stop service successfully"},
+		{name: "stop service multiple times (idempotent)"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := tt.setupFunc(t)
+			service := setupTestService(t)
 			require.NotNil(t, service)
 
 			ctx := context.Background()
@@ -466,77 +427,16 @@ func TestPIrateRF_Stop(t *testing.T) {
 func TestPIrateRF_Run(t *testing.T) {
 	tests := []struct {
 		name        string
-		setupFunc   func(t *testing.T) *PIrateRF
 		runDuration time.Duration
 		stopMethod  string // "context" or "service"
 	}{
 		{
-			name: "run and stop via context cancellation",
-			setupFunc: func(t *testing.T) *PIrateRF {
-				t.Setenv("ENV", "dev")
-
-				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("static"); err != nil {
-						t.Logf("Failed to remove static dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("files", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("files"); err != nil {
-						t.Logf("Failed to remove files dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("uploads", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("uploads"); err != nil {
-						t.Logf("Failed to remove uploads dir: %v", err)
-					}
-				})
-
-				service, err := New()
-				require.NoError(t, err)
-
-				return service
-			},
+			name:        "run and stop via context cancellation",
 			runDuration: 50 * time.Millisecond,
 			stopMethod:  "context",
 		},
 		{
-			name: "run and stop via service stop",
-			setupFunc: func(t *testing.T) *PIrateRF {
-				t.Setenv("ENV", "dev")
-
-				// Create required directories
-				require.NoError(t, os.MkdirAll("static", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("static"); err != nil {
-						t.Logf("Failed to remove static dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("files", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("files"); err != nil {
-						t.Logf("Failed to remove files dir: %v", err)
-					}
-				})
-
-				require.NoError(t, os.MkdirAll("uploads", 0o755))
-				t.Cleanup(func() {
-					if err := os.RemoveAll("uploads"); err != nil {
-						t.Logf("Failed to remove uploads dir: %v", err)
-					}
-				})
-
-				service, err := New()
-				require.NoError(t, err)
-
-				return service
-			},
+			name:        "run and stop via service stop",
 			runDuration: 50 * time.Millisecond,
 			stopMethod:  "service",
 		},
@@ -544,7 +444,7 @@ func TestPIrateRF_Run(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := tt.setupFunc(t)
+			service := setupTestService(t)
 			require.NotNil(t, service)
 
 			ctx, cancel := context.WithCancel(context.Background())

@@ -18,6 +18,7 @@ func TestParseConfig(t *testing.T) {
 			envVars:     map[string]string{},
 			expectError: false,
 			validate: func(t *testing.T, cfg Config) {
+				t.Helper()
 				assert.Equal(t, defaultHTMLDir, cfg.HTMLDir)
 				assert.Equal(t, defaultStaticDir, cfg.StaticDir)
 				assert.Equal(t, defaultFilesDir, cfg.FilesDir)
@@ -34,6 +35,7 @@ func TestParseConfig(t *testing.T) {
 			},
 			expectError: false,
 			validate: func(t *testing.T, cfg Config) {
+				t.Helper()
 				assert.Equal(t, "/custom/html", cfg.HTMLDir)
 				assert.Equal(t, "/custom/static", cfg.StaticDir)
 				assert.Equal(t, "/custom/files", cfg.FilesDir)
@@ -48,6 +50,7 @@ func TestParseConfig(t *testing.T) {
 			},
 			expectError: false,
 			validate: func(t *testing.T, cfg Config) {
+				t.Helper()
 				assert.Equal(t, "/custom/html", cfg.HTMLDir)
 				assert.Equal(t, defaultStaticDir, cfg.StaticDir)
 				assert.Equal(t, "/custom/files", cfg.FilesDir)

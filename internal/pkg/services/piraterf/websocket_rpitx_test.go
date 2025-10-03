@@ -15,6 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	introFile     = ".fixtures/test_2s.mp3"
+	mainAudioFile = ".fixtures/test_3s.wav"
+	outroFile     = ".fixtures/test_4s.wav"
+)
+
 func TestProcessAudioModifications(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
 
@@ -34,7 +40,11 @@ func TestProcessAudioModifications(t *testing.T) {
 	}
 
 	// Create test files
-	testFiles := []string{".fixtures/test_2s.mp3", ".fixtures/test_3s.wav", ".fixtures/test_4s.wav"}
+	testFiles := []string{
+		introFile,
+		mainAudioFile,
+		outroFile,
+	}
 
 	// Create logger for testing
 	logger := logrus.WithField("test", "processAudioModifications")
@@ -58,12 +68,26 @@ func TestProcessAudioModifications(t *testing.T) {
 			Outro:    nil,
 		}
 
-		finalTimeout, tempPath, finalArgs, err := service.processAudioModifications(msg, 0, logger)
+		finalTimeout, tempPath, finalArgs, err := service.processAudioModifications(
+			msg,
+			0,
+			logger,
+		)
 
 		require.NoError(t, err)
-		assert.Equal(t, 3, finalTimeout, "Timeout matches audio duration")
+		assert.Equal(
+			t,
+			3,
+			finalTimeout,
+			"Timeout matches audio duration",
+		)
 		assert.NotEmpty(t, tempPath, "Temp file should be created")
-		assert.Contains(t, tempPath, "_with_silence", "Temp path should contain silence file")
+		assert.Contains(
+			t,
+			tempPath,
+			"_with_silence",
+			"Temp path should contain silence file",
+		)
 
 		// Verify the modified args contain the silence file path
 		var modifiedArgsMap map[string]any
@@ -72,7 +96,12 @@ func TestProcessAudioModifications(t *testing.T) {
 		require.NoError(t, err)
 
 		if audioVal, ok := modifiedArgsMap["audio"].(string); ok {
-			assert.Contains(t, audioVal, "_with_silence", "Args should point to silence file")
+			assert.Contains(
+				t,
+				audioVal,
+				"_with_silence",
+				"Args should point to silence file",
+			)
 		} else {
 			t.Errorf("Expected string value for 'audio' key, got %T", modifiedArgsMap["audio"])
 		}
@@ -113,9 +142,9 @@ func TestProcessIntroOutro(t *testing.T) {
 		commander: mockCommander,
 	}
 
-	intro := ".fixtures/test_2s.mp3"
-	mainAudio := ".fixtures/test_3s.wav"
-	outro := ".fixtures/test_4s.wav"
+	intro := introFile
+	mainAudio := mainAudioFile
+	outro := outroFile
 
 	msg := rpitxExecutionStartMessage{
 		Intro: &intro,
@@ -124,7 +153,12 @@ func TestProcessIntroOutro(t *testing.T) {
 	args := map[string]any{"audio": mainAudio}
 	logger := logrus.WithField("test", "processIntroOutro")
 
-	playlistPath, finalArgs, err := service.processIntroOutro(msg, args, mainAudio, logger)
+	playlistPath, finalArgs, err := service.processIntroOutro(
+		msg,
+		args,
+		mainAudio,
+		logger,
+	)
 	assert.NoError(t, err)
 	assert.Contains(t, playlistPath, ".wav")
 	assert.NotNil(t, finalArgs)
@@ -181,7 +215,7 @@ func TestProcessPlayOnceTimeoutEdgeCases(t *testing.T) {
 			name:            "play once disabled",
 			playOnce:        false,
 			originalTimeout: 10,
-			audioFile:       ".fixtures/test_3s.wav",
+			audioFile:       mainAudioFile,
 			expectError:     false,
 			expectedTimeout: 10, // Should return original timeout
 		},
@@ -189,15 +223,16 @@ func TestProcessPlayOnceTimeoutEdgeCases(t *testing.T) {
 			name:            "play once with timeout set",
 			playOnce:        true,
 			originalTimeout: 15,
-			audioFile:       ".fixtures/test_3s.wav",
+			audioFile:       mainAudioFile,
 			expectError:     false,
-			expectedTimeout: 3, // Should return audio duration (3) which is lower than timeout (15)
+			// Should return audio duration (3) lower than timeout (15)
+			expectedTimeout: 3,
 		},
 		{
 			name:            "play once without timeout",
 			playOnce:        true,
 			originalTimeout: 0,
-			audioFile:       ".fixtures/test_3s.wav",
+			audioFile:       mainAudioFile,
 			expectError:     false,
 			expectedTimeout: 3, // Should calculate based on audio duration
 		},
@@ -211,7 +246,12 @@ func TestProcessPlayOnceTimeoutEdgeCases(t *testing.T) {
 			}
 
 			logger := logrus.WithField("test", "processPlayOnceTimeout")
-			result, err := service.processPlayOnceTimeout(msg, tt.audioFile, tt.originalTimeout, logger)
+			result, err := service.processPlayOnceTimeout(
+				msg,
+				tt.audioFile,
+				tt.originalTimeout,
+				logger,
+			)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -250,8 +290,10 @@ func TestUpdateArgsWithSilenceFile(t *testing.T) {
 		expectedAudioPath string
 	}{
 		{
-			name:              "valid args",
-			modifiedArgs:      json.RawMessage(`{"audio": "original.wav", "freq": 433.92}`),
+			name: "valid args",
+			modifiedArgs: json.RawMessage(
+				`{"audio": "original.wav", "freq": 433.92}`,
+			),
 			silenceAudioPath:  "/tmp/silence.wav",
 			expectError:       false,
 			expectedAudioPath: "/tmp/silence.wav",
@@ -265,7 +307,10 @@ func TestUpdateArgsWithSilenceFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := service.updateArgsWithSilenceFile(tt.modifiedArgs, tt.silenceAudioPath)
+			result, err := service.updateArgsWithSilenceFile(
+				tt.modifiedArgs,
+				tt.silenceAudioPath,
+			)
 
 			if tt.expectError {
 				assert.Error(t, err)
