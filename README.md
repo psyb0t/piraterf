@@ -474,6 +474,26 @@ PIrateRF supports the full amateur radio spectrum. Here are common frequencies f
 
 This project is licensed under WTFPL (Do What The Fuck You Want To Public License).
 
+## TODO
+
+- Fix playlist name requiring extension
+
+- Fix random values not being saved to local storage
+
+- Fix PPM Clock Correction not being saved to local storage
+
+- (gorpitx) Add 1 extra second of carrier to RTTY transmission
+
+- (gorpitx) Ditch minimodem in FSK and use smth else
+
+- (gorpitx) Fix word spacing in morse code
+
+- Remove the exit immediately option on carrier wave generator
+
+- Fix image delete issue (spectrumpaint + sstv)
+
+- Actually prove SSTV works (tried with qsstv and various settings + various listeners and nope can't do it)
+
 **🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
 _Remember: With great RF power comes great responsibility. Always operate legally and don't be a dick to other operators._
