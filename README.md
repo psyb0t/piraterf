@@ -84,7 +84,8 @@ All controlled through a **standalone WiFi access point** - connect any device a
 
 ### Prerequisites
 
-- **Raspberry Pi Zero W** with 4GB+ SD card
+- **Raspberry Pi Zero 1 W** (original model) with 4GB+ SD card
+  - **⚠️ Pi Zero 2 W does NOT work** - rpitx requires the BCM2835 chip (Pi Zero 1 W) for predictable clock timing. The Pi Zero 2 W uses BCM2710 (same as Pi 3) which breaks rpitx's timing assumptions.
 
 ### Option 1: Pre-Built Image (Recommended)
 
