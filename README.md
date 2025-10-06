@@ -575,8 +575,6 @@ piraterf/
 - **Protocol development**: Test encoding/decoding without external transmission
 - **Educational use**: Learn about modulation, filtering, and signal processing safely indoors
 
-**PIrateRF is designed for amateur radio experimentation and education - including safe indoor testing without external antennas. Built for engineers who understand that good RF practices matter more than arbitrary administrative boundaries. Users are responsible for compliance with all local RF regulations and licensing requirements.**
-
 ## 📡 Standard Operating Frequencies
 
 PIrateRF supports the full amateur radio spectrum. Here are common frequencies for each mode:
