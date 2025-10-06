@@ -284,6 +284,8 @@ Ultra-weak signal digital mode for HF DX:
 
 **Applications:** Long-range DX contacts, weak signal communication, intercontinental contacts, confusing the fuck out of contesters
 
+![FT8 Demo](./assets/ft8-demo.png)
+
 ### 📠 RTTY
 
 ![RTTY](./assets/rtty.png)
