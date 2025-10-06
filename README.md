@@ -348,12 +348,18 @@ Digital pager messaging system:
 
 - **Frequency**: Transmission frequency in Hz
 - **Baud Rate**: 512, 1200 (default), or 2400 bps
-- **Function Bits**: 0-3 (default 3) for message type
+- **Function Bits**: 0-3 (default 3) determines message type:
+  - 0: Numeric-only messages (BCD encoded)
+  - 1-2: Ring only (actual behavior depends on pager settings)
+  - 3: Alphanumeric messages (ASCII encoded, default)
 - **Repeat Count**: Number of transmission repeats (default 4)
 - **Numeric Mode**: Toggle for numeric-only messages
 - **Invert Polarity**: Signal polarity inversion
 - **Debug Mode**: Enable debug output
-- **Multiple Messages**: Support for batch message transmission
+- **Messages**: Array of messages, each containing:
+  - **Address**: Pager address (non-negative integer)
+  - **Message**: Message text to transmit
+  - **Function Bits** (optional): Per-message function bits override (0-3)
 
 **Reception:**
 
@@ -617,6 +623,8 @@ This project is licensed under WTFPL (Do What The Fuck You Want To Public Licens
 - (gorpitx) Fix word spacing in morse code
 
 - Actually prove SSTV works (tried with qsstv and various settings + various listeners and nope can't do it)
+
+- Add info overlays for UI form inputs
 
 **🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
