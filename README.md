@@ -332,7 +332,7 @@ Binary frequency shift keying for data transmission:
   ```bash
   pw-record --target=81 --rate=48000 --channels=1 - | minimodem --rx 50 -q -c 1
   ```
-  **Note**: Change the `--rx` parameter to match your selected baud rate. Current implementation works best with 50-100 baud rates.
+  **Note**: `pw-record --target=81` captures audio from the PulseAudio monitor sink (your SDR software output). Change the `--rx` parameter to match your selected baud rate. Current implementation works best with 50-100 baud rates.
 
 **Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, sending porn like back in the dialup days
 
@@ -362,7 +362,7 @@ Digital pager messaging system:
   ```bash
   pw-record --target=81 --rate=22050 --channels=1 - | multimon-ng -t raw -a POCSAG1200 -
   ```
-  **Note**: Change the multimon-ng mode based on your selected baud rate:
+  **Note**: `pw-record --target=81` captures audio from the PulseAudio monitor sink (your SDR software output). Change the multimon-ng mode based on your selected baud rate:
   - 512 baud: `-a POCSAG512`
   - 1200 baud: `-a POCSAG1200`
   - 2400 baud: `-a POCSAG2400`
@@ -390,7 +390,7 @@ Traditional CW transmission:
   ```bash
   pw-record --target=81 --rate=22050 --channels=1 - | multimon-ng -t raw -a MORSE_CW -d 60 -g 60 -
   ```
-  **Note**: The `-d` (delay) and `-g` (gain) parameters should be adjusted based on your transmission rate (dits per minute). Higher rates require lower delay values, lower rates need higher delay values for proper decoding.
+  **Note**: `pw-record --target=81` captures audio from the PulseAudio monitor sink (your SDR software output). The `-d` (delay) and `-g` (gain) parameters should be adjusted based on your transmission rate (dits per minute). Higher rates require lower delay values, lower rates need higher delay values for proper decoding.
 
 **Applications:** Morse code practice, beacon transmissions, emergency communications, sending dirty messages in CW, beacon spam
 
