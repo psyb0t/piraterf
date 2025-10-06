@@ -6,6 +6,8 @@
 
 **[🎬 Click here for PIrateRF Promo Video](https://www.youtube.com/watch?v=hnYkvDLOi70)**
 
+**[📺 Click here for PIrateRF Showcase Video](https://www.youtube.com/watch?v=7DeMhe47aNQ)**
+
 ---
 
 **⚠️ LEGAL NOTICE**
