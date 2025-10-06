@@ -8,13 +8,47 @@
 
 - [🎯 11 Different Transmission Modes](#-11-different-transmission-modes)
 - [🚀 Quick Setup Guide](#-quick-setup-guide)
+  - [Prerequisites](#prerequisites)
+  - [Option 1: Pre-Built Image (Recommended)](#option-1-pre-built-image-recommended)
+  - [Option 2: Manual Build Setup](#option-2-manual-build-setup)
+    - [🚨 IMPORTANT: Pi Zero Setup First!](#-important-pi-zero-setup-first)
+    - [1. Initial Setup](#1-initial-setup)
+    - [2. Complete Pi Setup](#2-complete-pi-setup)
+    - [3. Connect and Use](#3-connect-and-use)
+  - [🎉 Pirate Crew Mode](#-pirate-crew-mode)
+- [🔌 Antenna Setup](#-antenna-setup)
 - [📡 Transmission Modes Explained](#-transmission-modes-explained)
+  - [🎵 FM Station](#-fm-station)
+  - [🎙️ Live Microphone Broadcast](#️-live-microphone-broadcast)
+  - [📟 FT8](#-ft8)
+  - [📠 RTTY](#-rtty)
+  - [📊 FSK](#-fsk)
+  - [📱 POCSAG](#-pocsag)
+  - [📻 Morse Code](#-morse-code)
+  - [🎛️ Carrier Wave](#️-carrier-wave)
+  - [🌊 Frequency Sweep](#-frequency-sweep)
+  - [📺 SSTV](#-sstv)
+  - [🎨 Spectrum Paint](#-spectrum-paint)
 - [🛠️ Development Commands](#️-development-commands)
+  - [Local Development](#local-development)
+  - [Pi Management](#pi-management)
 - [📁 Project Structure](#-project-structure)
 - [🏴‍☠️ Legal and Safety Notice](#️-legal-and-safety-notice)
+  - [Amateur Radio License Required](#amateur-radio-license-required)
+  - [Frequency Regulations](#frequency-regulations)
+  - [Hardware Requirements (for proper use)](#hardware-requirements-for-proper-use)
+  - [Geographic Restrictions](#geographic-restrictions)
+  - [🏠 Indoor Testing & Experimentation](#-indoor-testing--experimentation)
 - [📡 Standard Operating Frequencies](#-standard-operating-frequencies)
+  - [HF Amateur Bands (3-30 MHz)](#hf-amateur-bands-3-30-mhz)
+  - [VHF/UHF Amateur Bands](#vhfuhf-amateur-bands)
+  - [FT8 Standard Frequencies (USB mode)](#ft8-standard-frequencies-usb-mode)
+  - [RTTY Standard Frequencies (USB mode)](#rtty-standard-frequencies-usb-mode)
+  - [SSTV Standard Frequencies](#sstv-standard-frequencies)
+  - [FM Repeater Standard Splits](#fm-repeater-standard-splits)
 - [🔗 Core Dependencies](#-core-dependencies)
 - [📝 License](#-license)
+- [TODO](#todo)
 
 ## 🎯 11 Different Transmission Modes
 
@@ -96,16 +130,6 @@ sudo iptables -t nat -A POSTROUTING -s 10.42.0.0/24 -o enp5s0 -j MASQUERADE
 
 **Find your interfaces**: Use `ip link show` to see `usb0` (Pi connection) and your main internet interface.
 
-### 🔌 Antenna Setup
-
-Connect your antenna to **GPIO 4 (Physical Pin 7)** on the Pi Zero W:
-
-- **No antenna**: Extremely weak signal contained within your home - perfect for safe chaos without pissing off the neighbors
-- **Short wire (10-20cm)**: Minimal range for indoor experimentation
-- **Wire antenna (75cm)**: Longer range but square wave harmonics travel farther than intended - keep this shit indoors
-- **Low-pass filter + antenna**: For proper outdoor transmission (get your fucking license first)
-- **Low-pass filter + amplifier + antenna**: For maximum range and maximum chaos (Pi outputs milliwatts by default)
-
 ### 1. Initial Setup
 
 ```bash
@@ -162,6 +186,18 @@ Connect multiple devices to the PIrateRF access point and all access the web int
 - **Live Status**: All devices see real-time transmission progress
 - **Output Streaming**: Live RF transmission logs visible to everyone
 - **Turn-Based Chaos**: Pass control between devices for collaborative broadcasting
+
+## 🔌 Antenna Setup
+
+Connect your antenna to **GPIO 4 (Physical Pin 7)** on the Pi Zero W:
+
+- **No antenna**: Extremely weak signal contained within your home - perfect for safe chaos without pissing off the neighbors
+- **Short wire (10-20cm)**: Minimal range for indoor experimentation
+- **Wire antenna (75cm)**: Longer range but square wave harmonics travel farther than intended - keep this shit indoors
+- **Low-pass filter + antenna**: For proper outdoor transmission (get your fucking license first)
+- **Low-pass filter + amplifier + antenna**: For maximum range and maximum chaos (Pi outputs milliwatts by default)
+
+**⚠️ WARNING**: The Raspberry Pi GPIO outputs square waves with harmonics across the entire spectrum. For proper outdoor transmission, you MUST use appropriate low-pass filters to suppress spurious emissions and comply with RF regulations. Without filtering, you're broadcasting on multiple frequencies simultaneously.
 
 ## 📡 Transmission Modes Explained
 
