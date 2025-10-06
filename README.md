@@ -460,7 +460,7 @@ Slow Scan Television image transmission:
 - **Demodulation**: USB mode
 - **SSTV Mode**: Martin 1
 - **Decoding**: Can be decoded using QSSTV or other SSTV software
-- **⚠️ UNVERIFIED**: The author has attempted decoding with QSSTV but has not successfully received images yet. The rpitx SSTV module is trusted to generate proper Martin 1 signals. If you successfully decode SSTV transmissions from PIrateRF, please open a PR describing your setup and decoding process!
+- **⚠️ UNVERIFIED**: I've tried decoding this with QSSTV but haven't successfully received images yet. The rpitx SSTV module is trusted to generate proper Martin 1 signals. If you successfully decode SSTV transmissions from PIrateRF, please open a PR describing your setup and decoding process!
 
 **Applications:** Image transmission over radio, amateur radio SSTV, visual communication, cock pic broadcasting - look at that big ass rooster
 
