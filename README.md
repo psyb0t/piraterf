@@ -4,6 +4,16 @@
 
 **PIrateRF** transforms your **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. Control everything from FM broadcasts to digital modes through your browser - hack the airwaves from anywhere! 📡⚡
 
+---
+
+**⚠️ LEGAL NOTICE**
+
+PIrateRF is designed for amateur radio experimentation and education - including safe indoor testing without external antennas. Built for engineers who understand that good RF practices matter more than arbitrary administrative boundaries. Users are responsible for compliance with all local RF regulations and licensing requirements. I am not responsible for any of your stupid fuckin' decisions!
+
+**All demonstration images and testing in this documentation were performed indoors without an antenna, with a maximum range of approximately 5 meters.**
+
+---
+
 ## 📋 Table of Contents
 
 - [🎯 11 Different Transmission Modes](#-11-different-transmission-modes)
