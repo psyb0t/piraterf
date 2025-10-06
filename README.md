@@ -42,10 +42,10 @@ All controlled through a **standalone WiFi access point** - connect any device a
 
 Skip all the build bullshit and get straight to RF chaos:
 
-1. **Download** the pre-built image: [PIrateRF Image v2025-09-28](https://archive.org/download/piraterf-2025-09-28-20-50-48-20250928181521/piraterf_2025-09-28_20-50-48.img)
+1. **Download** the pre-built image: [PIrateRF Image v2025-10-06](https://archive.org/download/piraterf-2025-10-06-12-19-14-20251006092641/piraterf_2025-10-06_12-19-14.img)
 2. **Flash** to SD card using:
    - **Raspberry Pi Imager** (recommended): Select "Use custom image" and choose the downloaded `.img` file
-   - **Command line**: `sudo dd if=piraterf_2025-09-28_20-50-48.img of=/dev/sdX bs=4M status=progress` (replace `/dev/sdX` with your SD card)
+   - **Command line**: `sudo dd if=piraterf_2025-10-06_12-19-14.img of=/dev/sdX bs=4M status=progress` (replace `/dev/sdX` with your SD card)
 3. **Boot** the Pi Zero W and connect to WiFi: "🏴‍☠️📡" (password: "FUCKER!!!")
 4. **Open browser**: `https://piraterf.local` and start transmitting immediately!
 
