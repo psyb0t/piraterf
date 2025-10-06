@@ -637,7 +637,9 @@ This project is licensed under WTFPL (Do What The Fuck You Want To Public Licens
 
 - Actually prove SSTV works (tried with qsstv and various settings + various listeners and nope can't do it)
 
-- Add info overlays for UI form inputs
+- Add UI help overlays: mode info buttons explaining what each transmission mode does + per-input tooltips explaining what each configuration option changes
+
+- Add RAW SendIQ module: upload .iq capture files and replay them (useful for repeater captures, signal replays, etc.)
 
 **🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
