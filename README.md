@@ -223,7 +223,17 @@ Full FM broadcasting with RDS support:
 - **Timeout**: Auto-stop after specified seconds (0 = no timeout)
 - **Microphone Recording**: Record audio directly through browser interface and save as WAV
 
+**Reception:**
+
+- **Demodulation**: WFM (wideband FM)
+- **RDS Signal**: The transmission includes three visible signals:
+  - Main signal: Contains the audio/music
+  - Two parallel RDS signals: Located at a fixed frequency offset from the main carrier, containing station metadata
+- **RDS Decoding**: SDR++ (sdrpp-brown fork) includes a built-in RDS decoder (no plugins required) that can decode the PI code, PS name, and radio text
+
 **Applications:** Underground radio broadcasting, music streaming, podcasting, community radio, pirate radio stations, rickrolling entire neighborhoods
+
+![FM Station Demo](./assets/fmstation-demo.png)
 
 ### 🎙️ Live Microphone Broadcast
 
@@ -243,7 +253,13 @@ Real-time microphone streaming with configurable modulation:
 - **Gain**: Audio gain multiplier (default 1.0)
 - **Real-time processing**: Browser captures microphone, streams via WebSocket into unix socket that gets piped to rpitx
 
+**Reception:**
+
+- **Demodulation**: Use the same modulation mode you selected for transmission (AM, DSB, USB, LSB, FM, or RAW)
+
 **Applications:** Live commentary, emergency communications, amateur radio nets, real-time broadcasting, broadcast your burps, go live on radio while in the moshpit
+
+![Live Microphone Broadcast Demo](./assets/livemic-demo.png)
 
 ### 📟 FT8
 
@@ -260,6 +276,12 @@ Ultra-weak signal digital mode for HF DX:
 - **Time Slot**: Choose 15-second transmission slot (0, 1, or 2)
 - **Repeat Mode**: Continuous transmission every 15 seconds
 
+**Reception:**
+
+- **Demodulation**: USB mode
+- **Decoding**: SDR++ (sdrpp-brown fork) has a built-in FT8 decoder module that works when tuned to standard FT8 frequencies (e.g., 14.074 MHz)
+- **⚠️ LICENSE WARNING**: DO NOT transmit FT8 without a valid amateur radio call sign - FT8 messages contain call signs and transmitting without one is direct call sign spoofing and highly illegal
+
 **Applications:** Long-range DX contacts, weak signal communication, intercontinental contacts, confusing the fuck out of contesters
 
 ### 📠 RTTY
@@ -274,7 +296,17 @@ Classic digital text communication:
 - **Space Frequency**: FSK space frequency offset (default 170 Hz)
 - **Message**: Text to transmit
 
+**Reception:**
+
+- **Demodulation**: USB mode
+- **Decoding with fldigi**:
+  - Set fldigi to RTTY mode
+  - Configure shift to match your space frequency (default: 45.45/170 or your selected space frequency)
+  - Configure fldigi audio input to use PulseAudio monitor of your SDR software output (SDR++, GQRX, SDRSharp, SDRAngel, etc.)
+
 **Applications:** Digital text communication, news bulletins, teletype messaging, sending ASCII art over RTTY
+
+![RTTY Demo](./assets/rtty-demo.png)
 
 ### 📊 FSK
 
@@ -291,7 +323,18 @@ Binary frequency shift keying for data transmission:
     > **Upload Process**: Files moved as-is (no conversion) to `./files/data/uploads/` preserving original extension
 - **Baud Rate**: Transmission speed (default 50 baud for reliability)
 
+**Reception:**
+
+- **Demodulation**: FM mode
+- **Decoding with minimodem**:
+  ```bash
+  pw-record --target=81 --rate=48000 --channels=1 - | minimodem --rx 50 -q -c 1
+  ```
+  **Note**: Change the `--rx` parameter to match your selected baud rate. Current implementation works best with 50-100 baud rates.
+
 **Applications:** Digital bulletins, file transfer, packet radio, data transmission, amateur radio digital modes, sending porn like back in the dialup days
+
+![FSK Demo](./assets/fsk-demo.png)
 
 ### 📱 POCSAG
 
@@ -310,7 +353,21 @@ Digital pager messaging system:
 - **Debug Mode**: Enable debug output
 - **Multiple Messages**: Support for batch message transmission
 
+**Reception:**
+
+- **Demodulation**: FM mode
+- **Decoding with multimon-ng**:
+  ```bash
+  pw-record --target=81 --rate=22050 --channels=1 - | multimon-ng -t raw -a POCSAG1200 -
+  ```
+  **Note**: Change the multimon-ng mode based on your selected baud rate:
+  - 512 baud: `-a POCSAG512`
+  - 1200 baud: `-a POCSAG1200`
+  - 2400 baud: `-a POCSAG2400`
+
 **Applications:** Emergency paging systems, alert notifications, pager messaging, mass notification chaos, 90s nostalgia bombing
+
+![POCSAG Demo](./assets/pocsag-demo.png)
 
 ### 📻 Morse Code
 
@@ -324,7 +381,18 @@ Traditional CW transmission:
 - **Rate**: Transmission speed in dits per minute (default 20)
 - **Message**: Text to convert to Morse code
 
+**Reception:**
+
+- **Demodulation**: CW mode
+- **Decoding with multimon-ng**:
+  ```bash
+  pw-record --target=81 --rate=22050 --channels=1 - | multimon-ng -t raw -a MORSE_CW -d 60 -g 60 -
+  ```
+  **Note**: The `-d` (delay) and `-g` (gain) parameters should be adjusted based on your transmission rate (dits per minute). Higher rates require lower delay values, lower rates need higher delay values for proper decoding.
+
 **Applications:** Morse code practice, beacon transmissions, emergency communications, sending dirty messages in CW, beacon spam
+
+![Morse Code Demo](./assets/morse-demo.png)
 
 ### 🎛️ Carrier Wave
 
@@ -337,7 +405,14 @@ Simple carrier generation for testing:
 - **Frequency**: Carrier frequency in Hz
 - **PPM Clock Correction**: Fine-tune frequency accuracy
 
+**Reception:**
+
+- **Demodulation**: RAW mode
+- **Signal**: Simple continuous wave at the specified frequency
+
 **Applications:** Antenna tuning, transmitter testing, SWR measurements, dead carrier trolling, RF circuit testing
+
+![Carrier Wave Demo](./assets/carrier-demo.png)
 
 ### 🌊 Frequency Sweep
 
@@ -351,7 +426,14 @@ Automated frequency sweeps for RF analysis:
 - **Bandwidth**: Sweep bandwidth in Hz (default 1 MHz)
 - **Sweep Duration**: Time for complete sweep in seconds (default 5.0)
 
+**Reception:**
+
+- **Demodulation**: RAW mode
+- **Watch**: The active carrier frequency sweep from left to right across your waterfall display
+
 **Applications:** Antenna analysis, filter testing, frequency response measurements, wobbulating like a maniac, antenna torture testing
+
+![Frequency Sweep Demo](./assets/freqsweep-demo.png)
 
 ### 📺 SSTV
 
@@ -364,6 +446,13 @@ Slow Scan Television image transmission:
 - **Frequency**: Transmission frequency in Hz
 - **Picture File**: Upload or select image file
   > **Upload Process**: Images converted via ImageMagick to RGB 320x256 format (.rgb extension) for SSTV transmission, saved to `./files/images/uploads/` (spectrum paint .Y files also available if previously uploaded)
+
+**Reception:**
+
+- **Demodulation**: USB mode
+- **SSTV Mode**: Martin 1
+- **Decoding**: Can be decoded using QSSTV or other SSTV software
+- **⚠️ UNVERIFIED**: The author has attempted decoding with QSSTV but has not successfully received images yet. The rpitx SSTV module is trusted to generate proper Martin 1 signals. If you successfully decode SSTV transmissions from PIrateRF, please open a PR describing your setup and decoding process!
 
 **Applications:** Image transmission over radio, amateur radio SSTV, visual communication, cock pic broadcasting - look at that big ass rooster
 
@@ -380,7 +469,14 @@ Convert images to RF spectrum art:
   > **Upload Process**: Images converted via ImageMagick to YUV format (.Y extension) for spectrum paint AND RGB 320x256 format (.rgb extension) for SSTV, both saved to `./files/images/uploads/`
 - **Excursion**: Frequency deviation in Hz (default 100000)
 
+**Reception:**
+
+- **Demodulation**: RAW mode
+- **Waterfall Settings**: Set waterfall display to full resolution (no filtering, show all spectrum peaks not just the highs) to see the complete image painted across the spectrum
+
 **Applications:** RF spectrum art, spectrum visualization, signal analysis demonstrations, drawing dick pics on waterfalls, spectrum graffiti
+
+![Spectrum Paint Demo](./assets/spectrumpaint-demo.png)
 
 ## 🛠️ Development Commands
 
@@ -437,7 +533,7 @@ piraterf/
 ### Frequency Regulations
 
 - **Stay within amateur bands**: Use only frequencies allocated to amateur radio
-- **Power limits**: Respect maximum power limitations (typically 100W on HF, varies by band/license class)
+- **Power limits**: Pi Zero outputs only a few milliwatts - if using an amplifier, respect maximum power limitations for your license class
 - **Spurious emissions**: Always use appropriate low-pass filters
 - **No commercial content**: Amateur radio prohibits business communications
 
@@ -445,7 +541,8 @@ piraterf/
 
 - **Low-pass filters mandatory**: Pi GPIO outputs square waves with harmonics across the spectrum
 - **Proper antenna**: Use resonant antennas for your operating frequency
-- **SWR monitoring**: High SWR can damage your Pi - use antenna analyzer/SWR meter
+- **Power output**: Pi Zero GPIO outputs only a few milliwatts - if you want more range, you'll need a proper amplifier and low-pass filter
+- **SWR monitoring**: At milliwatt power levels the Pi doesn't give a fuck about SWR, but if you're using an amplifier you need proper impedance matching or you'll fry your amp
 
 ### Geographic Restrictions
 
