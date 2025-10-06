@@ -25,7 +25,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
     - [1. Initial Setup](#1-initial-setup)
     - [2. Complete Pi Setup](#2-complete-pi-setup)
     - [3. Connect and Use](#3-connect-and-use)
-  - [🎉 Pirate Crew Mode](#-pirate-crew-mode)
+- [🎉 Pirate Crew Mode](#-pirate-crew-mode)
 - [🔌 Antenna Setup](#-antenna-setup)
 - [📡 Transmission Modes Explained](#-transmission-modes-explained)
   - [🎵 FM Station](#-fm-station)
@@ -186,7 +186,7 @@ This command will:
 2. Open browser: `https://piraterf.local`
 3. Select transmission mode and start broadcasting like a proper RF pirate!
 
-### 🎉 Pirate Crew Mode
+## 🎉 Pirate Crew Mode
 
 Connect multiple devices to the PIrateRF access point and all access the web interface simultaneously! While only one transmission can run at a time (because GPIO doesn't fucking share), all connected devices see real-time transmission status, output logs, and can take turns controlling the RF transmissions. Perfect for fucking around with friends in a radio wave gangbang! 📡💥
 
