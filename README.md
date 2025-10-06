@@ -299,7 +299,6 @@ Simple carrier generation for testing:
 **Configuration Options:**
 
 - **Frequency**: Carrier frequency in Hz
-- **Exit Immediate**: Option to exit without killing carrier
 - **PPM Clock Correction**: Fine-tune frequency accuracy
 
 **Applications:** Antenna tuning, transmitter testing, SWR measurements, dead carrier trolling, RF circuit testing
@@ -476,21 +475,11 @@ This project is licensed under WTFPL (Do What The Fuck You Want To Public Licens
 
 ## TODO
 
-- Fix playlist name requiring extension
-
-- Fix random values not being saved to local storage
-
-- Fix PPM Clock Correction not being saved to local storage
-
 - (gorpitx) Add 1 extra second of carrier to RTTY transmission
 
 - (gorpitx) Ditch minimodem in FSK and use smth else
 
 - (gorpitx) Fix word spacing in morse code
-
-- Remove the exit immediately option on carrier wave generator
-
-- Fix image delete issue (spectrumpaint + sstv)
 
 - Actually prove SSTV works (tried with qsstv and various settings + various listeners and nope can't do it)
 

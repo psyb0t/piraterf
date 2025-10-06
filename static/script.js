@@ -23,6 +23,7 @@ class PIrateRFController {
         pi: "",
         ps: "",
         rt: "",
+        ppm: "",
         timeout: "0",
         playOnce: false,
         introOutroToggled: false,
@@ -38,7 +39,6 @@ class PIrateRFController {
 
       tune: {
         freq: "144500000",
-        exitImmediate: false,
         ppm: "",
       },
 
@@ -345,7 +345,6 @@ class PIrateRFController {
 
     // TUNE form inputs
     this.tuneFreqInput = document.getElementById("tuneFreq");
-    this.tuneExitImmediateInput = document.getElementById("tuneExitImmediate");
     this.tunePPMInput = document.getElementById("tunePPM");
 
     // SPECTRUMPAINT form inputs
@@ -456,6 +455,7 @@ class PIrateRFController {
     // Current file being edited
     this.currentEditFile = null;
     this.currentEditDirectory = null;
+    this.currentEditModule = null;
     this.imageUploadStatusTimeout = null;
 
     // Playlist functionality
@@ -595,7 +595,6 @@ class PIrateRFController {
       this.morseMessageInput,
       // TUNE inputs
       this.tuneFreqInput,
-      this.tuneExitImmediateInput,
       this.tunePPMInput,
     ].forEach((input) => {
       if (input) {
@@ -616,6 +615,7 @@ class PIrateRFController {
     this.piInput.addEventListener("input", () => this.saveState());
     this.psInput.addEventListener("input", () => this.saveState());
     this.rtInput.addEventListener("input", () => this.saveState());
+    this.ppmInput.addEventListener("input", () => this.saveState());
     document
       .getElementById("timeout")
       .addEventListener("input", () => this.saveState());
@@ -635,9 +635,6 @@ class PIrateRFController {
     document
       .getElementById("tuneFreq")
       .addEventListener("input", () => this.saveState());
-    document
-      .getElementById("tuneExitImmediate")
-      .addEventListener("change", () => this.saveState());
     document
       .getElementById("tunePPM")
       .addEventListener("input", () => this.saveState());
@@ -660,7 +657,7 @@ class PIrateRFController {
       const selectedFile = this.pictureFileInput.value;
       if (selectedFile) {
         const fileName = selectedFile.split('/').pop();
-        this.openFileEditModal("image", fileName, "imageUploads");
+        this.openFileEditModal("image", fileName, "imageUploads", "spectrumpaint");
       } else {
         this.log("❌ No spectrum paint image file selected", "system");
       }
@@ -765,7 +762,7 @@ class PIrateRFController {
       const selectedFile = this.pisstvPictureFileInput.value;
       if (selectedFile) {
         const fileName = selectedFile.split('/').pop();
-        this.openFileEditModal("image", fileName, "imageUploads");
+        this.openFileEditModal("image", fileName, "imageUploads", "pisstv");
       } else {
         this.log("❌ No SSTV image file selected", "system");
       }
@@ -1054,7 +1051,9 @@ class PIrateRFController {
     switch (module) {
       case "pifmrds":
         this.pifmrdsForm.classList.remove("hidden");
-        this.initializeRandomValues();
+        if (!this.isRestoring) {
+          this.initializeRandomValues();
+        }
         break;
       case "morse":
         this.morseForm.classList.remove("hidden");
@@ -1128,6 +1127,7 @@ class PIrateRFController {
       hexStr = "0" + hexStr;
     }
     this.piInput.value = hexStr;
+    this.saveState();
   }
 
   generateRandomPS() {
@@ -1139,6 +1139,7 @@ class PIrateRFController {
       result += chars[Math.floor(Math.random() * chars.length)];
     }
     this.psInput.value = result;
+    this.saveState();
   }
 
   generateRandomRT() {
@@ -1154,6 +1155,7 @@ class PIrateRFController {
       result += chars[Math.floor(Math.random() * chars.length)];
     }
     this.rtInput.value = result;
+    this.saveState();
   }
 
   setExecutionMode(isExecuting) {
@@ -1421,7 +1423,7 @@ class PIrateRFController {
     event.target.value = '';
   }
 
-  openFileEditModal(fileType, selectedFile, directory) {
+  openFileEditModal(fileType, selectedFile, directory, module = null) {
     if (!selectedFile) {
       this.log("❌ No file selected", "system");
       return;
@@ -1430,6 +1432,7 @@ class PIrateRFController {
     // Clear previous modal state first
     this.currentEditFile = null;
     this.currentEditDirectory = null;
+    this.currentEditModule = null;
     this.currentFileExtension = null;
     this.editFileName.value = "";
 
@@ -1458,6 +1461,7 @@ class PIrateRFController {
 
     this.currentEditFile = selectedFile;
     this.currentEditDirectory = directory;
+    this.currentEditModule = module;
     this.currentFileExtension = fileExtension;
     this.fileEditModal.style.display = "flex";
   }
@@ -1742,9 +1746,6 @@ class PIrateRFController {
         args = {
           frequency: parseFloat(this.tuneFreqInput.value),
         };
-        if (this.tuneExitImmediateInput.checked) {
-          args.exitImmediate = true;
-        }
         if (this.tunePPMInput.value.trim()) {
           args.ppm = parseFloat(this.tunePPMInput.value);
         }
@@ -2451,6 +2452,7 @@ class PIrateRFController {
     this.fileEditModal.style.display = "none";
     this.currentEditFile = null;
     this.currentEditDirectory = null;
+    this.currentEditModule = null;
     this.currentFileExtension = null;
     this.editFileName.value = "";
   }
@@ -2484,12 +2486,16 @@ class PIrateRFController {
 
     this.showLoadingScreen("Renaming file...");
 
-    // Get the correct file path based on current edit directory
+    // Get the correct file path based on current edit directory and module
     let filePath;
     if (this.currentEditDirectory === "data") {
       filePath = this.fskFileInput.value;
     } else if (this.currentEditDirectory === "imageUploads") {
-      filePath = this.pictureFileInput.value || this.pisstvPictureFileInput.value;
+      if (this.currentEditModule === "pisstv") {
+        filePath = this.pisstvPictureFileInput.value;
+      } else {
+        filePath = this.pictureFileInput.value;
+      }
     } else {
       filePath = this.audioInput.value;
     }
@@ -2529,12 +2535,16 @@ class PIrateRFController {
 
     this.showLoadingScreen("Deleting file...");
 
-    // Get the correct file path based on current edit directory
+    // Get the correct file path based on current edit directory and module
     let filePath;
     if (this.currentEditDirectory === "data") {
       filePath = this.fskFileInput.value;
     } else if (this.currentEditDirectory === "imageUploads") {
-      filePath = this.pictureFileInput.value || this.pisstvPictureFileInput.value;
+      if (this.currentEditModule === "pisstv") {
+        filePath = this.pisstvPictureFileInput.value;
+      } else {
+        filePath = this.pictureFileInput.value;
+      }
     } else {
       filePath = this.audioInput.value;
     }
@@ -2918,12 +2928,18 @@ class PIrateRFController {
       return;
     }
 
+    // Add .wav extension if not present
+    let finalPlaylistName = playlistName;
+    if (!finalPlaylistName.toLowerCase().endsWith('.wav')) {
+      finalPlaylistName = finalPlaylistName + '.wav';
+    }
+
     this.showLoadingScreen("Creating playlist...");
 
     const message = {
       type: "audio.playlist.create",
       data: {
-        playlistFileName: playlistName,
+        playlistFileName: finalPlaylistName,
         files: this.playlist.map((item) => item.path),
       },
       id: this.generateUUID(),
@@ -2938,7 +2954,7 @@ class PIrateRFController {
     this.playlistError.style.display = "none";
 
     this.log(
-      `🎵 Creating playlist: ${playlistName} with ${this.playlist.length} files`,
+      `🎵 Creating playlist: ${finalPlaylistName} with ${this.playlist.length} files`,
       "system"
     );
   }
@@ -2949,14 +2965,19 @@ class PIrateRFController {
       `✅ Playlist created successfully: ${data.playlistName}`,
       "system"
     );
-    this.closePlaylistModal();
 
-    // Clear the playlist
+    // Clear the playlist and update UI
     this.playlist = [];
     this.playlistName.value = "";
+    this.renderPlaylist();
 
-    // Refresh the dropdown and select the newest file (the new playlist)
-    this.loadAudioFiles();
+    this.closePlaylistModal();
+
+    // Refresh the dropdown and select the newly created playlist
+    this.loadAudioFiles(data.playlistName).then(() => {
+      this.validateForm();
+      this.saveState();
+    });
   }
 
   onPlaylistCreateError(data) {
@@ -3401,6 +3422,7 @@ class PIrateRFController {
     this.state.pifmrds.pi = this.piInput.value;
     this.state.pifmrds.ps = this.psInput.value;
     this.state.pifmrds.rt = this.rtInput.value;
+    this.state.pifmrds.ppm = this.ppmInput.value;
     this.state.pifmrds.timeout = document.getElementById("timeout").value;
     this.state.pifmrds.playOnce =
       this.playModeToggle.classList.contains("active");
@@ -3417,8 +3439,6 @@ class PIrateRFController {
 
     // Update TUNE state
     this.state.tune.freq = document.getElementById("tuneFreq")?.value || "";
-    this.state.tune.exitImmediate =
-      document.getElementById("tuneExitImmediate")?.checked || false;
     this.state.tune.ppm = document.getElementById("tunePPM")?.value || "";
 
     // Update SPECTRUMPAINT state
@@ -3592,6 +3612,7 @@ class PIrateRFController {
     if (this.state.pifmrds.pi) this.piInput.value = this.state.pifmrds.pi;
     if (this.state.pifmrds.ps) this.psInput.value = this.state.pifmrds.ps;
     if (this.state.pifmrds.rt) this.rtInput.value = this.state.pifmrds.rt;
+    if (this.state.pifmrds.ppm !== undefined) this.ppmInput.value = this.state.pifmrds.ppm;
     if (this.state.pifmrds.timeout) {
       const timeoutEl = document.getElementById("timeout");
       if (timeoutEl) timeoutEl.value = this.state.pifmrds.timeout;
@@ -3641,10 +3662,6 @@ class PIrateRFController {
     if (this.state.tune.freq) {
       const tuneFreqEl = document.getElementById("tuneFreq");
       if (tuneFreqEl) tuneFreqEl.value = this.state.tune.freq;
-    }
-    if (this.state.tune.exitImmediate !== undefined) {
-      const tuneExitImmediateEl = document.getElementById("tuneExitImmediate");
-      if (tuneExitImmediateEl) tuneExitImmediateEl.checked = this.state.tune.exitImmediate;
     }
     if (this.state.tune.ppm) {
       const tunePPMEl = document.getElementById("tunePPM");
