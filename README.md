@@ -212,7 +212,7 @@ Full FM broadcasting with RDS support:
 - **Frequency**: Transmission frequency in MHz
 - **Audio File**: Upload MP3/WAV/FLAC/OGG or select processed files
   > **Upload Process**: Files automatically converted via FFmpeg to 48kHz/16-bit/mono WAV format and saved to `./files/audio/uploads/`
-- **Playlist Builder**: UI tool to combine multiple audio files and SFX into a single WAV
+- **Playlist Builder**: UI tool to combine multiple audio files and SFX into a single WAV using Sox
 - **RDS Settings**:
   - **PI Code**: 4-character station identifier
   - **PS Name**: 8-character station name
