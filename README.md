@@ -4,6 +4,8 @@
 
 **PIrateRF** transforms your **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. Control everything from FM broadcasts to digital modes through your browser - hack the airwaves from anywhere! 📡⚡
 
+**[🎬 Click here for PIrateRF Promo Video](https://www.youtube.com/watch?v=hnYkvDLOi70)**
+
 ---
 
 **⚠️ LEGAL NOTICE**
