@@ -641,6 +641,8 @@ This project is licensed under WTFPL (Do What The Fuck You Want To Public Licens
 
 - Add RAW SendIQ module: upload .iq capture files and replay them (useful for repeater captures, signal replays, etc.)
 
+- Fix the fuckin UI header so it's not a fkin rectangle no more that fucks up the shadow lol
+
 **🏴‍☠️ Now get out there and start broadcasting like the RF pirate you were meant to be! 📡**
 
 _Remember: With great RF power comes great responsibility. Always operate legally and don't be a dick to other operators._
