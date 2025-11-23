@@ -177,16 +177,18 @@ func TestHandleFileRename(t *testing.T) {
 			client := &wshub.Client{}
 
 			// Test that handleFileRename doesn't panic
-			if tt.eventData == `{invalid json` {
+			if tt.eventData == invalidJSONData {
 				// Invalid JSON should succeed but send error event
 				err := service.handleFileRename(hub, client, event)
 				assert.NoError(t, err)
-			} else {
-				assert.NotPanics(t, func() {
-					err := service.handleFileRename(hub, client, event)
-					assert.NoError(t, err)
-				})
+
+				return
 			}
+
+			assert.NotPanics(t, func() {
+				err := service.handleFileRename(hub, client, event)
+				assert.NoError(t, err)
+			})
 
 			// Clean up renamed file if rename was successful
 			if tt.setupFile && tt.fileName != "" {
@@ -261,16 +263,18 @@ func TestHandleFileDelete(t *testing.T) {
 			client := &wshub.Client{}
 
 			// Test that handleFileDelete doesn't panic
-			if tt.eventData == `{invalid json` {
+			if tt.eventData == invalidJSONData {
 				// Invalid JSON should succeed but send error event
 				err := service.handleFileDelete(hub, client, event)
 				assert.NoError(t, err)
-			} else {
-				assert.NotPanics(t, func() {
-					err := service.handleFileDelete(hub, client, event)
-					assert.NoError(t, err)
-				})
+
+				return
 			}
+
+			assert.NotPanics(t, func() {
+				err := service.handleFileDelete(hub, client, event)
+				assert.NoError(t, err)
+			})
 		})
 	}
 }

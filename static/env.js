@@ -5,7 +5,8 @@ window.PIrateRFConfig = {
     audioSFXFiles: "/files/audio/sfx",
     imageUploadFiles: "/files/images/uploads",
     dataUploadFiles: "/files/data/uploads",
-    iqUploadFiles: "/files/iqs/uploads"
+    iqUploadFiles: "/files/iqs/uploads",
+    presets: "/files/presets"
   },
   directories: {
     audioFiles: "audio",

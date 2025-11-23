@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/psyb0t/common-go/constants"
 	"github.com/psyb0t/ctxerrors"
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +29,13 @@ func (s *PIrateRF) imageConversionPostprocessor(
 	// Check if it's an image file - convert common image formats
 	ext := strings.ToLower(filepath.Ext(filePath))
 	imageExtensions := []string{
-		".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp",
+		constants.FileExtensionJPG,
+		constants.FileExtensionJPEG,
+		constants.FileExtensionPNG,
+		constants.FileExtensionBMP,
+		constants.FileExtensionGIF,
+		constants.FileExtensionTIFF,
+		constants.FileExtensionWEBP,
 	}
 
 	isImageFile := slices.Contains(imageExtensions, ext)

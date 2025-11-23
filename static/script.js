@@ -482,6 +482,34 @@ class PIrateRFController {
     this.createPlaylistBtn = document.getElementById("createPlaylistBtn");
     this.playlistError = document.getElementById("playlistError");
 
+    // Preset elements
+    this.presetSelect = document.getElementById("presetSelect");
+    this.refreshPresetBtn = document.getElementById("refreshPresetBtn");
+    this.newPresetBtn = document.getElementById("newPresetBtn");
+    this.savePresetBtn = document.getElementById("savePresetBtn");
+    this.reloadPresetBtn = document.getElementById("reloadPresetBtn");
+    this.editPresetBtn = document.getElementById("editPresetBtn");
+
+    // New Preset modal elements
+    this.newPresetModal = document.getElementById("newPresetModal");
+    this.newPresetModalCloseBtn = document.getElementById("newPresetModalCloseBtn");
+    this.newPresetName = document.getElementById("newPresetName");
+    this.newPresetCancelBtn = document.getElementById("newPresetCancelBtn");
+    this.createPresetBtn = document.getElementById("createPresetBtn");
+    this.newPresetError = document.getElementById("newPresetError");
+
+    // Edit Preset modal elements
+    this.editPresetModal = document.getElementById("editPresetModal");
+    this.editPresetModalCloseBtn = document.getElementById("editPresetModalCloseBtn");
+    this.editPresetName = document.getElementById("editPresetName");
+    this.editPresetCancelBtn = document.getElementById("editPresetCancelBtn");
+    this.renamePresetBtn = document.getElementById("renamePresetBtn");
+    this.deletePresetBtn = document.getElementById("deletePresetBtn");
+    this.editPresetError = document.getElementById("editPresetError");
+
+    // Preset state
+    this.currentPresetName = null;
+
     // Audio playback elements
     this.audioPlayer = document.getElementById("audioPlayer");
     this.playAudioBtn = document.getElementById("playAudioBtn");
@@ -601,6 +629,31 @@ class PIrateRFController {
     this.playlistName.addEventListener("input", () =>
       this.validatePlaylistCreation()
     );
+
+    // Preset events
+    this.presetSelect.addEventListener("change", () => this.onPresetSelect());
+    this.refreshPresetBtn.addEventListener("click", () => this.loadPresets());
+    this.newPresetBtn.addEventListener("click", () => this.openNewPresetModal());
+    this.savePresetBtn.addEventListener("click", () => this.saveCurrentPreset());
+    this.reloadPresetBtn.addEventListener("click", () => this.reloadCurrentPreset());
+    this.editPresetBtn.addEventListener("click", () => this.openEditPresetModal());
+
+    // New Preset modal events
+    this.newPresetModalCloseBtn.addEventListener("click", () => this.closeNewPresetModal());
+    this.newPresetCancelBtn.addEventListener("click", () => this.closeNewPresetModal());
+    this.createPresetBtn.addEventListener("click", () => this.createNewPreset());
+    this.newPresetName.addEventListener("input", () => {
+      this.newPresetError.style.display = "none";
+    });
+
+    // Edit Preset modal events
+    this.editPresetModalCloseBtn.addEventListener("click", () => this.closeEditPresetModal());
+    this.editPresetCancelBtn.addEventListener("click", () => this.closeEditPresetModal());
+    this.renamePresetBtn.addEventListener("click", () => this.renamePreset());
+    this.deletePresetBtn.addEventListener("click", () => this.deletePreset());
+    this.editPresetName.addEventListener("input", () => {
+      this.editPresetError.style.display = "none";
+    });
 
     // Modal click handlers removed - modals only close via buttons
 
@@ -1116,6 +1169,30 @@ class PIrateRFController {
       case "audio.playlist.create.error":
         this.onPlaylistCreateError(message.data);
         break;
+      case "preset.load.success":
+        this.onPresetLoadSuccess(message.data);
+        break;
+      case "preset.load.error":
+        this.onPresetLoadError(message.data);
+        break;
+      case "preset.save.success":
+        this.onPresetSaveSuccess(message.data);
+        break;
+      case "preset.save.error":
+        this.onPresetSaveError(message.data);
+        break;
+      case "preset.rename.success":
+        this.onPresetRenameSuccess(message.data);
+        break;
+      case "preset.rename.error":
+        this.onPresetRenameError(message.data);
+        break;
+      case "preset.delete.success":
+        this.onPresetDeleteSuccess(message.data);
+        break;
+      case "preset.delete.error":
+        this.onPresetDeleteError(message.data);
+        break;
       case "echo.reply":
         this.handleHeartbeatReply(message);
         break;
@@ -1192,6 +1269,9 @@ class PIrateRFController {
         this.loadIqFiles();
         break;
     }
+
+    // Load presets for the selected module
+    this.loadPresets();
 
     this.validateForm();
   }
@@ -3465,6 +3545,9 @@ class PIrateRFController {
     // Set the error message
     this.errorMessage.textContent = message;
 
+    // Remove success class if present
+    this.errorNotification.classList.remove("success");
+
     // Set error type data attribute for tracking
     if (errorType) {
       this.errorNotification.setAttribute("data-error-type", errorType);
@@ -3481,8 +3564,31 @@ class PIrateRFController {
     }, 10000);
   }
 
+  showSuccessNotification(message) {
+    // Clear any existing timeout
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+
+    // Set the message
+    this.errorMessage.textContent = message;
+
+    // Add success class for green styling
+    this.errorNotification.classList.add("success");
+    this.errorNotification.removeAttribute("data-error-type");
+
+    // Show the notification
+    this.errorNotification.style.display = "block";
+
+    // Auto-hide after 3 seconds
+    this.errorTimeout = setTimeout(() => {
+      this.hideErrorNotification();
+    }, 3000);
+  }
+
   hideErrorNotification() {
     this.errorNotification.style.display = "none";
+    this.errorNotification.classList.remove("success");
 
     // Clear timeout if it exists
     if (this.errorTimeout) {
@@ -3808,11 +3914,16 @@ class PIrateRFController {
           this.moduleSelect.value = parsedState.modulename;
           this.onModuleChange();
           this.isRestoring = false;
+
+          return;
         }
       }
     } catch (e) {
       console.warn("Failed to restore module selection from localStorage:", e);
     }
+
+    // No saved state - trigger onModuleChange for default module
+    this.onModuleChange();
   }
 
   // Load state from localStorage and sync to DOM
@@ -4452,6 +4563,441 @@ class PIrateRFController {
     // Clean up flags and pending args
     this.microphoneReady = false;
     this.pendingAudioSockArgs = null;
+  }
+
+  // ============================================================================
+  // PRESET METHODS
+  // ============================================================================
+
+  async loadPresets() {
+    const moduleName = this.moduleSelect.value;
+    if (!moduleName) {
+      return;
+    }
+
+    try {
+      const response = await this.customFetch(
+        `${window.PIrateRFConfig.paths.presets}/${moduleName}`,
+        {},
+        "Loading presets..."
+      );
+
+      if (!response.ok) {
+        this.debug("Failed to load presets");
+        return;
+      }
+
+      const files = await response.json();
+
+      // Filter to only .json files (not directories)
+      const presetFiles = files.filter(file => !file.isDir && file.name.endsWith('.json'));
+
+      // Clear preset dropdown
+      this.presetSelect.innerHTML = '';
+
+      if (presetFiles.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No presets";
+        option.disabled = true;
+        this.presetSelect.appendChild(option);
+
+        // Reset current preset name and button states
+        this.currentPresetName = null;
+        this.savePresetBtn.disabled = true;
+        this.reloadPresetBtn.disabled = true;
+        this.editPresetBtn.disabled = true;
+      } else {
+        presetFiles.forEach((file) => {
+          const presetName = file.name.replace(".json", "");
+          const option = document.createElement("option");
+          option.value = presetName;
+          option.textContent = presetName;
+          this.presetSelect.appendChild(option);
+        });
+
+        // Try to restore last selected preset from localStorage
+        const savedPreset = localStorage.getItem('lastSelectedPreset');
+        if (savedPreset) {
+          try {
+            const { moduleName: savedModule, presetName } = JSON.parse(savedPreset);
+            // Only restore if it's for the current module
+            if (savedModule === moduleName) {
+              const targetOption = Array.from(this.presetSelect.options).find(option =>
+                option.value === presetName
+              );
+              if (targetOption) {
+                this.presetSelect.value = presetName;
+                // DON'T auto-load the preset - just restore the selection
+              }
+            }
+          } catch (e) {
+            // Invalid JSON - ignore
+          }
+        }
+
+        // Check final dropdown value and enable/disable buttons accordingly
+        if (this.presetSelect.value && this.presetSelect.value !== "") {
+          this.currentPresetName = this.presetSelect.value;
+          this.savePresetBtn.disabled = false;
+          this.reloadPresetBtn.disabled = false;
+          this.editPresetBtn.disabled = false;
+        } else {
+          this.currentPresetName = null;
+          this.savePresetBtn.disabled = true;
+          this.reloadPresetBtn.disabled = true;
+          this.editPresetBtn.disabled = true;
+        }
+      }
+
+      this.debug(`Loaded ${presetFiles.length} presets for ${moduleName}`);
+    } catch (error) {
+      this.debug(`Error loading presets: ${error.message}`);
+    }
+  }
+
+  onPresetSelect() {
+    const presetName = this.presetSelect.value;
+
+    if (!presetName || presetName === "") {
+      this.currentPresetName = null;
+      this.savePresetBtn.disabled = true;
+      this.reloadPresetBtn.disabled = true;
+      this.editPresetBtn.disabled = true;
+      localStorage.removeItem('lastSelectedPreset');
+      return;
+    }
+
+    this.currentPresetName = presetName;
+    this.savePresetBtn.disabled = false;
+    this.reloadPresetBtn.disabled = false;
+    this.editPresetBtn.disabled = false;
+
+    // Save to localStorage for persistence across page refreshes
+    const moduleName = this.moduleSelect.value;
+    localStorage.setItem('lastSelectedPreset', JSON.stringify({
+      moduleName: moduleName,
+      presetName: presetName
+    }));
+
+    // Send WebSocket message to load preset
+    const message = {
+      type: "preset.load",
+      data: {
+        moduleName: moduleName,
+        presetName: presetName,
+      },
+    };
+
+    if (this.isDebugMode) {
+      this.log(`📤 Loading preset: ${JSON.stringify(message, null, 2)}`, "send");
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  onPresetLoadSuccess(data) {
+    this.debug("Preset loaded successfully:", data);
+
+    // Apply the preset data to the form
+    if (data.data) {
+      this.applyPresetToForm(data.data);
+    }
+
+    // Validate form after loading preset
+    this.validateForm();
+  }
+
+  onPresetLoadError(data) {
+    this.debug("Preset load error:", data);
+    this.showErrorNotification(`Failed to load preset: ${data.error}`, "preset");
+  }
+
+  applyPresetToForm(presetData) {
+    // Find all inputs with data-module-name and data-field-name attributes
+    const inputs = document.querySelectorAll("[data-module-name][data-field-name]");
+
+    inputs.forEach((input) => {
+      const moduleName = input.getAttribute("data-module-name");
+      const fieldName = input.getAttribute("data-field-name");
+
+      // Only apply if the preset data has this field
+      if (presetData.hasOwnProperty(fieldName)) {
+        const value = presetData[fieldName];
+
+        if (input.type === "checkbox") {
+          input.checked = Boolean(value);
+        } else if (input.type === "radio") {
+          if (input.value === String(value)) {
+            input.checked = true;
+          }
+        } else {
+          input.value = value;
+        }
+
+        // Trigger change event to update any dependent UI
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+
+    this.debug("Applied preset data to form");
+  }
+
+  saveCurrentPreset() {
+    if (!this.currentPresetName) {
+      return;
+    }
+
+    const moduleName = this.moduleSelect.value;
+    const presetData = this.getCurrentFormState();
+
+    // Send WebSocket message to save preset
+    const message = {
+      type: "preset.save",
+      data: {
+        moduleName: moduleName,
+        presetName: this.currentPresetName,
+        data: presetData,
+      },
+    };
+
+    if (this.isDebugMode) {
+      this.log(`📤 Saving preset: ${JSON.stringify(message, null, 2)}`, "send");
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  reloadCurrentPreset() {
+    if (!this.currentPresetName) {
+      return;
+    }
+
+    // Reload the current preset by triggering onPresetSelect
+    this.onPresetSelect();
+    this.showSuccessNotification(`Preset "${this.currentPresetName}" reloaded`);
+  }
+
+  getCurrentFormState() {
+    const moduleName = this.moduleSelect.value;
+    const formState = {};
+
+    // Find all inputs with data-module-name matching current module
+    const inputs = document.querySelectorAll(`[data-module-name="${moduleName}"][data-field-name]`);
+
+    inputs.forEach((input) => {
+      const fieldName = input.getAttribute("data-field-name");
+
+      if (input.type === "checkbox") {
+        formState[fieldName] = input.checked;
+      } else if (input.type === "radio") {
+        if (input.checked) {
+          formState[fieldName] = input.value;
+        }
+      } else {
+        formState[fieldName] = input.value;
+      }
+    });
+
+    return formState;
+  }
+
+  onPresetSaveSuccess(data) {
+    this.debug("Preset saved successfully:", data);
+
+    const presetName = data.presetName;
+
+    // Check if new preset modal is open - if so, we're creating a new preset
+    if (this.newPresetModal.style.display === "flex") {
+      this.closeNewPresetModal();
+
+      // Reload presets to show the new one
+      this.loadPresets().then(() => {
+        // Select the newly created preset
+        if (presetName) {
+          this.presetSelect.value = presetName;
+          // Trigger change event to enable buttons and load preset
+          this.presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          this.showSuccessNotification(`Preset "${presetName}" created`);
+        }
+      });
+    } else {
+      // We're updating an existing preset
+      if (presetName) {
+        this.showSuccessNotification(`Preset "${presetName}" saved`);
+      }
+    }
+  }
+
+  onPresetSaveError(data) {
+    this.debug("Preset save error:", data);
+
+    // Check if new preset modal is open - show error there
+    if (this.newPresetModal.style.display === "flex") {
+      this.newPresetError.textContent = data.error || "Failed to create preset";
+      this.newPresetError.style.display = "block";
+    } else {
+      // Otherwise show general error notification
+      this.showErrorNotification(`Failed to save preset: ${data.error}`, "preset");
+    }
+  }
+
+  openNewPresetModal() {
+    this.newPresetName.value = "";
+    this.newPresetError.style.display = "none";
+    this.newPresetModal.style.display = "flex";
+  }
+
+  closeNewPresetModal() {
+    this.newPresetModal.style.display = "none";
+  }
+
+  createNewPreset() {
+    const presetName = this.newPresetName.value.trim();
+
+    if (!presetName) {
+      this.newPresetError.textContent = "Preset name cannot be empty";
+      this.newPresetError.style.display = "block";
+      return;
+    }
+
+    const moduleName = this.moduleSelect.value;
+    const presetData = this.getCurrentFormState();
+
+    // Send WebSocket message to save new preset
+    const message = {
+      type: "preset.save",
+      data: {
+        moduleName: moduleName,
+        presetName: presetName,
+        data: presetData,
+      },
+    };
+
+    if (this.isDebugMode) {
+      this.log(`📤 Creating new preset: ${JSON.stringify(message, null, 2)}`, "send");
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  openEditPresetModal() {
+    if (!this.currentPresetName) {
+      return;
+    }
+
+    this.editPresetName.value = this.currentPresetName;
+    this.editPresetError.style.display = "none";
+    this.editPresetModal.style.display = "flex";
+  }
+
+  closeEditPresetModal() {
+    this.editPresetModal.style.display = "none";
+  }
+
+  renamePreset() {
+    const newPresetName = this.editPresetName.value.trim();
+
+    if (!newPresetName) {
+      this.editPresetError.textContent = "Preset name cannot be empty";
+      this.editPresetError.style.display = "block";
+      return;
+    }
+
+    if (newPresetName === this.currentPresetName) {
+      this.editPresetError.textContent = "New name is the same as current name";
+      this.editPresetError.style.display = "block";
+      return;
+    }
+
+    const moduleName = this.moduleSelect.value;
+
+    // Send WebSocket message to rename preset
+    const message = {
+      type: "preset.rename",
+      data: {
+        moduleName: moduleName,
+        oldName: this.currentPresetName,
+        newName: newPresetName,
+      },
+    };
+
+    if (this.isDebugMode) {
+      this.log(`📤 Renaming preset: ${JSON.stringify(message, null, 2)}`, "send");
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  onPresetRenameSuccess(data) {
+    this.debug("Preset renamed successfully:", data);
+    this.closeEditPresetModal();
+
+    // Update current preset name
+    this.currentPresetName = data.newName;
+
+    // Reload presets to reflect the rename
+    this.loadPresets().then(() => {
+      // Select the renamed preset
+      if (data.newName) {
+        this.presetSelect.value = data.newName;
+        // Trigger change event to enable buttons
+        this.presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+  }
+
+  onPresetRenameError(data) {
+    this.debug("Preset rename error:", data);
+    this.editPresetError.textContent = data.error || "Failed to rename preset";
+    this.editPresetError.style.display = "block";
+  }
+
+  deletePreset() {
+    if (!this.currentPresetName) {
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete the preset "${this.currentPresetName}"?`)) {
+      return;
+    }
+
+    const moduleName = this.moduleSelect.value;
+
+    // Send WebSocket message to delete preset
+    const message = {
+      type: "preset.delete",
+      data: {
+        moduleName: moduleName,
+        presetName: this.currentPresetName,
+      },
+    };
+
+    if (this.isDebugMode) {
+      this.log(`📤 Deleting preset: ${JSON.stringify(message, null, 2)}`, "send");
+    }
+
+    this.ws.send(JSON.stringify(message));
+  }
+
+  onPresetDeleteSuccess(data) {
+    this.debug("Preset deleted successfully:", data);
+    this.closeEditPresetModal();
+
+    // Clear current preset
+    this.currentPresetName = null;
+    this.savePresetBtn.disabled = true;
+    this.reloadPresetBtn.disabled = true;
+    this.editPresetBtn.disabled = true;
+
+    // Reload presets to reflect the deletion
+    this.loadPresets();
+  }
+
+  onPresetDeleteError(data) {
+    this.debug("Preset delete error:", data);
+    this.editPresetError.textContent = data.error || "Failed to delete preset";
+    this.editPresetError.style.display = "block";
   }
 }
 

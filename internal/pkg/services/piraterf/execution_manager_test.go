@@ -346,9 +346,11 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
+
+			assert.NoError(t, err)
 
 			// Give goroutine a moment to start - execution validation might take time
 			time.Sleep(50 * time.Millisecond)
@@ -430,9 +432,11 @@ func TestExecutionManager_StopExecution(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
+
+			assert.NoError(t, err)
 
 			// Check final state
 			finalState := executionState(em.state.Load())

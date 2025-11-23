@@ -1,17 +1,32 @@
 package constants
 
 const (
-	FileExtensionJPG   = ".jpg"
-	FileExtensionMP4   = ".mp4"
-	FileExtensionMP3   = ".mp3"
-	FileExtensionHTML  = ".html"
-	FileExtensionPNG   = ".png"
-	FileExtensionTXT   = ".txt"
-	FileExtensionM4A   = ".m4a"
+	// Image formats
+	FileExtensionJPG  = ".jpg"
+	FileExtensionJPEG = ".jpeg"
+	FileExtensionPNG  = ".png"
+	FileExtensionBMP  = ".bmp"
+	FileExtensionGIF  = ".gif"
+	FileExtensionTIFF = ".tiff"
+	FileExtensionWEBP = ".webp"
+
+	// Video formats
+	FileExtensionMP4 = ".mp4"
+
+	// Audio formats
+	FileExtensionMP3  = ".mp3"
+	FileExtensionM4A  = ".m4a"
+	FileExtensionFlac = ".flac"
+	FileExtensionOGG  = ".ogg"
+	FileExtensionAAC  = ".aac"
+	FileExtensionWMA  = ".wma"
+	FileExtensionWAV  = ".wav"
+
+	// Text and data formats
+	FileExtensionHTML = ".html"
+	FileExtensionTXT  = ".txt"
+	FileExtensionJSON = ".json"
+
+	// Code generation
 	FileExtensionGenGo = ".gen.go"
-	FileExtensionFlac  = ".flac"
-	FileExtensionOGG   = ".ogg"
-	FileExtensionAAC   = ".aac"
-	FileExtensionWMA   = ".wma"
-	FileExtensionWAV   = ".wav"
 )

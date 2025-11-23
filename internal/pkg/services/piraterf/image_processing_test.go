@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"github.com/psyb0t/commander"
+	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -85,14 +87,17 @@ func TestCopyFileStream(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				// Verify file was actually copied
-				if err == nil {
-					content, readErr := os.ReadFile(dst)
-					assert.NoError(t, readErr)
-					assert.NotEmpty(t, content)
-				}
+				assert.True(t, tt.errorCheck(err), "Error check failed")
+
+				return
+			}
+
+			assert.NoError(t, err)
+			// Verify file was actually copied
+			if err == nil {
+				content, readErr := os.ReadFile(dst)
+				assert.NoError(t, readErr)
+				assert.NotEmpty(t, content)
 			}
 
 			assert.True(t, tt.errorCheck(err), "Error check failed")
@@ -139,17 +144,21 @@ func TestMoveFile(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				// Verify file was moved
-				assert.NoFileExists(t, source)
-				assert.FileExists(t, dest)
+
+				return
 			}
+
+			assert.NoError(t, err)
+			// Verify file was moved
+			assert.NoFileExists(t, source)
+			assert.FileExists(t, dest)
 		})
 	}
 }
 
 func TestConvertImageToYUV(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tests := []struct {
 		name        string
 		inputFile   string
@@ -219,6 +228,7 @@ func TestConvertImageToYUV(t *testing.T) {
 					FilesDir: tempDir,
 				},
 				commander: mockCmd,
+				rpitx:     gorpitx.GetInstance(),
 			}
 
 			logger := logrus.WithField("test", "convertImage")
@@ -227,16 +237,20 @@ func TestConvertImageToYUV(t *testing.T) {
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.Empty(t, outputPath)
-			} else {
-				assert.NoError(t, err)
-				assert.NotEmpty(t, outputPath)
-				assert.Contains(t, outputPath, ".Y")
+
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.NotEmpty(t, outputPath)
+			assert.Contains(t, outputPath, ".Y")
 		})
 	}
 }
 
 func TestImageConversionPostprocessor(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tests := []struct {
 		name          string
 		inputResponse map[string]any
@@ -339,6 +353,7 @@ func TestImageConversionPostprocessor(t *testing.T) {
 					FilesDir: tempDir,
 				},
 				commander: mockCmd,
+				rpitx:     gorpitx.GetInstance(),
 			}
 
 			// Set up files if needed
@@ -353,44 +368,44 @@ func TestImageConversionPostprocessor(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
 
-			if !tt.expectError {
-				// Check specific expected results
-				for key, expectedValue := range tt.expectResult {
-					actualValue, exists := result[key]
-					assert.True(t, exists, "Result should contain key %s", key)
+			assert.NoError(t, err)
 
-					if key == "converted" && expectedValue == true {
-						boolVal, ok := actualValue.(bool)
-						if !ok {
-							t.Errorf(
-								"Expected bool for 'converted', got %T",
-								actualValue,
-							)
+			// Check specific expected results
+			for key, expectedValue := range tt.expectResult {
+				actualValue, exists := result[key]
+				assert.True(t, exists, "Result should contain key %s", key)
 
-							continue
-						}
-
-						assert.True(t, boolVal)
+				if key == "converted" && expectedValue == true {
+					boolVal, ok := actualValue.(bool)
+					if !ok {
+						t.Errorf(
+							"Expected bool for 'converted', got %T",
+							actualValue,
+						)
 
 						continue
 					}
 
-					assert.Equal(t, expectedValue, actualValue)
+					assert.True(t, boolVal)
+
+					continue
 				}
 
-				// For non-image files, check path
-				if tt.name == "non-image file unchanged" {
-					pathValue, exists := result["path"]
-					assert.True(t, exists, "Result should contain path")
+				assert.Equal(t, expectedValue, actualValue)
+			}
 
-					pathStr, ok := pathValue.(string)
-					assert.True(t, ok, "Path should be string")
-					assert.Contains(t, pathStr, "test_document.txt")
-				}
+			// For non-image files, check path
+			if tt.name == "non-image file unchanged" {
+				pathValue, exists := result["path"]
+				assert.True(t, exists, "Result should contain path")
+
+				pathStr, ok := pathValue.(string)
+				assert.True(t, ok, "Path should be string")
+				assert.Contains(t, pathStr, "test_document.txt")
 			}
 		})
 	}
@@ -495,22 +510,28 @@ func TestHandleYFile(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
 
-				if tt.expectSame {
-					assert.Equal(t, inputPath, result)
-				} else {
-					assert.Equal(t, tt.outputPath, result)
-					// Verify file was moved
-					assert.FileExists(t, tt.outputPath)
-				}
+				return
 			}
+
+			assert.NoError(t, err)
+
+			if tt.expectSame {
+				assert.Equal(t, inputPath, result)
+
+				return
+			}
+
+			assert.Equal(t, tt.outputPath, result)
+			// Verify file was moved
+			assert.FileExists(t, tt.outputPath)
 		})
 	}
 }
 
 func TestProcessImageModifications(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tempDir := t.TempDir()
 
 	// Create test mock commander that handles convert commands
@@ -524,6 +545,7 @@ func TestProcessImageModifications(t *testing.T) {
 			FilesDir: tempDir,
 		},
 		commander: mockCommander,
+		rpitx:     gorpitx.GetInstance(),
 	}
 
 	tests := []struct {
@@ -584,17 +606,21 @@ func TestProcessImageModifications(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
 
-				if tt.expectChange {
-					// Result should be different from input if image was converted
-					assert.NotEqual(t, string(argsJSON), string(result))
-				} else {
-					// Result should be same as input if no changes
-					assert.Equal(t, string(argsJSON), string(result))
-				}
+				return
 			}
+
+			assert.NoError(t, err)
+
+			if tt.expectChange {
+				// Result should be different from input if image was converted
+				assert.NotEqual(t, string(argsJSON), string(result))
+
+				return
+			}
+
+			// Result should be same as input if no changes
+			assert.Equal(t, string(argsJSON), string(result))
 		})
 	}
 }

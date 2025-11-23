@@ -6,7 +6,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/psyb0t/aichteeteapee v0.0.0-20250928161247-5243ccab674d
 	github.com/psyb0t/commander v0.4.1
-	github.com/psyb0t/common-go v0.0.0-20251003100840-a2e2f3f4d7d2
+	github.com/psyb0t/common-go v0.0.0-20251123182222-51ec2c088103
 	github.com/psyb0t/ctxerrors v0.2.0
 	github.com/psyb0t/gonfiguration v1.3.1
 	github.com/psyb0t/gorpitx v0.1.0

@@ -95,19 +95,22 @@ func TestProcessAudioModifications(t *testing.T) {
 		err = json.Unmarshal(finalArgs, &modifiedArgsMap)
 		require.NoError(t, err)
 
-		if audioVal, ok := modifiedArgsMap["audio"].(string); ok {
-			assert.Contains(
-				t,
-				audioVal,
-				"_with_silence",
-				"Args should point to silence file",
-			)
-		} else {
+		audioVal, ok := modifiedArgsMap["audio"].(string)
+		if !ok {
 			t.Errorf(
 				"Expected string value for 'audio' key, got %T",
 				modifiedArgsMap["audio"],
 			)
+
+			return
 		}
+
+		assert.Contains(
+			t,
+			audioVal,
+			"_with_silence",
+			"Args should point to silence file",
+		)
 	})
 }
 
@@ -259,10 +262,12 @@ func TestProcessPlayOnceTimeoutEdgeCases(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedTimeout, result)
+
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedTimeout, result)
 		})
 	}
 }
@@ -318,16 +323,18 @@ func TestUpdateArgsWithSilenceFile(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
 
-				// Verify the audio path was updated
-				var resultMap map[string]any
-
-				err = json.Unmarshal(result, &resultMap)
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedAudioPath, resultMap["audio"])
+				return
 			}
+
+			assert.NoError(t, err)
+
+			// Verify the audio path was updated
+			var resultMap map[string]any
+
+			err = json.Unmarshal(result, &resultMap)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedAudioPath, resultMap["audio"])
 		})
 	}
 }

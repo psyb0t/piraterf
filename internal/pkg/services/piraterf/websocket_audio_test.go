@@ -108,9 +108,11 @@ func TestValidatePlaylistRequest(t *testing.T) {
 
 			if tt.expectError {
 				assert.False(t, ok)
-			} else {
-				assert.True(t, ok)
+
+				return
 			}
+
+			assert.True(t, ok)
 		})
 	}
 }
@@ -195,12 +197,14 @@ func TestHandleAudioPlaylistCreate(t *testing.T) {
 				// Invalid JSON should succeed but send error event
 				err := service.handleAudioPlaylistCreate(hub, client, event)
 				assert.NoError(t, err)
-			} else {
-				assert.NotPanics(t, func() {
-					err := service.handleAudioPlaylistCreate(hub, client, event)
-					assert.NoError(t, err)
-				})
+
+				return
 			}
+
+			assert.NotPanics(t, func() {
+				err := service.handleAudioPlaylistCreate(hub, client, event)
+				assert.NoError(t, err)
+			})
 		})
 	}
 }

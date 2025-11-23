@@ -28,6 +28,7 @@ const (
 	dataUploadsPath   = dataFilesDir + "/" + uploadsSubdir
 	iqsFilesDir       = "iqs"
 	iqsUploadsPath    = iqsFilesDir + "/" + uploadsSubdir
+	presetsDir        = "presets"
 	envJSFilename     = "env.js"
 	envJSTemplate     = `window.PIrateRFConfig = {
   paths: {
@@ -36,7 +37,8 @@ const (
     audioSFXFiles: "/files/` + audioFilesDir + `/` + audioSFXDir + `",
     imageUploadFiles: "/files/` + imagesFilesDir + `/` + uploadsSubdir + `",
     dataUploadFiles: "/files/` + dataFilesDir + `/` + uploadsSubdir + `",
-    iqUploadFiles: "/files/` + iqsFilesDir + `/` + uploadsSubdir + `"
+    iqUploadFiles: "/files/` + iqsFilesDir + `/` + uploadsSubdir + `",
+    presets: "/files/` + presetsDir + `"
   },
   directories: {
     audioFiles: "` + audioFilesDir + `",
@@ -68,8 +70,9 @@ const (
 	audioChannels   = "1"     // mono (1 channel)
 
 	// File and directory permissions.
-	dirPerms  = 0o750 // Directory permissions
-	filePerms = 0o600 // File permissions
+	// readable/executable by all for web serving.
+	dirPerms  = 0o755
+	filePerms = 0o644 // readable by all for web serving
 )
 
 type PIrateRF struct {
@@ -197,71 +200,42 @@ func (s *PIrateRF) ensureUploadDirExists() error {
 // ensureFilesDirsExist creates the files directory structure if it doesn't
 // exist.
 func (s *PIrateRF) ensureFilesDirsExist() error {
-	// Create base files directory
-	if err := os.MkdirAll(s.config.FilesDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create files directory")
+	dirs := []struct {
+		pathParts []string
+		name      string
+	}{
+		{[]string{}, "files directory"},
+		{[]string{audioFilesDir}, "audio directory"},
+		{[]string{audioFilesDir, uploadsSubdir}, "audio uploads directory"},
+		{[]string{audioFilesDir, audioSFXDir}, "audio SFX directory"},
+		{[]string{imagesFilesDir}, "images directory"},
+		{[]string{imagesFilesDir, uploadsSubdir}, "images uploads directory"},
+		{[]string{dataFilesDir}, "data directory"},
+		{[]string{dataUploadsPath}, "data uploads directory"},
+		{[]string{iqsFilesDir}, "IQ directory"},
+		{[]string{iqsUploadsPath}, "IQ uploads directory"},
+		{[]string{presetsDir}, "presets directory"},
 	}
 
-	// Create audio subdirectory
-	audioDir := path.Join(s.config.FilesDir, audioFilesDir)
-	if err := os.MkdirAll(audioDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create audio directory")
+	for _, dir := range dirs {
+		parts := append([]string{s.config.FilesDir}, dir.pathParts...)
+		dirPath := path.Join(parts...)
+
+		if err := os.MkdirAll(dirPath, dirPerms); err != nil {
+			return ctxerrors.Wrap(err, "failed to create "+dir.name)
+		}
 	}
 
-	// Create audio uploads subdirectory
-	audioUploadsDir := path.Join(
-		s.config.FilesDir,
-		audioFilesDir,
-		uploadsSubdir,
-	)
-	if err := os.MkdirAll(audioUploadsDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create audio uploads directory")
-	}
-
-	// Create audio SFX subdirectory
-	audioSFXDirPath := path.Join(s.config.FilesDir, audioFilesDir, audioSFXDir)
-	if err := os.MkdirAll(audioSFXDirPath, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create audio SFX directory")
-	}
-
-	// Create images directory
-	imagesDir := path.Join(s.config.FilesDir, imagesFilesDir)
-	if err := os.MkdirAll(imagesDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create images directory")
-	}
-
-	// Create images uploads subdirectory
-	imagesUploadsDir := path.Join(
-		s.config.FilesDir,
-		imagesFilesDir,
-		uploadsSubdir,
-	)
-	if err := os.MkdirAll(imagesUploadsDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create images uploads directory")
-	}
-
-	// Create data directory
-	dataDir := path.Join(s.config.FilesDir, dataFilesDir)
-	if err := os.MkdirAll(dataDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create data directory")
-	}
-
-	// Create data uploads subdirectory
-	dataUploadsDir := path.Join(s.config.FilesDir, dataUploadsPath)
-	if err := os.MkdirAll(dataUploadsDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create data uploads directory")
-	}
-
-	// Create IQ directory
-	iqsDir := path.Join(s.config.FilesDir, iqsFilesDir)
-	if err := os.MkdirAll(iqsDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create IQ directory")
-	}
-
-	// Create IQ uploads subdirectory
-	iqsUploadsDir := path.Join(s.config.FilesDir, iqsUploadsPath)
-	if err := os.MkdirAll(iqsUploadsDir, dirPerms); err != nil {
-		return ctxerrors.Wrap(err, "failed to create IQ uploads directory")
+	// Create preset subdirectories for all supported modules
+	moduleNames := s.rpitx.GetSupportedModules()
+	for _, moduleName := range moduleNames {
+		modulePresetDir := path.Join(s.config.FilesDir, presetsDir, moduleName)
+		if err := os.MkdirAll(modulePresetDir, dirPerms); err != nil {
+			return ctxerrors.Wrap(
+				err,
+				"failed to create preset directory for module "+moduleName,
+			)
+		}
 	}
 
 	return nil

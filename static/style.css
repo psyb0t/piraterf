@@ -158,6 +158,12 @@ body {
   color: #ffcccc;
 }
 
+.error-notification.success {
+  background: rgba(0, 200, 0, 0.9);
+  border-color: #00c800;
+  box-shadow: 0 0 20px rgba(0, 200, 0, 0.5);
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -1003,6 +1009,85 @@ body.executing .log-output {
 .file-controls .refresh-btn:hover {
   background: rgba(0, 255, 0, 0.3);
   transform: scale(1.05);
+}
+
+/* Preset controls container */
+.preset-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.preset-controls select {
+  flex: 1;
+  margin-right: 0;
+}
+
+.preset-controls .refresh-btn {
+  flex: none;
+  width: auto;
+  min-width: auto;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.preset-controls .refresh-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
+}
+
+/* Preset buttons container */
+.preset-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.preset-btn {
+  flex: 1;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: normal;
+}
+
+.preset-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.preset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Preset error message */
+.preset-error {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-family: "Fira Code", monospace;
 }
 
 .refresh-btn, .edit-btn, .play-btn {

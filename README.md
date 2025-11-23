@@ -44,6 +44,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
   - [📺 SSTV](#-sstv)
   - [🎨 Spectrum Paint](#-spectrum-paint)
   - [📡 IQ](#-iq)
+- [💾 Preset System](#-preset-system)
 - [🛠️ Development Commands](#️-development-commands)
   - [Local Development](#local-development)
   - [Pi Management](#pi-management)
@@ -535,6 +536,32 @@ Raw IQ sample file replay for signal reproduction:
 
 **Applications:** Signal replay, repeater capture/replay, testing and validation, signal analysis, reproducing complex modulations, SDR capture replay, RF fingerprinting research
 
+## 💾 Preset System
+
+Stop entering the same fuckin parameters every time! PIrateRF includes a full preset management system:
+
+**Features:**
+
+- **Save Configurations**: Save current module settings as named presets
+- **Quick Load**: Select and reload saved presets with one click
+- **Preset Management**: Create, rename, and delete presets through the web interface
+- **Per-Module Storage**: Each transmission mode has its own preset directory
+- **Persistent Selection**: Last selected preset remembered across page refreshes
+- **One-Click Revert**: Reload button reverts unsaved changes back to preset values
+
+**Usage:**
+
+1. Configure your transmission parameters (frequency, audio file, RDS settings, etc.)
+2. Click "📝 New" to create a preset with a custom name
+3. Select the preset from the dropdown to enable Save/Reload/Edit buttons
+4. Make changes and click "💾 Save" to update the preset
+5. Click "🔃 Reload" to revert any unsaved changes
+6. Click "✏️ Edit" to rename or delete the preset
+
+**Storage:**
+
+Presets are stored as JSON files in `files/presets/{modulename}/` and can be backed up, shared, or version controlled. Perfect for maintaining your favorite doorbell replay configs, FM broadcast setups, or FT8 configurations!
+
 ## 🛠️ Development Commands
 
 ### Local Development
@@ -569,11 +596,20 @@ piraterf/
 │       ├── websocket*.go  # Real-time communication
 │       ├── audio_*.go     # Audio processing
 │       ├── image_*.go     # Image processing
+│       ├── preset_*.go    # Preset management
 │       └── execution_*.go # RF transmission management
 ├── scripts/               # Setup and deployment scripts
 ├── html/                  # Web interface templates
 ├── static/                # Frontend assets (CSS/JS/images)
-├── files/                 # Audio, image, and data storage
+├── files/                 # Runtime file storage
+│   ├── audio/            # Audio files (uploads, SFX)
+│   ├── images/           # Image files (uploads)
+│   ├── data/             # Data files for FSK
+│   ├── iqs/              # IQ sample files
+│   └── presets/          # Per-module preset configurations
+│       ├── pifmrds/      # FM broadcast presets
+│       ├── sendiq/       # IQ transmission presets
+│       └── ...           # Other module presets
 └── uploads/              # Temporary upload staging
 ```
 

@@ -319,6 +319,16 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				info, err = os.Stat(imagesUploadsDir)
 				assert.NoError(t, err)
 				assert.True(t, info.IsDir())
+
+				// Check preset directories for all modules
+				rpitx := gorpitx.GetInstance()
+				moduleNames := rpitx.GetSupportedModules()
+				for _, moduleName := range moduleNames {
+					modulePresetDir := path.Join(config.FilesDir, presetsDir, moduleName)
+					info, err = os.Stat(modulePresetDir)
+					assert.NoError(t, err)
+					assert.True(t, info.IsDir())
+				}
 			},
 		},
 	}
@@ -329,7 +339,10 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				tt.setupFunc(t)
 			}
 
-			service := &PIrateRF{config: tt.config}
+			service := &PIrateRF{
+				config: tt.config,
+				rpitx:  gorpitx.GetInstance(),
+			}
 			err := service.ensureFilesDirsExist()
 
 			if tt.expectError {
@@ -569,9 +582,11 @@ func TestValidateModuleInDev(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
+
+			assert.NoError(t, err)
 		})
 	}
 }

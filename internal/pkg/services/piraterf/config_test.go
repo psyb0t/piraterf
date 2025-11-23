@@ -237,12 +237,12 @@ func TestPermissionsConstants(t *testing.T) {
 		{
 			name:        "directory permissions",
 			permissions: dirPerms,
-			expected:    0o750,
+			expected:    0o755,
 		},
 		{
 			name:        "file permissions",
 			permissions: filePerms,
-			expected:    0o600,
+			expected:    0o644,
 		},
 	}
 

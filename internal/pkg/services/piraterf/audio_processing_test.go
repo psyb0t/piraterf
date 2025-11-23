@@ -10,12 +10,16 @@ import (
 
 	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/constants"
+	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/gorpitx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFileConversionPostprocessor(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tests := []struct {
 		name          string
 		inputResponse map[string]any
@@ -90,6 +94,7 @@ func TestFileConversionPostprocessor(t *testing.T) {
 					FilesDir: tempDir,
 				},
 				commander: mockCmd,
+				rpitx:     gorpitx.GetInstance(),
 			}
 
 			// Set up files if needed
@@ -112,44 +117,44 @@ func TestFileConversionPostprocessor(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
 
-			if !tt.expectError {
-				// Check specific expected results
-				for key, expectedValue := range tt.expectResult {
-					actualValue, exists := result[key]
-					assert.True(t, exists, "Result should contain key %s", key)
+			assert.NoError(t, err)
 
-					if key == "converted" && expectedValue == true {
-						boolVal, ok := actualValue.(bool)
-						if !ok {
-							t.Errorf(
-								"Expected bool for 'converted', got %T",
-								actualValue,
-							)
+			// Check specific expected results
+			for key, expectedValue := range tt.expectResult {
+				actualValue, exists := result[key]
+				assert.True(t, exists, "Result should contain key %s", key)
 
-							continue
-						}
-
-						assert.True(t, boolVal)
+				if key == "converted" && expectedValue == true {
+					boolVal, ok := actualValue.(bool)
+					if !ok {
+						t.Errorf(
+							"Expected bool for 'converted', got %T",
+							actualValue,
+						)
 
 						continue
 					}
 
-					assert.Equal(t, expectedValue, actualValue)
+					assert.True(t, boolVal)
+
+					continue
 				}
 
-				// For non-audio files, check path
-				if tt.name == "non-audio file unchanged" {
-					pathValue, exists := result["path"]
-					assert.True(t, exists, "Result should contain path")
+				assert.Equal(t, expectedValue, actualValue)
+			}
 
-					pathStr, ok := pathValue.(string)
-					assert.True(t, ok, "Path should be string")
-					assert.Contains(t, pathStr, "test_document.txt")
-				}
+			// For non-audio files, check path
+			if tt.name == "non-audio file unchanged" {
+				pathValue, exists := result["path"]
+				assert.True(t, exists, "Result should contain path")
+
+				pathStr, ok := pathValue.(string)
+				assert.True(t, ok, "Path should be string")
+				assert.Contains(t, pathStr, "test_document.txt")
 			}
 		})
 	}
@@ -223,6 +228,7 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 					FilesDir: tempDir,
 				},
 				commander: mockCmd,
+				rpitx:     gorpitx.GetInstance(),
 			}
 
 			// Set up files if needed
@@ -237,20 +243,20 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+
+				return
 			}
 
-			if !tt.expectError {
-				// Check if conversion happened as expected
-				converted, hasConverted := result["converted"].(bool)
-				if tt.expectConversion {
-					assert.True(t, hasConverted, "Result should have 'converted' key")
-					assert.True(t, converted, "File should be marked as converted")
-				} else if hasConverted {
-					// Either no converted key or converted=false
-					assert.False(t, converted, "File should not be marked as converted")
-				}
+			assert.NoError(t, err)
+
+			// Check if conversion happened as expected
+			converted, hasConverted := result["converted"].(bool)
+			if tt.expectConversion {
+				assert.True(t, hasConverted, "Result should have 'converted' key")
+				assert.True(t, converted, "File should be marked as converted")
+			} else if hasConverted {
+				// Either no converted key or converted=false
+				assert.False(t, converted, "File should not be marked as converted")
 			}
 		})
 	}
@@ -320,6 +326,7 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 					FilesDir: tempDir,
 				},
 				commander: mockCmd,
+				rpitx:     gorpitx.GetInstance(),
 			}
 
 			convertedPath, wasConverted, err := service.
@@ -329,21 +336,23 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 				assert.Error(t, err)
 				assert.False(t, wasConverted)
 				assert.Empty(t, convertedPath)
-			} else {
-				assert.NoError(t, err)
-				assert.True(t, wasConverted)
-				assert.NotEmpty(t, convertedPath)
 
-				// Check that output path was constructed correctly
-				expectedBasename := filepath.Base(tt.inputFile)
-				ext := filepath.Ext(expectedBasename)
-				expectedBasename = expectedBasename[:len(expectedBasename)-len(ext)]
-				expectedPath := filepath.Join(
-					audioUploadsDir,
-					expectedBasename+constants.FileExtensionWAV,
-				)
-				assert.Equal(t, expectedPath, convertedPath)
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.True(t, wasConverted)
+			assert.NotEmpty(t, convertedPath)
+
+			// Check that output path was constructed correctly
+			expectedBasename := filepath.Base(tt.inputFile)
+			ext := filepath.Ext(expectedBasename)
+			expectedBasename = expectedBasename[:len(expectedBasename)-len(ext)]
+			expectedPath := filepath.Join(
+				audioUploadsDir,
+				expectedBasename+constants.FileExtensionWAV,
+			)
+			assert.Equal(t, expectedPath, convertedPath)
 		})
 	}
 }
@@ -382,12 +391,15 @@ func TestEnsureWavExtension(t *testing.T) {
 }
 
 func TestGetPlaylistOutputPath(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tempDir := t.TempDir()
 
 	service := &PIrateRF{
 		config: Config{
 			FilesDir: tempDir,
 		},
+		rpitx: gorpitx.GetInstance(),
 	}
 
 	tests := []struct {
@@ -429,16 +441,20 @@ func TestGetPlaylistOutputPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := service.getPlaylistOutputPath(tt.playlistName, tt.outputDir...)
-			if tt.expectPath != "" {
-				assert.Contains(t, result, "test_playlist.wav")
-			} else {
+			if tt.expectPath == "" {
 				assert.Equal(t, "", result)
+
+				return
 			}
+
+			assert.Contains(t, result, "test_playlist.wav")
 		})
 	}
 }
 
 func TestCreatePlaylistFromFiles(t *testing.T) {
+	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+
 	tempDir := t.TempDir()
 
 	// Create test mock commander that handles sox playlist creation
@@ -452,6 +468,7 @@ func TestCreatePlaylistFromFiles(t *testing.T) {
 			FilesDir: tempDir,
 		},
 		commander: mockCommander,
+		rpitx:     gorpitx.GetInstance(),
 	}
 
 	// Create test input files
@@ -513,16 +530,18 @@ func TestCreatePlaylistFromFiles(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.NotEmpty(t, outputPath)
-				assert.Contains(
-					t,
-					outputPath,
-					".wav",
-					"Output path should contain .wav extension",
-				)
+
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.NotEmpty(t, outputPath)
+			assert.Contains(
+				t,
+				outputPath,
+				".wav",
+				"Output path should contain .wav extension",
+			)
 		})
 	}
 }

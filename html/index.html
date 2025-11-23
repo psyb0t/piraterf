@@ -103,6 +103,21 @@
           </select>
         </div>
 
+        <!-- Preset Controls -->
+        <div class="form-group">
+          <label for="presetSelect">Preset</label>
+          <div class="preset-controls">
+            <select id="presetSelect"></select>
+            <button type="button" class="refresh-btn" id="refreshPresetBtn" title="Refresh presets">🔄</button>
+          </div>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" id="newPresetBtn" title="Create new preset">📝 New</button>
+            <button type="button" class="preset-btn" id="savePresetBtn" disabled title="Save current preset">💾 Save</button>
+            <button type="button" class="preset-btn" id="reloadPresetBtn" disabled title="Reload preset values">🔃 Reload</button>
+            <button type="button" class="preset-btn" id="editPresetBtn" disabled title="Edit preset">✏️ Edit</button>
+          </div>
+        </div>
+
         <!-- PIFMRDS Module Form -->
         <div id="pifmrdsForm" class="module-form">
           <div class="form-group">
@@ -315,7 +330,7 @@
             <input
               type="number"
               id="timeout"
-              placeholder="30"
+              placeholder="0"
               min="0"
               value="0"
               data-module-name="pifmrds"
@@ -1183,7 +1198,7 @@ TEST MESSAGE</textarea
             <input
               type="number"
               id="sendiqTimeout"
-              placeholder="30"
+              placeholder="0"
               min="0"
               value="0"
               data-module-name="sendiq"
@@ -1303,6 +1318,71 @@ TEST MESSAGE</textarea
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Preset Modal -->
+    <div class="modal-overlay" id="newPresetModal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Create New Preset</h3>
+          <button type="button" class="modal-close" id="newPresetModalCloseBtn">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newPresetName">Preset Name</label>
+            <input type="text" id="newPresetName" placeholder="my_preset" />
+          </div>
+          <div
+            class="preset-error"
+            id="newPresetError"
+            style="display: none"
+          ></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" id="newPresetCancelBtn">
+            ❌
+          </button>
+          <button type="button" class="save-btn" id="createPresetBtn">
+            💾 Create
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Preset Modal -->
+    <div class="modal-overlay" id="editPresetModal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Edit Preset</h3>
+          <button type="button" class="modal-close" id="editPresetModalCloseBtn">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editPresetName">Preset Name</label>
+            <input type="text" id="editPresetName" placeholder="preset_name" />
+          </div>
+          <div
+            class="preset-error"
+            id="editPresetError"
+            style="display: none"
+          ></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" id="editPresetCancelBtn">
+            ❌
+          </button>
+          <button type="button" class="delete-btn" id="deletePresetBtn">
+            🗑️
+          </button>
+          <button type="button" class="save-btn" id="renamePresetBtn">
+            💾
+          </button>
         </div>
       </div>
     </div>
