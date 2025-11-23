@@ -33,6 +33,8 @@ func (s *PIrateRF) fileConversionPostprocessor(
 		return s.audioConversionPostprocessor(response)
 	case gorpitx.ModuleNameSPECTRUMPAINT, gorpitx.ModuleNamePISSSTV:
 		return s.imageConversionPostprocessor(response)
+	case gorpitx.ModuleNameSENDIQ:
+		return s.iqFilePostprocessor(response)
 	default:
 		return response, nil
 	}
@@ -71,6 +73,43 @@ func (s *PIrateRF) dataFilePostprocessor(
 	response["path"] = destPath
 	response["moved"] = true
 	response["destination_directory"] = dataUploadsPath
+
+	return response, nil
+}
+
+// iqFilePostprocessor moves uploaded IQ files to the IQ directory
+// for SENDIQ module.
+func (s *PIrateRF) iqFilePostprocessor(
+	response map[string]any,
+) (map[string]any, error) {
+	// Get the file path from the response
+	filePath, ok := response["path"].(string)
+	if !ok {
+		return response, nil // Not a string path, return unchanged
+	}
+
+	// Ensure IQ directory exists
+	if err := s.ensureFilesDirsExist(); err != nil {
+		return response, ctxerrors.Wrap(err, "failed to ensure directories exist")
+	}
+
+	// Generate destination path in IQ uploads directory
+	filename := filepath.Base(filePath)
+	destPath := filepath.Join(s.config.FilesDir, iqsUploadsPath, filename)
+
+	// Move file to IQ directory
+	if err := moveFile(filePath, destPath); err != nil {
+		return response, ctxerrors.Wrapf(
+			err,
+			"failed to move file to IQ directory: %s",
+			destPath,
+		)
+	}
+
+	// Update response with new path and mark as moved
+	response["path"] = destPath
+	response["moved"] = true
+	response["destination_directory"] = iqsUploadsPath
 
 	return response, nil
 }

@@ -4,7 +4,8 @@ window.PIrateRFConfig = {
     audioUploadFiles: "/files/audio/uploads",
     audioSFXFiles: "/files/audio/sfx",
     imageUploadFiles: "/files/images/uploads",
-    dataUploadFiles: "/files/data/uploads"
+    dataUploadFiles: "/files/data/uploads",
+    iqUploadFiles: "/files/iqs/uploads"
   },
   directories: {
     audioFiles: "audio",
@@ -13,12 +14,15 @@ window.PIrateRFConfig = {
     imageFiles: "images",
     imageUploads: "images/uploads",
     dataFiles: "data",
-    dataUploads: "data/uploads"
+    dataUploads: "data/uploads",
+    iqFiles: "iqs",
+    iqUploads: "iqs/uploads"
   },
   serverPaths: {
     audioUploads: "./files/audio/uploads",
     audioSFX: "./files/audio/sfx",
     imageUploads: "./files/images/uploads",
-    dataUploads: "./files/data/uploads"
+    dataUploads: "./files/data/uploads",
+    iqUploads: "./files/iqs/uploads"
   }
 };

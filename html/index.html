@@ -99,6 +99,7 @@
             <option value="pichirp">Frequency Sweep</option>
             <option value="pisstv">SSTV</option>
             <option value="spectrumpaint">Spectrum Paint</option>
+            <option value="sendiq">IQ</option>
           </select>
         </div>
 
@@ -1042,6 +1043,165 @@ TEST MESSAGE</textarea
               data-module-name="audiosock-broadcast"
               data-field-name="gain"
             />
+          </div>
+        </div>
+
+        <!-- SENDIQ Module Form -->
+        <div id="sendiqForm" class="module-form hidden">
+          <div class="form-group">
+            <label for="sendiqFreq" class="required">Frequency (Hz)</label>
+            <input
+              type="number"
+              id="sendiqFreq"
+              step="1"
+              placeholder="434000000"
+              value="434000000"
+              data-module-name="sendiq"
+              data-field-name="freq"
+            />
+          </div>
+
+          <div class="form-group iq-form-group">
+            <label for="sendiqInputFile" class="required">IQ File</label>
+            <div class="iq-controls">
+              <select
+                id="sendiqInputFile"
+                data-module-name="sendiq"
+                data-field-name="inputFile"
+              >
+                <option value="">Select IQ file...</option>
+              </select>
+              <button
+                type="button"
+                class="refresh-btn"
+                id="refreshIqBtn"
+                title="Refresh IQ files"
+              >
+                🔄
+              </button>
+            </div>
+
+            <!-- IQ control buttons -->
+            <div class="iq-method-selector">
+              <input
+                type="file"
+                id="iqFile"
+                style="display: none"
+                accept="*/*"
+              />
+              <button
+                type="button"
+                class="file-upload-btn"
+                id="iqFileSelectBtn"
+                title="Upload IQ file"
+              >
+                📁
+              </button>
+              <button
+                type="button"
+                class="edit-btn"
+                id="editIqFileBtn"
+                disabled
+                title="Edit selected IQ file"
+              >
+                ✏️
+              </button>
+            </div>
+
+            <!-- Status displays -->
+            <div class="upload-status" id="iqUploadStatus"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqSampleRate">Sample Rate (Hz)</label>
+            <input
+              type="number"
+              id="sendiqSampleRate"
+              step="1"
+              placeholder="48000"
+              data-module-name="sendiq"
+              data-field-name="sampleRate"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqHarmonic">Harmonic</label>
+            <input
+              type="number"
+              id="sendiqHarmonic"
+              step="1"
+              min="1"
+              placeholder="1"
+              data-module-name="sendiq"
+              data-field-name="harmonic"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqIqType">IQ Data Type</label>
+            <select
+              id="sendiqIqType"
+              data-module-name="sendiq"
+              data-field-name="iqType"
+            >
+              <option value="u8">u8</option>
+              <option value="i16" selected>i16 (default)</option>
+              <option value="float">float</option>
+              <option value="double">double</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqPower">Power Level (0.0 - 7.0)</label>
+            <input
+              type="number"
+              id="sendiqPower"
+              step="0.1"
+              min="0"
+              max="7"
+              placeholder="0.1"
+              data-module-name="sendiq"
+              data-field-name="power"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqSharedMemToken">Shared Memory Token</label>
+            <input
+              type="number"
+              id="sendiqSharedMemToken"
+              step="1"
+              placeholder="Optional IPC token (non-zero)"
+              data-module-name="sendiq"
+              data-field-name="sharedMemToken"
+            />
+            <span class="help-text">When set, forces IQ type to float and enables runtime control via shared memory</span>
+          </div>
+
+          <div class="form-group">
+            <label for="sendiqTimeout">Timeout (seconds, 0 = no timeout)</label>
+            <input
+              type="number"
+              id="sendiqTimeout"
+              placeholder="30"
+              min="0"
+              value="0"
+              data-module-name="sendiq"
+              data-field-name="timeout"
+            />
+          </div>
+
+          <div class="form-group">
+            <button
+              type="button"
+              class="sendiq-toggle toggle-btn"
+              id="sendiqLoopMode"
+              data-module-name="sendiq"
+              data-field-name="loopMode"
+              title="Toggle loop mode"
+            >
+              🔁 Loop Mode
+            </button>
           </div>
         </div>
 

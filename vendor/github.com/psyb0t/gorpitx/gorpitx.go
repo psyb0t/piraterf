@@ -68,6 +68,7 @@ func newRPITX() *RPITX {
 			ModuleNamePIRTTY:             &PIRTTY{},
 			ModuleNameFSK:                &FSK{},
 			ModuleNameAudioSockBroadcast: &AudioSockBroadcast{},
+			ModuleNameSENDIQ:             &SENDIQ{},
 		},
 	}
 }

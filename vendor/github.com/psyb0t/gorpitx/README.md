@@ -21,6 +21,7 @@ Executes rpitx modules through Go without the usual mess of manual process manag
 - **pirtty**: RTTY (Radio Teletype) transmission (frequency in Hz)
 - **fsk**: FSK text transmission via minimodem/sox (frequency in Hz)
 - **audiosock-broadcast**: Audio streaming from unix socket with modulation-based processing (frequency in Hz)
+- **sendiq**: I/Q data transmission with runtime control via shared memory (frequency in Hz)
 
 **Architecture Highlights:**
 
@@ -1054,6 +1055,109 @@ Amateur radio frequencies suitable for voice transmission:
 - Supports all common modulation types via CSDR processing (AM, FM, SSB, raw)
 - Default narrow FM ideal for VHF/UHF amateur radio communications
 
+## 📡 SENDIQ Module Configuration
+
+Transmits I/Q (In-phase/Quadrature) data for advanced RF applications with runtime control via shared memory IPC.
+
+**Basic Configuration:**
+
+```json
+{
+  "inputFile": "samples.iq",
+  "freq": 434000000
+}
+```
+
+**Complete Configuration:**
+
+```json
+{
+  "inputFile": "samples.iq",
+  "freq": 434000000,
+  "sampleRate": 96000,
+  "harmonic": 2,
+  "iqType": "float",
+  "power": 2.5,
+  "sharedMemToken": 12345,
+  "loopMode": true
+}
+```
+
+**Configuration Fields:**
+
+- `inputFile` (string, **required**): Input file path or "-" for stdin
+- `freq` (float64, **required**): Carrier frequency in Hz (50 kHz - 1500 MHz)
+- `sampleRate` (int, optional): Sample rate in Hz (10000-2000000, default: 48000)
+  - Native max is 200,000 Hz; higher values trigger automatic decimation
+- `harmonic` (int, optional): Harmonic number (≥1, default: 1)
+- `iqType` (string, optional): I/Q data format (default: "i16")
+  - Valid: "i16", "u8", "float", "double"
+  - Automatically forced to "float" when using shared memory
+- `power` (float64, optional): Power/drive level (0.0-7.0, default: 0.1)
+  - Values outside range are clamped automatically
+- `sharedMemToken` (int, optional): Shared memory token for runtime control
+  - Must be non-zero if specified
+  - Enables IPC for frequency/power changes during transmission
+- `loopMode` (bool, optional): Loop transmission continuously (default: false)
+
+**Example Usage:**
+
+```go
+rpitx := gorpitx.GetInstance()
+
+config := gorpitx.SENDIQ{
+    InputFile:  "signal.iq",
+    Freq:       434000000, // 434 MHz
+    SampleRate: intPtr(96000),
+    LoopMode:   true,
+}
+
+configBytes, _ := json.Marshal(config)
+err := rpitx.ExecuteModule(gorpitx.ModuleNameSENDIQ, configBytes, 0, nil)
+```
+
+**Runtime Control via Shared Memory:**
+
+When `sharedMemToken` is set, you can control sendiq while it's running:
+
+```python
+#!/usr/bin/env python3
+import sysv_ipc
+import struct
+
+# Connect to shared memory
+shm = sysv_ipc.SharedMemory(12345)
+
+# Change frequency to 144.5 MHz
+freq_hz = 144500000.0
+packet = struct.pack('?if', True, 4444, freq_hz)
+shm.write(packet)
+print(f"Frequency changed to {freq_hz/1e6:.3f} MHz")
+```
+
+**Available Runtime Commands:**
+
+- Command `4444`: Change frequency (data = frequency in Hz)
+- Command `3333`: Change power level (data = power 0.0-7.0)
+- Command `1111`: Switch to I/Q mode
+- Command `2222`: Switch to carrier mode
+
+**Key Features:**
+
+- Direct I/Q sample transmission for maximum flexibility
+- Runtime frequency/power control via shared memory IPC
+- Support for multiple I/Q data formats
+- Automatic decimation for high sample rates (>200 kHz)
+- Loop mode for continuous transmission
+- Can read from files or stdin for piped data
+
+**Notes:**
+
+- PLL initialization takes 1-3 seconds at startup (hardware limitation)
+- Shared memory forces `iqType` to "float" regardless of setting
+- Power values are clamped to 0.0-7.0 range (enforced by rpitx)
+- Sample rates >200,000 Hz use automatic 10x decimation
+
 ## 🎛️ Process Control
 
 ### Stream Output
@@ -1197,26 +1301,7 @@ New modules implement this interface with:
 
 ## 📋 TODO: Remaining Modules Implementation
 
-Based on the easytest modules from rpitx, here are the **3 additional modules** we still need to implement:
-
-- **SENDIQ** - IQ Data Transmission
-
-  - **Command**: `sendiq [-i File] [-s Samplerate] [-f Frequency] [-l] [-h Harmonic] [-m Token] [-d] [-p Power] [-t IQType]`
-  - **Go struct**:
-    ```go
-    type SENDIQ struct {
-        InputFile string `json:"inputFile"` // Required, input file path
-        SampleRate *int `json:"sampleRate,omitempty"` // Optional, 10000-250000, default 48000
-        Frequency *float64 `json:"frequency,omitempty"` // Hz, optional, 50kHz-1500MHz, default 434e6
-        LoopMode *bool `json:"loopMode,omitempty"` // Optional, default false
-        Harmonic *int `json:"harmonic,omitempty"` // Optional, >= 1, default 1
-        SharedMemoryToken *int `json:"sharedMemoryToken,omitempty"` // Optional
-        DDSMode *bool `json:"ddsMode,omitempty"` // Optional, default false
-        PowerLevel *float64 `json:"powerLevel,omitempty"` // Optional, 0.0-7.0, default 0.1
-        IQType *string `json:"iqType,omitempty"` // Optional, i16/u8/float/double, default "i16"
-    }
-    ```
-  - **Validation**: File exists, sample rate 10000-250000, power 0.0-7.0, IQ type enum
+Based on the easytest modules from rpitx, here are the **2 additional modules** we still need to implement:
 
 - **FREEDV** - FreeDV Digital Voice
 

@@ -106,6 +106,18 @@ class PIrateRFController {
         modulation: "FM",
         gain: "1.0",
       },
+
+      sendiq: {
+        freq: "434000000",
+        inputFile: "",
+        sampleRate: "",
+        harmonic: "",
+        iqType: "i16",
+        power: "",
+        sharedMemToken: "",
+        timeout: "0",
+        loopMode: false,
+      },
     };
 
     this.initializeElements();
@@ -276,6 +288,11 @@ class PIrateRFController {
         return `${window.PIrateRFConfig.serverPaths.dataUploads}/${justFilename}`;
       }
       return `${window.PIrateRFConfig.paths.files}/${window.PIrateRFConfig.directories.dataUploads}/${justFilename}`;
+    } else if (type === "iqUploads") {
+      if (forServer) {
+        return `${window.PIrateRFConfig.serverPaths.iqUploads}/${justFilename}`;
+      }
+      return `${window.PIrateRFConfig.paths.files}/${window.PIrateRFConfig.directories.iqUploads}/${justFilename}`;
     }
 
     // If no type specified, assume it's already a full path
@@ -409,6 +426,23 @@ class PIrateRFController {
     this.audioSockBroadcastModulationInput = document.getElementById("audioSockBroadcastModulation");
     this.audioSockBroadcastGainInput = document.getElementById("audioSockBroadcastGain");
     this.fskDataFile = document.getElementById("fskDataFile");
+
+    // SENDIQ form inputs
+    this.sendiqForm = document.getElementById("sendiqForm");
+    this.sendiqFreqInput = document.getElementById("sendiqFreq");
+    this.sendiqInputFileInput = document.getElementById("sendiqInputFile");
+    this.sendiqSampleRateInput = document.getElementById("sendiqSampleRate");
+    this.sendiqHarmonicInput = document.getElementById("sendiqHarmonic");
+    this.sendiqIqTypeInput = document.getElementById("sendiqIqType");
+    this.sendiqPowerInput = document.getElementById("sendiqPower");
+    this.sendiqSharedMemTokenInput = document.getElementById("sendiqSharedMemToken");
+    this.sendiqTimeoutInput = document.getElementById("sendiqTimeout");
+    this.sendiqLoopModeInput = document.getElementById("sendiqLoopMode");
+    this.refreshIqBtn = document.getElementById("refreshIqBtn");
+    this.iqFileSelectBtn = document.getElementById("iqFileSelectBtn");
+    this.editIqFileBtn = document.getElementById("editIqFileBtn");
+    this.iqFile = document.getElementById("iqFile");
+    this.iqUploadStatus = document.getElementById("iqUploadStatus");
 
     // PISSTV image control buttons
     this.refreshPisstvImageBtn = document.getElementById("refreshPisstvImageBtn");
@@ -841,6 +875,43 @@ class PIrateRFController {
       this.validateForm();
     });
 
+    // SENDIQ module form events
+    this.sendiqFreqInput.addEventListener("input", () => {
+      this.saveState();
+      this.validateForm();
+    });
+    this.sendiqInputFileInput.addEventListener("change", () => {
+      this.onIqFileChange();
+      this.saveState();
+      this.validateForm();
+    });
+    this.sendiqSampleRateInput.addEventListener("input", () => this.saveState());
+    this.sendiqHarmonicInput.addEventListener("input", () => this.saveState());
+    this.sendiqIqTypeInput.addEventListener("change", () => this.saveState());
+    this.sendiqPowerInput.addEventListener("input", () => this.saveState());
+    this.sendiqSharedMemTokenInput.addEventListener("input", () => this.saveState());
+    this.sendiqTimeoutInput.addEventListener("input", () => this.saveState());
+
+    // SENDIQ toggle buttons
+    this.sendiqLoopModeInput.addEventListener("click", () => {
+      this.toggleSendiqOption(this.sendiqLoopModeInput);
+      this.saveState();
+    });
+
+    // SENDIQ file control buttons
+    this.refreshIqBtn.addEventListener("click", () => this.loadIqFiles());
+    this.iqFileSelectBtn.addEventListener("click", () => this.iqFile.click());
+    this.editIqFileBtn.addEventListener("click", () => {
+      const selectedFile = this.sendiqInputFileInput.value;
+      if (selectedFile) {
+        const fileName = selectedFile.split('/').pop();
+        this.openFileEditModal("iq", fileName, "iqUploads", "sendiq");
+      } else {
+        this.log("❌ No IQ file selected", "system");
+      }
+    });
+    this.iqFile.addEventListener("change", (event) => this.handleIqFileUpload(event));
+
     // POCSAG messages management
     this.addMessageBtn.addEventListener("click", () => this.addPOCSAGMessage());
     this.bindPOCSAGMessageEvents();
@@ -961,6 +1032,11 @@ class PIrateRFController {
           message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
         ) {
           this.onDataFileRenameSuccess(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.iqUploads}/`)
+        ) {
+          this.onIqFileRenameSuccess(message.data);
         } else {
           this.onFileRenameSuccess(message.data);
         }
@@ -977,6 +1053,11 @@ class PIrateRFController {
           message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
         ) {
           this.onDataFileRenameError(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.iqUploads}/`)
+        ) {
+          this.onIqFileRenameError(message.data);
         } else {
           this.onFileRenameError(message.data);
         }
@@ -997,6 +1078,12 @@ class PIrateRFController {
         ) {
           this.debug("Calling onDataFileDeleteSuccess");
           this.onDataFileDeleteSuccess(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.iqUploads}/`)
+        ) {
+          this.debug("Calling onIqFileDeleteSuccess");
+          this.onIqFileDeleteSuccess(message.data);
         } else {
           this.debug("Calling onFileDeleteSuccess");
           this.onFileDeleteSuccess(message.data);
@@ -1014,6 +1101,11 @@ class PIrateRFController {
           message.data.fileName.includes(`/${window.PIrateRFConfig.directories.dataUploads}/`)
         ) {
           this.onDataFileDeleteError(message.data);
+        } else if (
+          message.data.fileName &&
+          message.data.fileName.includes(`/${window.PIrateRFConfig.directories.iqUploads}/`)
+        ) {
+          this.onIqFileDeleteError(message.data);
         } else {
           this.onFileDeleteError(message.data);
         }
@@ -1046,6 +1138,7 @@ class PIrateRFController {
     this.pirttyForm.classList.add("hidden");
     this.fskForm.classList.add("hidden");
     this.audioSockBroadcastForm.classList.add("hidden");
+    this.sendiqForm.classList.add("hidden");
 
     // Show the selected module form
     switch (module) {
@@ -1093,6 +1186,10 @@ class PIrateRFController {
         break;
       case "audiosock-broadcast":
         this.audioSockBroadcastForm.classList.remove("hidden");
+        break;
+      case "sendiq":
+        this.sendiqForm.classList.remove("hidden");
+        this.loadIqFiles();
         break;
     }
 
@@ -1292,6 +1389,9 @@ class PIrateRFController {
         // For AudioSock, socket path gets populated after connecting, so don't require it
         isValid = module && this.audioSockBroadcastFreqInput.value;
         break;
+      case "sendiq":
+        isValid = module && this.sendiqFreqInput.value && this.sendiqInputFileInput.value;
+        break;
       default:
         isValid = false;
     }
@@ -1327,6 +1427,10 @@ class PIrateRFController {
   }
 
   togglePOCSAGOption(button) {
+    button.classList.toggle('active');
+  }
+
+  toggleSendiqOption(button) {
     button.classList.toggle('active');
   }
 
@@ -1384,6 +1488,28 @@ class PIrateRFController {
     });
   }
 
+  async loadIqFiles(selectFilename = null) {
+    return this.loadFiles({
+      endpoint: window.PIrateRFConfig.paths.iqUploadFiles,
+      selectElement: this.sendiqInputFileInput,
+      fileTypes: ['.iq'], // Filter for .iq extension only
+      selectLatest: !selectFilename,
+      selectFilename,
+      savedStateKey: 'sendiq',
+      onChangeCallback: () => this.onIqFileChange(),
+      noFilesText: "No IQ files",
+      debugPrefix: "IQ files",
+      useServerPath: true,
+      pathType: "iqUploads"
+    });
+  }
+
+  onIqFileChange() {
+    const hasFile = this.sendiqInputFileInput.value !== "";
+    this.editIqFileBtn.disabled = !hasFile;
+    this.validateForm();
+  }
+
   async handleDataFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1423,6 +1549,45 @@ class PIrateRFController {
     event.target.value = '';
   }
 
+  async handleIqFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('module', 'sendiq');
+
+    try {
+      const response = await this.customFetch('/upload', {
+        method: 'POST',
+        body: formData
+      }, "Uploading IQ file...");
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        this.log(`✅ Uploaded: ${result.original_filename}`, "system");
+
+        // Clear the file input after successful upload
+        event.target.value = "";
+
+        // Refresh dropdown to show new file and auto-select it (newest first)
+        await this.loadIqFiles();
+
+        this.saveState();
+        this.validateForm();
+      }
+    } catch (error) {
+      this.log(`❌ Upload error: ${error.message}`, "system");
+    }
+
+    // Clear the file input for next upload
+    event.target.value = '';
+  }
+
   openFileEditModal(fileType, selectedFile, directory, module = null) {
     if (!selectedFile) {
       this.log("❌ No file selected", "system");
@@ -1440,7 +1605,8 @@ class PIrateRFController {
     const config = {
       audio: { title: "Edit Audio File", placeholder: "filename" },
       image: { title: "Edit Image File", placeholder: "filename" },
-      data: { title: "Edit Data File", placeholder: "filename" }
+      data: { title: "Edit Data File", placeholder: "filename" },
+      iq: { title: "Edit IQ File", placeholder: "filename" }
     };
 
     const modalConfig = config[fileType] || { title: "Edit File", placeholder: "filename" };
@@ -1552,6 +1718,45 @@ class PIrateRFController {
       }
 
       args.messages.push(message);
+    }
+
+    return args;
+  }
+
+  buildSendiqArgs() {
+    const args = {
+      freq: parseFloat(this.sendiqFreqInput.value),
+      inputFile: this.sendiqInputFileInput.value,
+    };
+
+    // Add optional sample rate
+    if (this.sendiqSampleRateInput.value.trim()) {
+      args.sampleRate = parseInt(this.sendiqSampleRateInput.value);
+    }
+
+    // Add optional harmonic
+    if (this.sendiqHarmonicInput.value.trim()) {
+      args.harmonic = parseInt(this.sendiqHarmonicInput.value);
+    }
+
+    // Add optional IQ type
+    if (this.sendiqIqTypeInput.value.trim()) {
+      args.iqType = this.sendiqIqTypeInput.value;
+    }
+
+    // Add optional power
+    if (this.sendiqPowerInput.value.trim()) {
+      args.power = parseFloat(this.sendiqPowerInput.value);
+    }
+
+    // Add optional shared memory token
+    if (this.sendiqSharedMemTokenInput.value.trim()) {
+      args.sharedMemToken = parseInt(this.sendiqSharedMemTokenInput.value);
+    }
+
+    // Add boolean flags
+    if (this.sendiqLoopModeInput.classList.contains('active')) {
+      args.loopMode = true;
     }
 
     return args;
@@ -1838,6 +2043,14 @@ class PIrateRFController {
         // For audiosock-broadcast, we first need to connect to /wsunix to get socket path
         this.startAudioSockBroadcast();
         return; // Return early, don't send normal rpitx message yet
+
+      case "sendiq":
+        args = this.buildSendiqArgs();
+        timeout =
+          this.sendiqTimeoutInput.value === ""
+            ? 30
+            : parseInt(this.sendiqTimeoutInput.value);
+        break;
     }
 
     const message = {
@@ -2496,6 +2709,8 @@ class PIrateRFController {
       } else {
         filePath = this.pictureFileInput.value;
       }
+    } else if (this.currentEditDirectory === "iqUploads") {
+      filePath = this.sendiqInputFileInput.value;
     } else {
       filePath = this.audioInput.value;
     }
@@ -2545,6 +2760,8 @@ class PIrateRFController {
       } else {
         filePath = this.pictureFileInput.value;
       }
+    } else if (this.currentEditDirectory === "iqUploads") {
+      filePath = this.sendiqInputFileInput.value;
     } else {
       filePath = this.audioInput.value;
     }
@@ -2640,6 +2857,45 @@ class PIrateRFController {
     this.closeEditModal();
     // Refresh the dropdown to show current state
     this.loadDataFiles();
+  }
+
+  // IQ file handlers
+  onIqFileRenameSuccess(data) {
+    this.hideLoadingScreen();
+    this.log(
+      `✅ IQ file renamed from ${data.fileName} to ${data.newName}`,
+      "system"
+    );
+    this.closeEditModal();
+
+    // Refresh the dropdown and select the renamed file
+    this.loadIqFiles(data.newName).then(() => {
+      this.validateForm();
+      this.saveState();
+    });
+  }
+
+  onIqFileRenameError(data) {
+    this.hideLoadingScreen();
+    this.log(`❌ Failed to rename IQ file: ${data.message}`, "system");
+    this.showErrorNotification(`Failed to rename IQ file: ${data.message}`, "iq-file-rename");
+  }
+
+  onIqFileDeleteSuccess(data) {
+    this.hideLoadingScreen();
+    this.log(`✅ IQ file deleted: ${data.fileName}`, "system");
+    this.closeEditModal();
+
+    // Refresh the dropdown
+    this.loadIqFiles();
+  }
+
+  onIqFileDeleteError(data) {
+    this.hideLoadingScreen();
+    this.log(`❌ Failed to delete IQ file: ${data.message}`, "system");
+    this.closeEditModal();
+    // Refresh the dropdown to show current state
+    this.loadIqFiles();
   }
 
   // This function is defined earlier (line 1252) with unified modal support
@@ -3516,6 +3772,17 @@ class PIrateRFController {
     this.state["audiosock-broadcast"].modulation = this.audioSockBroadcastModulationInput.value;
     this.state["audiosock-broadcast"].gain = this.audioSockBroadcastGainInput.value;
 
+    // Update SENDIQ state
+    this.state.sendiq.freq = this.sendiqFreqInput.value;
+    this.state.sendiq.inputFile = this.sendiqInputFileInput.value;
+    this.state.sendiq.sampleRate = this.sendiqSampleRateInput.value;
+    this.state.sendiq.harmonic = this.sendiqHarmonicInput.value;
+    this.state.sendiq.iqType = this.sendiqIqTypeInput.value;
+    this.state.sendiq.power = this.sendiqPowerInput.value;
+    this.state.sendiq.sharedMemToken = this.sendiqSharedMemTokenInput.value;
+    this.state.sendiq.timeout = this.sendiqTimeoutInput.value;
+    this.state.sendiq.loopMode = this.sendiqLoopModeInput.classList.contains('active');
+
     this.debug("💾 Saving FSK state:", this.state.fsk);
     this.debug("💾 Saving FT8 state to localStorage, fucking finally:", this.state.pift8);
     if (this.isDebugMode) {
@@ -3575,6 +3842,7 @@ class PIrateRFController {
           pisstv: { ...this.state.pisstv, ...parsedState.pisstv },
           pirtty: { ...this.state.pirtty, ...parsedState.pirtty },
           fsk: { ...this.state.fsk, ...parsedState.fsk },
+          sendiq: { ...this.state.sendiq, ...parsedState.sendiq },
         };
       }
 
@@ -3820,6 +4088,29 @@ class PIrateRFController {
       this.audioSockBroadcastModulationInput.value = this.state["audiosock-broadcast"].modulation;
     if (this.state["audiosock-broadcast"].gain && this.audioSockBroadcastGainInput)
       this.audioSockBroadcastGainInput.value = this.state["audiosock-broadcast"].gain;
+
+    // Restore SENDIQ state
+    if (this.state.sendiq.freq && this.sendiqFreqInput)
+      this.sendiqFreqInput.value = this.state.sendiq.freq;
+    if (this.state.sendiq.inputFile && this.sendiqInputFileInput)
+      this.sendiqInputFileInput.value = this.state.sendiq.inputFile;
+    if (this.state.sendiq.sampleRate && this.sendiqSampleRateInput)
+      this.sendiqSampleRateInput.value = this.state.sendiq.sampleRate;
+    if (this.state.sendiq.harmonic && this.sendiqHarmonicInput)
+      this.sendiqHarmonicInput.value = this.state.sendiq.harmonic;
+    if (this.state.sendiq.iqType && this.sendiqIqTypeInput)
+      this.sendiqIqTypeInput.value = this.state.sendiq.iqType;
+    if (this.state.sendiq.power && this.sendiqPowerInput)
+      this.sendiqPowerInput.value = this.state.sendiq.power;
+    if (this.state.sendiq.sharedMemToken && this.sendiqSharedMemTokenInput)
+      this.sendiqSharedMemTokenInput.value = this.state.sendiq.sharedMemToken;
+    if (this.state.sendiq.timeout !== undefined && this.sendiqTimeoutInput)
+      this.sendiqTimeoutInput.value = this.state.sendiq.timeout;
+
+    // Restore toggle states
+    if (this.state.sendiq.loopMode) {
+      this.sendiqLoopModeInput.classList.add('active');
+    }
 
     // Note: intro/outro selections are restored by restoreSfxSelections() when SFX files are loaded
 

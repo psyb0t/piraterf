@@ -941,6 +941,38 @@ body.executing .log-output {
   transform: scale(1.05);
 }
 
+/* IQ controls container - same layout as audio/image controls */
+.iq-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.iq-controls select {
+  flex: 1;
+  margin-right: 0;
+}
+
+.iq-controls .refresh-btn {
+  flex: none;
+  width: auto;
+  min-width: auto;
+  padding: 8px;
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.iq-controls .refresh-btn:hover {
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.05);
+}
+
 /* File controls container - same layout as audio/image controls */
 .file-controls {
   display: flex;
