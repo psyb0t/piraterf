@@ -20,7 +20,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
 
 ## 📋 Table of Contents
 
-- [🎯 11 Different Transmission Modes](#-11-different-transmission-modes)
+- [🎯 12 Different Transmission Modes](#-12-different-transmission-modes)
 - [🚀 Quick Setup Guide](#-quick-setup-guide)
   - [Prerequisites](#prerequisites)
   - [Option 1: Pre-Built Image (Recommended)](#option-1-pre-built-image-recommended)
@@ -43,6 +43,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
   - [🌊 Frequency Sweep](#-frequency-sweep)
   - [📺 SSTV](#-sstv)
   - [🎨 Spectrum Paint](#-spectrum-paint)
+  - [📡 IQ](#-iq)
 - [🛠️ Development Commands](#️-development-commands)
   - [Local Development](#local-development)
   - [Pi Management](#pi-management)
@@ -62,9 +63,10 @@ PIrateRF is designed for amateur radio experimentation and education - including
   - [FM Repeater Standard Splits](#fm-repeater-standard-splits)
 - [🔗 Core Dependencies](#-core-dependencies)
 - [📝 License](#-license)
+- [📋 Changelog](./CHANGELOG.md)
 - [TODO](#todo)
 
-## 🎯 11 Different Transmission Modes
+## 🎯 12 Different Transmission Modes
 
 - **🎵 FM Station** - Full FM broadcasting with RDS metadata, playlists, and audio processing
 - **🎙️ Live Microphone Broadcast** - Real-time microphone streaming with configurable modulation (AM/DSB/USB/LSB/FM/RAW)
@@ -77,6 +79,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
 - **🌊 Frequency Sweep** - RF sweeps for antenna testing and analysis
 - **📺 SSTV** - Slow Scan Television image transmission
 - **🎨 Spectrum Paint** - Convert images to RF spectrum art
+- **📡 IQ** - Raw IQ sample replay for signal reproduction and testing
 
 All controlled through a **standalone WiFi access point** - connect any device and start transmitting like the RF rebel you were meant to be! Perfect for international waters operations and regions with more... flexible spectrum policies.
 
@@ -501,6 +504,35 @@ Convert images to RF spectrum art:
 
 ![Spectrum Paint Demo](./assets/spectrumpaint-demo.png)
 
+### 📡 IQ
+
+Raw IQ sample file replay for signal reproduction:
+
+**Configuration Options:**
+
+- **Frequency**: Carrier frequency in Hz
+- **IQ File**: Upload or select .iq file
+  > **Upload Process**: IQ files moved as-is (no conversion) to `./files/iqs/uploads/` preserving the .iq extension
+- **Sample Rate**: Sample rate in Hz (default 48000)
+  - Range: 10,000 to 2,000,000 Hz
+  - Values above 200,000 Hz trigger automatic decimation
+- **Harmonic**: Harmonic number for transmission (default 1)
+- **IQ Data Type**: Sample format (u8, i16, float, double)
+  - Default: i16 (16-bit signed integer)
+- **Power Level**: Drive level from 0.0 to 7.0 (default 0.1)
+- **Shared Memory Token**: Optional IPC token for runtime control
+  - When set, forces IQ type to float and enables shared memory control
+- **Timeout**: Auto-stop after specified seconds (0 = no timeout, default 30)
+- **Loop Mode**: Continuously replay the IQ file
+
+**Reception:**
+
+- **Demodulation**: Depends on what signal was captured in the IQ file
+- **Signal Type**: IQ files contain raw I/Q samples that can represent any modulation scheme
+- **Replay Fidelity**: The transmission will reproduce the exact signal characteristics captured in the IQ file
+
+**Applications:** Signal replay, repeater capture/replay, testing and validation, signal analysis, reproducing complex modulations, SDR capture replay, RF fingerprinting research
+
 ## 🛠️ Development Commands
 
 ### Local Development
@@ -638,8 +670,6 @@ This project is licensed under WTFPL (Do What The Fuck You Want To Public Licens
 - Actually prove SSTV works (tried with qsstv and various settings + various listeners and nope can't do it)
 
 - Add UI help overlays: mode info buttons explaining what each transmission mode does + per-input tooltips explaining what each configuration option changes
-
-- Add RAW SendIQ module: upload .iq capture files and replay them (useful for repeater captures, signal replays, etc.)
 
 - Fix the fuckin UI header so it's not a fkin rectangle no more that fucks up the shadow lol
 
