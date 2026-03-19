@@ -7,8 +7,36 @@ MIN_TEST_COVERAGE := 70
 # Include servicepack framework commands
 include Makefile.servicepack
 
-.PHONY: tls pi-setup-deps pi-setup-ap pi-setup-branding \
+.PHONY: lint lint-fix tls pi-setup-deps pi-setup-ap pi-setup-branding \
 	pi-reboot ssh deploy uninstall install pi pi-image
+
+lint: ## Lint Go files
+	@echo ""
+	@echo "\033[1m=== Linting Go Files ===\033[0m"
+	@echo ""
+	@echo "\033[0;34m\033[1m[INFO]\033[0m Running modernize analysis..."
+	@out=$$(go tool modernize -test ./... 2>&1 \
+		| grep -v '\.gen\.go:') || true; \
+	if [ -n "$$out" ]; then echo "$$out"; exit 1; fi
+	@echo "\033[0;32m\033[1m[SUCCESS]\033[0m modernize passed!"
+	@echo "\033[0;34m\033[1m[INFO]\033[0m Running golangci-lint..."
+	@go tool golangci-lint run --timeout=30m0s ./...
+	@echo "\033[0;32m\033[1m[SUCCESS]\033[0m Linting completed successfully!"
+
+lint-fix: ## Lint and fix Go files
+	@echo ""
+	@echo "\033[1m=== Linting and Fixing Go Files ===\033[0m"
+	@echo ""
+	@echo "\033[0;34m\033[1m[INFO]\033[0m Running modernize analysis with fixes..."
+	@gen_files=$$(find . -name '*.gen.go' -not -path './vendor/*'); \
+	out=$$(go tool modernize -fix -test ./... 2>&1 \
+		| grep -v '\.gen\.go:') || true; \
+	if [ -n "$$gen_files" ]; then echo "$$gen_files" | xargs git checkout -- 2>/dev/null || true; fi; \
+	if [ -n "$$out" ]; then echo "$$out"; exit 1; fi
+	@echo "\033[0;32m\033[1m[SUCCESS]\033[0m modernize passed!"
+	@echo "\033[0;34m\033[1m[INFO]\033[0m Running golangci-lint with fixes..."
+	@go tool golangci-lint run --fix --timeout=30m0s ./...
+	@echo "\033[0;32m\033[1m[SUCCESS]\033[0m Linting and fixing completed successfully!"
 
 build: ## Build the fucking PIrateRF beast
 	@./$(SCRIPTS_DIR)/make/build.sh

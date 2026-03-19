@@ -48,7 +48,7 @@ either.`,
 
 var Analyzer = SCAnalyzer.Analyzer
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (any, error) {
 	type entry struct {
 		l, r *types.Func
 	}
@@ -56,6 +56,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	msc := &pass.ResultOf[buildir.Analyzer].(*buildir.IR).Pkg.Prog.MethodSets
 	for _, fn := range pass.ResultOf[buildir.Analyzer].(*buildir.IR).SrcFuncs {
 		for _, b := range fn.Blocks {
+		instrLoop:
 			for _, instr := range b.Instrs {
 				assert, ok := instr.(*ir.TypeAssert)
 				if !ok {
@@ -74,13 +75,20 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				}
 
 				ms := msc.MethodSet(left)
-				for i := 0; i < righti.NumMethods(); i++ {
-					mr := righti.Method(i).Origin()
+				for i := range righti.NumMethods() {
+					mr := righti.Method(i)
 					sel := ms.Lookup(mr.Pkg(), mr.Name())
 					if sel == nil {
 						continue
 					}
-					ml := sel.Obj().(*types.Func).Origin()
+					ml := sel.Obj().(*types.Func)
+					if ml.Origin() != ml || mr.Origin() != mr {
+						// Give up when we see generics.
+						//
+						// TODO(dh): support generics once go/types gets an
+						// exported API for type unification.
+						continue instrLoop
+					}
 					if types.AssignableTo(ml.Type(), mr.Type()) {
 						continue
 					}

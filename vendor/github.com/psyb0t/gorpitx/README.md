@@ -1351,7 +1351,7 @@ func ValidateRange(value, min, max float64) error
 ## 📚 Package Dependencies
 
 - [`github.com/psyb0t/commander`](https://github.com/psyb0t/commander) - Process execution
-- [`github.com/psyb0t/common-go/env`](https://github.com/psyb0t/common-go) - Environment detection
+- [`github.com/psyb0t/goenv`](https://github.com/psyb0t/goenv) - Environment detection
 - [`github.com/psyb0t/ctxerrors`](https://github.com/psyb0t/ctxerrors) - Context-aware errors
 - [`github.com/psyb0t/gonfiguration`](https://github.com/psyb0t/gonfiguration) - Configuration parsing
 - [`github.com/sirupsen/logrus`](https://github.com/sirupsen/logrus) - Logging

@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/psyb0t/commander"
-	"github.com/psyb0t/common-go/env"
 	commonerrors "github.com/psyb0t/common-go/errors"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/goenv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,7 +49,7 @@ func newRPITX() *RPITX {
 	}
 
 	// Check if running as root in production
-	if !env.IsDev() && os.Geteuid() != 0 {
+	if !goenv.IsDev() && os.Geteuid() != 0 {
 		panic("PIrateRF must be run as root in production mode")
 	}
 
@@ -173,7 +173,7 @@ func (r *RPITX) prepareCommand(
 		cmdArgs []string
 	)
 
-	if env.IsDev() {
+	if goenv.IsDev() {
 		cmdName, cmdArgs = r.getMockExecCmd(name, parsedArgs)
 
 		return cmdName, cmdArgs, stdin, nil
