@@ -8,7 +8,7 @@ import (
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/commander"
-	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/goenv"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -115,7 +115,7 @@ func TestProcessAudioModifications(t *testing.T) {
 }
 
 func TestGetAudioDurationWithSox(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	mockCmd := commander.NewMock()
 	mockCmd.Expect("sox", "--info", "-D", "test.wav").
@@ -132,7 +132,7 @@ func TestGetAudioDurationWithSox(t *testing.T) {
 }
 
 func TestProcessIntroOutro(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tempDir := t.TempDir()
 
@@ -172,7 +172,7 @@ func TestProcessIntroOutro(t *testing.T) {
 }
 
 func TestHandleRPITXExecutionStop(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()

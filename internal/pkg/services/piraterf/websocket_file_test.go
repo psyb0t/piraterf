@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
-	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/goenv"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +18,7 @@ import (
 
 func TestSendFileRenameSuccessEvent(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -31,7 +31,7 @@ func TestSendFileRenameSuccessEvent(t *testing.T) {
 }
 
 func TestSendFileRenameErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -49,7 +49,7 @@ func TestSendFileRenameErrorEvent(t *testing.T) {
 }
 
 func TestSendFileDeleteSuccessEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -62,7 +62,7 @@ func TestSendFileDeleteSuccessEvent(t *testing.T) {
 }
 
 func TestSendFileDeleteErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -79,7 +79,7 @@ func TestSendFileDeleteErrorEvent(t *testing.T) {
 }
 
 func TestValidateFileRenameRequest(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -110,7 +110,7 @@ func TestValidateFileRenameRequest(t *testing.T) {
 }
 
 func TestHandleFileRename(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string
@@ -204,7 +204,7 @@ func TestHandleFileRename(t *testing.T) {
 }
 
 func TestHandleFileDelete(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string

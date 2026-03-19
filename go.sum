@@ -490,6 +490,8 @@ github.com/psyb0t/common-go v0.0.0-20251123182222-51ec2c088103 h1:vZ72U5J2ZAlUuu
 github.com/psyb0t/common-go v0.0.0-20251123182222-51ec2c088103/go.mod h1:maibL2s0Z45LBYwBzw47bigfOGLNdYDEesWntJ6T518=
 github.com/psyb0t/ctxerrors v0.2.0 h1:IbypLbNWfiyXzbzccfcVM2NcMN24GRK27m730Pb6EFw=
 github.com/psyb0t/ctxerrors v0.2.0/go.mod h1:JTaOBio8b2e/2k+6nFeyB1D3ME7ul+SYLlRSVrC4tbM=
+github.com/psyb0t/goenv v1.0.1 h1:NemEShe35oSBQWhrcPwA7ZhlJAK0W++aZTywg0x5uSU=
+github.com/psyb0t/goenv v1.0.1/go.mod h1:bhHp+KXm9qjKdaypOkcxsqEQ5UWcOaJZQtFP3aYls8A=
 github.com/psyb0t/gofindimpl v1.0.0 h1:XKbrpeqoRbFwaFtmBrbBd14KmHWyOQyuexFyGy8NMHc=
 github.com/psyb0t/gofindimpl v1.0.0/go.mod h1:PLf52u0l4lSP+jX9LoZP/UuhQascr2STEyI1Ua9Gy9Y=
 github.com/psyb0t/gonfiguration v1.3.1 h1:rGK52laVinSYicwcn6CbVKEKCHVye7wHhmES8QxiPJI=

@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
-	"github.com/psyb0t/common-go/env"
 	commonerrors "github.com/psyb0t/common-go/errors"
+	"github.com/psyb0t/goenv"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
 
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	// Create a mock hub
 	hub := wshub.NewHub("test")
@@ -62,7 +62,7 @@ func TestExecutionManager_StopStreaming_DoubleClose(t *testing.T) {
 
 func TestExecutionManager_StopStreaming_NormalClose(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	// Create a mock hub
 	hub := wshub.NewHub("test")
@@ -97,7 +97,7 @@ func TestExecutionManager_StopStreaming_NormalClose(t *testing.T) {
 
 func TestExecutionManager_StopStreaming_MultipleCallsSafe(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	// Create a mock hub
 	hub := wshub.NewHub("test")
@@ -120,7 +120,7 @@ func TestExecutionManager_StopStreaming_MultipleCallsSafe(t *testing.T) {
 
 func TestExecutionManager_StreamOutput_ContextCancellation(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	// Create a mock hub
 	hub := wshub.NewHub("test")
@@ -174,7 +174,7 @@ func TestExecutionManager_StreamOutput_ContextCancellation(t *testing.T) {
 
 func TestExecutionManager_IsExpectedTermination(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	rpitx := gorpitx.GetInstance()
@@ -242,7 +242,7 @@ func TestExecutionManager_IsExpectedTermination(t *testing.T) {
 
 func TestExecutionManager_StartExecution(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name          string
@@ -387,7 +387,7 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 func TestExecutionManager_StopExecution(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name          string
@@ -454,7 +454,7 @@ func TestExecutionManager_StopExecution(t *testing.T) {
 
 func TestExecutionManager_ValidateTimeout(t *testing.T) {
 	// Set ENV=dev to avoid root check
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	rpitx := gorpitx.GetInstance()
@@ -498,7 +498,7 @@ func TestExecutionManager_ValidateTimeout(t *testing.T) {
 }
 
 func TestSendStoppedEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -514,7 +514,7 @@ func TestSendStoppedEvent(t *testing.T) {
 }
 
 func TestSendError(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -529,7 +529,7 @@ func TestSendError(t *testing.T) {
 }
 
 func TestSendOutputEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()

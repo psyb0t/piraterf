@@ -10,15 +10,15 @@ import (
 
 	"github.com/psyb0t/commander"
 	"github.com/psyb0t/common-go/constants"
-	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/goenv"
 	"github.com/psyb0t/gorpitx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFileConversionPostprocessor(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name          string
@@ -391,7 +391,7 @@ func TestEnsureWavExtension(t *testing.T) {
 }
 
 func TestGetPlaylistOutputPath(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tempDir := t.TempDir()
 
@@ -453,7 +453,7 @@ func TestGetPlaylistOutputPath(t *testing.T) {
 }
 
 func TestCreatePlaylistFromFiles(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tempDir := t.TempDir()
 

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/psyb0t/commander"
-	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/goenv"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -157,7 +157,7 @@ func TestMoveFile(t *testing.T) {
 }
 
 func TestConvertImageToYUV(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name        string
@@ -249,7 +249,7 @@ func TestConvertImageToYUV(t *testing.T) {
 }
 
 func TestImageConversionPostprocessor(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name          string
@@ -530,7 +530,7 @@ func TestHandleYFile(t *testing.T) {
 }
 
 func TestProcessImageModifications(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tempDir := t.TempDir()
 

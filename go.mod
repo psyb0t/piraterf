@@ -1,6 +1,6 @@
 module github.com/psyb0t/piraterf
 
-go 1.24.6
+go 1.25
 
 require (
 	github.com/google/uuid v1.6.0
@@ -8,6 +8,7 @@ require (
 	github.com/psyb0t/commander v0.4.1
 	github.com/psyb0t/common-go v0.0.0-20251123182222-51ec2c088103
 	github.com/psyb0t/ctxerrors v0.2.0
+	github.com/psyb0t/goenv v1.0.1
 	github.com/psyb0t/gonfiguration v1.3.1
 	github.com/psyb0t/gorpitx v0.1.0
 	github.com/psyb0t/logrus-configurator v1.1.0

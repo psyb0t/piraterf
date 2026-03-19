@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/goenv"
 	"github.com/psyb0t/gorpitx"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -536,7 +536,7 @@ func TestPIrateRF_Run(t *testing.T) {
 }
 
 func TestValidateModuleInDev(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name        string

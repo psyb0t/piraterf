@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/psyb0t/common-go/env"
 	"github.com/psyb0t/ctxerrors"
+	"github.com/psyb0t/goenv"
 	servicemanager "github.com/psyb0t/piraterf/internal/pkg/service-manager"
 	"github.com/psyb0t/piraterf/internal/pkg/services"
 	"github.com/sirupsen/logrus"
@@ -60,7 +60,7 @@ func resetInstance() {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	logrus.Infof("running app with ENV=%s", env.Get())
+	logrus.Infof("running app with ENV=%s", goenv.Get())
 
 	defer func() {
 		if err := a.Stop(ctx); err != nil {

@@ -10,7 +10,7 @@ import (
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
 	"github.com/psyb0t/commander"
-	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/goenv"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +20,7 @@ const invalidJSONData = `{invalid json`
 
 func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 	logrus.SetLevel(logrus.WarnLevel)
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -33,7 +33,7 @@ func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 }
 
 func TestSendAudioPlaylistCreateErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -46,7 +46,7 @@ func TestSendAudioPlaylistCreateErrorEvent(t *testing.T) {
 }
 
 func TestValidatePlaylistRequest(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name        string
@@ -151,7 +151,7 @@ func TestConvertHTTPPathToFileSystem(t *testing.T) {
 }
 
 func TestHandleAudioPlaylistCreate(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string

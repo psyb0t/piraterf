@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	dabluveees "github.com/psyb0t/aichteeteapee/server/dabluvee-es"
 	"github.com/psyb0t/aichteeteapee/server/dabluvee-es/wshub"
-	"github.com/psyb0t/common-go/env"
+	"github.com/psyb0t/goenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,7 +68,7 @@ func testPresetHandlerHelper(
 }
 
 func TestSendPresetLoadSuccessEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -85,7 +85,7 @@ func TestSendPresetLoadSuccessEvent(t *testing.T) {
 }
 
 func TestSendPresetLoadErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -103,7 +103,7 @@ func TestSendPresetLoadErrorEvent(t *testing.T) {
 }
 
 func TestSendPresetSaveSuccessEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -116,7 +116,7 @@ func TestSendPresetSaveSuccessEvent(t *testing.T) {
 }
 
 func TestSendPresetSaveErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -134,7 +134,7 @@ func TestSendPresetSaveErrorEvent(t *testing.T) {
 }
 
 func TestSendPresetRenameSuccessEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -151,7 +151,7 @@ func TestSendPresetRenameSuccessEvent(t *testing.T) {
 }
 
 func TestSendPresetRenameErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -170,7 +170,7 @@ func TestSendPresetRenameErrorEvent(t *testing.T) {
 }
 
 func TestSendPresetDeleteSuccessEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -183,7 +183,7 @@ func TestSendPresetDeleteSuccessEvent(t *testing.T) {
 }
 
 func TestSendPresetDeleteErrorEvent(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -201,7 +201,7 @@ func TestSendPresetDeleteErrorEvent(t *testing.T) {
 }
 
 func TestGetPresetPath(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tempDir := t.TempDir()
 
@@ -243,7 +243,7 @@ func TestGetPresetPath(t *testing.T) {
 }
 
 func TestReadPresetFile(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -322,7 +322,7 @@ func TestReadPresetFile(t *testing.T) {
 }
 
 func TestWritePresetFile(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -362,7 +362,7 @@ func TestWritePresetFile(t *testing.T) {
 }
 
 func TestRenamePresetFile(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -460,7 +460,7 @@ func TestRenamePresetFile(t *testing.T) {
 }
 
 func TestDeletePresetFile(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	hub := wshub.NewHub("test")
 	defer hub.Close()
@@ -534,7 +534,7 @@ func TestDeletePresetFile(t *testing.T) {
 }
 
 func TestHandlePresetLoad(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string
@@ -585,7 +585,7 @@ func TestHandlePresetLoad(t *testing.T) {
 }
 
 func TestHandlePresetSave(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string
@@ -625,7 +625,7 @@ func TestHandlePresetSave(t *testing.T) {
 }
 
 func TestHandlePresetRename(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string
@@ -668,7 +668,7 @@ func TestHandlePresetRename(t *testing.T) {
 }
 
 func TestHandlePresetDelete(t *testing.T) {
-	t.Setenv(env.EnvVarName, env.EnvTypeDev)
+	t.Setenv(goenv.EnvVarName, goenv.Dev)
 
 	tests := []struct {
 		name      string
