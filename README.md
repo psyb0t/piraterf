@@ -88,8 +88,8 @@ All controlled through a **standalone WiFi access point** - connect any device a
 
 ### Prerequisites
 
-- **Raspberry Pi Zero 1 W** (original model) with 4GB+ SD card
-  - **⚠️ Pi Zero 2 W does NOT work** - rpitx requires the BCM2835 chip (Pi Zero 1 W) for predictable clock timing. The Pi Zero 2 W uses BCM2710A1 which breaks rpitx's timing assumptions.
+- **Raspberry Pi Zero 1 W** (original model, recommended) with 4GB+ SD card
+  - **Other Pi models:** rpitx itself works on Pi 1, 2, 3, 3B+, Zero, Zero W, and Pi 4 — but PIrateRF's deployment scripts, WiFi AP setup, cross-compilation, and pre-built image are all built specifically for the Pi Zero 1 W. Other boards may work with manual setup but are untested.
 
 ### Option 1: Pre-Built Image (Recommended)
 
