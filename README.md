@@ -1,5 +1,8 @@
 # 🏴‍☠️ PIrateRF - Software-Defined Radio Transmission Platform
 
+[![version](https://raw.githubusercontent.com/psyb0t/piraterf/badges/version.svg)](https://github.com/psyb0t/piraterf/releases)
+[![license](https://raw.githubusercontent.com/psyb0t/piraterf/badges/license.svg)](LICENSE)
+
 ![PIrateRF](./assets/piraterf.png)
 
 **PIrateRF** transforms your **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. Control everything from FM broadcasts to digital modes through your browser - hack the airwaves from anywhere! 📡⚡

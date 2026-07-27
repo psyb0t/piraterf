@@ -2,6 +2,10 @@
 
 All notable changes to this pirate-ass project will be documented in this fuckin file.
 
+## 2026-07-27
+
+- Added self-hosted version and license badges; wired a badges job into pipeline.yml.
+
 ## 2025-11-23
 
 ### Added - Preset System 💾
