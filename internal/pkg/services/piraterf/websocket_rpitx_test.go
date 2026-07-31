@@ -68,17 +68,15 @@ func TestProcessAudioModifications(t *testing.T) {
 			Outro:    nil,
 		}
 
-		finalTimeout, tempPath, finalArgs, err := service.processAudioModifications(
-			msg,
-			0,
-			logger,
+		timeout, tempPath, finalArgs, err := service.processAudioModifications(
+			msg, 0, logger,
 		)
 
 		require.NoError(t, err)
 		assert.Equal(
 			t,
 			3,
-			finalTimeout,
+			timeout,
 			"Timeout matches audio duration",
 		)
 		assert.NotEmpty(t, tempPath, "Temp file should be created")

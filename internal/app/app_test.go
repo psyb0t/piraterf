@@ -93,7 +93,9 @@ func TestApp_Run(t *testing.T) {
 		{
 			name: "timeout context",
 			setupFunc: func() (context.Context, context.CancelFunc) {
-				return context.WithTimeout(context.Background(), 50*time.Millisecond)
+				return context.WithTimeout(
+					context.Background(), 50*time.Millisecond,
+				)
 			},
 			runFunc: func(t *testing.T, app *App, ctx context.Context) {
 				t.Helper()
@@ -246,10 +248,12 @@ func TestApp_ServiceActivity(t *testing.T) {
 			expectError:  false,
 		},
 		{
-			name:         "many services run and stop correctly",
-			serviceNames: []string{"Service1", "Service2", "Service3", "Service4"},
-			stopMethod:   "app_stop",
-			expectError:  false,
+			name: "many services run and stop correctly",
+			serviceNames: []string{
+				"Service1", "Service2", "Service3", "Service4",
+			},
+			stopMethod:  "app_stop",
+			expectError: false,
 		},
 	}
 
@@ -262,7 +266,9 @@ func TestApp_ServiceActivity(t *testing.T) {
 			// Create mock services that track their activity
 			var mockServices []*servicemanager.MockService
 			for _, name := range tt.serviceNames {
-				mockServices = append(mockServices, servicemanager.NewMockService(name))
+				mockServices = append(
+					mockServices, servicemanager.NewMockService(name),
+				)
 			}
 
 			// Create app manually and add mock services

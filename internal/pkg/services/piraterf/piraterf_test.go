@@ -221,8 +221,9 @@ func TestPIrateRF_ensureUploadDirExists(t *testing.T) {
 				// Create directory first
 				require.NoError(t, os.MkdirAll("./existing_upload_dir", 0o750))
 				t.Cleanup(func() {
-					if err := os.RemoveAll("./existing_upload_dir"); err != nil {
-						t.Logf("Failed to remove existing_upload_dir: %v", err)
+					err := os.RemoveAll("./existing_upload_dir")
+					if err != nil {
+						t.Logf("Failed to remove upload dir: %v", err)
 					}
 				})
 			},
@@ -293,13 +294,17 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				assert.True(t, info.IsDir())
 
 				// Check audio uploads directory
-				audioUploadsDir := path.Join(config.FilesDir, audioFilesDir, uploadsSubdir)
+				audioUploadsDir := path.Join(
+					config.FilesDir, audioFilesDir, uploadsSubdir,
+				)
 				info, err = os.Stat(audioUploadsDir)
 				assert.NoError(t, err)
 				assert.True(t, info.IsDir())
 
 				// Check audio SFX directory
-				audioSFXDirPath := path.Join(config.FilesDir, audioFilesDir, audioSFXDir)
+				audioSFXDirPath := path.Join(
+					config.FilesDir, audioFilesDir, audioSFXDir,
+				)
 				info, err = os.Stat(audioSFXDirPath)
 				assert.NoError(t, err)
 				assert.True(t, info.IsDir())
@@ -324,7 +329,9 @@ func TestPIrateRF_ensureFilesDirsExist(t *testing.T) {
 				rpitx := gorpitx.GetInstance()
 				moduleNames := rpitx.GetSupportedModules()
 				for _, moduleName := range moduleNames {
-					modulePresetDir := path.Join(config.FilesDir, presetsDir, moduleName)
+					modulePresetDir := path.Join(
+						config.FilesDir, presetsDir, moduleName,
+					)
 					info, err = os.Stat(modulePresetDir)
 					assert.NoError(t, err)
 					assert.True(t, info.IsDir())

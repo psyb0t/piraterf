@@ -47,8 +47,8 @@ type rpitxExecutionStartMessage struct {
 	Args       json.RawMessage    `json:"args"`
 	Timeout    int                `json:"timeout"`  // timeout in seconds
 	PlayOnce   bool               `json:"playOnce"` // use duration as timeout
-	Intro      *string            `json:"intro"`    // intro file path (optional)
-	Outro      *string            `json:"outro"`    // outro file path (optional)
+	Intro      *string            `json:"intro"`    // intro file (optional)
+	Outro      *string            `json:"outro"`    // outro file (optional)
 }
 
 type rpitxExecutionStartedMessageData struct {
@@ -108,7 +108,9 @@ func (s *PIrateRF) parseExecutionMessage(
 	if err := json.Unmarshal(event.Data, &msg); err != nil {
 		logger.WithError(err).Error("failed to unmarshal RPITX exec message")
 
-		return nil, ctxerrors.Wrap(err, "failed to unmarshal RPITX exec message")
+		return nil, ctxerrors.Wrap(
+			err, "failed to unmarshal RPITX exec message",
+		)
 	}
 
 	return &msg, nil
@@ -159,7 +161,7 @@ func (s *PIrateRF) handlePIFMRDSExecution(
 	client *wshub.Client,
 	logger *logrus.Entry,
 ) error {
-	processedTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(
+	newTimeout, cleanupPath, finalArgs, err := s.processAudioModifications(
 		*msg, finalTimeout, logger,
 	)
 	if err != nil {
@@ -171,7 +173,8 @@ func (s *PIrateRF) handlePIFMRDSExecution(
 	callback := s.createCleanupCallback(cleanupPath, logger)
 
 	return s.executionManager.startExecution(
-		s.serviceCtx, msg.ModuleName, finalArgs, processedTimeout, client, callback,
+		s.serviceCtx, msg.ModuleName, finalArgs, newTimeout,
+		client, callback,
 	)
 }
 
@@ -235,7 +238,9 @@ func (s *PIrateRF) createCleanupCallback(
 			return ctxerrors.Wrap(err, "failed to remove temporary audio file")
 		}
 
-		logger.WithField("path", cleanupPath).Debug("Cleaned up temporary audio file")
+		logger.WithField("path", cleanupPath).Debug(
+			"Cleaned up temporary audio file",
+		)
 
 		return nil
 	}
@@ -276,7 +281,9 @@ func (s *PIrateRF) getAudioDurationWithSox(audioFile string) (float64, error) {
 
 	duration, err := strconv.ParseFloat(durationStr, 64)
 	if err != nil {
-		return 0, ctxerrors.Wrapf(err, "failed to parse duration '%s'", durationStr)
+		return 0, ctxerrors.Wrapf(
+			err, "failed to parse duration '%s'", durationStr,
+		)
 	}
 
 	return duration, nil
@@ -360,7 +367,9 @@ func (s *PIrateRF) processIntroOutro(
 	if err != nil {
 		logger.WithError(err).Error("Failed to create temp playlist")
 
-		return "", msg.Args, ctxerrors.Wrap(err, "failed to create temp playlist")
+		return "", msg.Args, ctxerrors.Wrap(
+			err, "failed to create temp playlist",
+		)
 	}
 
 	// Update the audio file path in args to use the playlist
@@ -370,7 +379,9 @@ func (s *PIrateRF) processIntroOutro(
 	if err != nil {
 		logger.WithError(err).Error("Failed to marshal modified args")
 
-		return "", msg.Args, ctxerrors.Wrap(err, "failed to marshal modified args")
+		return "", msg.Args, ctxerrors.Wrap(
+			err, "failed to marshal modified args",
+		)
 	}
 
 	logger.WithFields(logrus.Fields{
@@ -396,7 +407,9 @@ func (s *PIrateRF) processPlayOnceTimeout(
 	if err != nil {
 		logger.WithError(err).Error("Play Once: failed to get audio duration")
 
-		return originalTimeout, ctxerrors.Wrap(err, "failed to get audio duration")
+		return originalTimeout, ctxerrors.Wrap(
+			err, "failed to get audio duration",
+		)
 	}
 
 	audioDurationSeconds := int(duration + durationRoundingOffset) // Round up
@@ -458,10 +471,12 @@ func (s *PIrateRF) createTempPlaylist(
 		"mainAudio": mainAudio,
 		"outro":     outro,
 		"filePaths": filePaths,
-	}).Debug("Creating temporary playlist using existing createPlaylistFromFiles")
+	}).Debug("Creating temporary playlist via createPlaylistFromFiles")
 
 	// Use existing function with /tmp directory for temporary playlist
-	playlistPath, err := s.createPlaylistFromFiles(playlistName, filePaths, "/tmp")
+	playlistPath, err := s.createPlaylistFromFiles(
+		playlistName, filePaths, "/tmp",
+	)
 	if err != nil {
 		return "", ctxerrors.Wrapf(err, "failed to create temporary playlist")
 	}
@@ -494,7 +509,9 @@ func (s *PIrateRF) processPlayOnceSilence(
 		return audioFile, existingTempPath, modifiedArgs, err
 	}
 
-	finalArgs, err := s.updateArgsWithSilenceFile(modifiedArgs, silenceAudioPath)
+	finalArgs, err := s.updateArgsWithSilenceFile(
+		modifiedArgs, silenceAudioPath,
+	)
 	if err != nil {
 		return audioFile, existingTempPath, modifiedArgs, err
 	}
@@ -555,7 +572,9 @@ func (s *PIrateRF) updateArgsWithSilenceFile(
 
 	finalArgs, err := json.Marshal(argsMap)
 	if err != nil {
-		return modifiedArgs, ctxerrors.Wrapf(err, "failed to marshal final args")
+		return modifiedArgs, ctxerrors.Wrapf(
+			err, "failed to marshal final args",
+		)
 	}
 
 	return finalArgs, nil

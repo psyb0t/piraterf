@@ -221,7 +221,9 @@ func (em *executionManager) handleExecutionResult(
 
 	if err != nil {
 		if em.isExpectedTermination(err) {
-			logrus.WithError(err).Debug("execution completed with expected termination")
+			logrus.WithError(err).Debug(
+				"execution completed with expected termination",
+			)
 			em.sendStoppedEvent(client.ID())
 
 			return

@@ -107,11 +107,15 @@ func NewWithConfig(config Config) (*PIrateRF, error) {
 
 	// Ensure directories exist during construction
 	if err := s.ensureUploadDirExists(); err != nil {
-		return nil, ctxerrors.Wrap(err, "failed to ensure upload directory exists")
+		return nil, ctxerrors.Wrap(
+			err, "failed to ensure upload directory exists",
+		)
 	}
 
 	if err := s.ensureFilesDirsExist(); err != nil {
-		return nil, ctxerrors.Wrap(err, "failed to ensure files directories exist")
+		return nil, ctxerrors.Wrap(
+			err, "failed to ensure files directories exist",
+		)
 	}
 
 	// Generate env.js config file for frontend

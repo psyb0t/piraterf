@@ -27,7 +27,9 @@ func (s *PIrateRF) setupHTTPServer() error {
 
 	httpServer, err := server.New()
 	if err != nil {
-		return ctxerrors.Wrap(err, "failed to create HTTP server with TLS config")
+		return ctxerrors.Wrap(
+			err, "failed to create HTTP server with TLS config",
+		)
 	}
 
 	s.httpServer = httpServer
@@ -136,7 +138,9 @@ func (s *PIrateRF) rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	htmlContent, err := os.ReadFile(htmlPath)
 	if err != nil {
-		http.Error(w, "Failed to read HTML file", http.StatusInternalServerError)
+		http.Error(
+			w, "Failed to read HTML file", http.StatusInternalServerError,
+		)
 
 		return
 	}

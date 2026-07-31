@@ -2,6 +2,21 @@
 
 All notable changes to this pirate-ass project will be documented in this fuckin file.
 
+## 2026-07-31
+
+- Fixed the lint gate, red since 2026-07-27. `lll` was flagging lines over the
+  80-column budget across 19 files — mostly tests, but also `piraterf.go`,
+  `http_server.go`, `execution_manager.go`, `image_processing.go`,
+  `websocket_audio.go`, `websocket_rpitx.go` and `file_upload_postprocessor.go`.
+- Purely formatting: long calls broken one argument group per line with the
+  closing paren on its own line, long raw-string test fixtures split at a token
+  boundary, and a few over-long trailing comments shortened. No behaviour
+  changed and no assertion was weakened — the suite passes under `-race`
+  exactly as before.
+- Two locals were renamed rather than wrapped, because `gofumpt` rejoins a
+  wrapped `:=` continuation: `processedTimeout` → `newTimeout` in
+  `handlePIFMRDSExecution`, and `finalTimeout` → `timeout` in its test.
+
 ## 2026-07-27
 
 - Added a GitHub Actions CI status badge to the README.

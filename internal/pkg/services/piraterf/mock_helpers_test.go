@@ -46,13 +46,15 @@ func (m *fileCreatingMockCommander) Start(
 
 	// If this is a convert (ImageMagick) command, create the output files
 	if name == "convert" && len(args) >= 11 {
-		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
+		// Last argument is the output path (base.yuv).
+		outputPath := args[len(args)-1]
 		// Create the directory if it doesn't exist
 		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return proc, err
 		}
 
-		// For partition interlace, ImageMagick creates separate .Y, .U, .V files
+		// For partition interlace, ImageMagick creates separate
+		// .Y, .U, .V files
 		// We need to create the .Y file that the code expects
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
 
@@ -187,13 +189,15 @@ func (m *testMockCommander) Start(
 
 	// Handle convert (ImageMagick) command for image conversion
 	if name == "convert" && len(args) >= 11 {
-		outputPath := args[len(args)-1] // Last argument is output path (base.yuv)
+		// Last argument is the output path (base.yuv).
+		outputPath := args[len(args)-1]
 		// Create the directory if it doesn't exist
 		if err := os.MkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 			return nil, err
 		}
 
-		// For partition interlace, ImageMagick creates separate .Y, .U, .V files
+		// For partition interlace, ImageMagick creates separate
+		// .Y, .U, .V files
 		// We need to create the .Y file that the code expects
 		basePath := outputPath[:len(outputPath)-4] // Remove .yuv extension
 

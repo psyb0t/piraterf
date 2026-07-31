@@ -124,13 +124,15 @@ func TestHandleFileRename(t *testing.T) {
 			setupFile: false,
 		},
 		{
-			name:      "file not found",
-			eventData: `{"filePath": "/nonexistent/file.txt", "newName": "renamed.txt"}`,
+			name: "file not found",
+			eventData: `{"filePath": "/nonexistent/file.txt", ` +
+				`"newName": "renamed.txt"}`,
 			setupFile: false,
 		},
 		{
-			name:      "valid rename request",
-			eventData: `{"filePath": "test_file.txt", "newName": "renamed_file.txt"}`,
+			name: "valid rename request",
+			eventData: `{"filePath": "test_file.txt", ` +
+				`"newName": "renamed_file.txt"}`,
 			setupFile: true,
 			fileName:  "test_file.txt",
 		},

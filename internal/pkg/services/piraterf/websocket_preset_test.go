@@ -600,13 +600,15 @@ func TestHandlePresetSave(t *testing.T) {
 			eventData: `{"moduleName": "", "presetName": "test", "data": {}}`,
 		},
 		{
-			name:      "empty preset name",
-			eventData: `{"moduleName": "pifmrds", "presetName": "", "data": {}}`,
+			name: "empty preset name",
+			eventData: `{"moduleName": "pifmrds", "presetName": "", ` +
+				`"data": {}}`,
 		},
 		{
 			name: "valid save request",
-			eventData: `{"moduleName": "pifmrds", "presetName": "test-preset",` +
-				` "data": {"frequency": "100.0"}}`,
+			eventData: `{"moduleName": "pifmrds", ` +
+				`"presetName": "test-preset", ` +
+				`"data": {"frequency": "100.0"}}`,
 		},
 	}
 

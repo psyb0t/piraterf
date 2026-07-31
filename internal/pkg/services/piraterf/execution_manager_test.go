@@ -314,7 +314,8 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 			moduleName:   gorpitx.ModuleNamePOCSAG,
 			args: json.RawMessage(
 				`{"frequency": 431000000, "baudRate": 1200, ` +
-					`"messages": [{"address": 123456, "message": "TEST MESSAGE"}]}`,
+					`"messages": [{"address": 123456, ` +
+					`"message": "TEST MESSAGE"}]}`,
 			),
 			timeout:       10,
 			expectError:   false,
@@ -352,7 +353,8 @@ func TestExecutionManager_StartExecution(t *testing.T) {
 
 			assert.NoError(t, err)
 
-			// Give goroutine a moment to start - execution validation might take time
+			// Give the goroutine a moment to start - execution validation
+			// might take time
 			time.Sleep(50 * time.Millisecond)
 
 			// Check final state

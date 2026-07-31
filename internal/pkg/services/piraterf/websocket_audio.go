@@ -27,8 +27,8 @@ const (
 )
 
 type audioPlaylistCreateMessage struct {
-	PlaylistFileName string   `json:"playlistFileName"` // Name for the output file
-	Files            []string `json:"files"`            // Array of full file paths
+	PlaylistFileName string   `json:"playlistFileName"` // output file name
+	Files            []string `json:"files"`            // full file paths
 }
 
 type audioPlaylistCreateSuccessMessageData struct {
@@ -76,7 +76,9 @@ func (s *PIrateRF) handleAudioPlaylistCreate(
 	}
 
 	// Create playlist by concatenating all files
-	outputPath, err := s.createPlaylistFromFiles(msg.PlaylistFileName, filePaths)
+	outputPath, err := s.createPlaylistFromFiles(
+		msg.PlaylistFileName, filePaths,
+	)
 	if err != nil {
 		logger.WithError(err).Error("failed to create playlist")
 		s.sendAudioPlaylistCreateErrorEvent(

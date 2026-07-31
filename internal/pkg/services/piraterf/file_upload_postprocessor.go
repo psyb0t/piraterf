@@ -53,7 +53,9 @@ func (s *PIrateRF) dataFilePostprocessor(
 
 	// Ensure data directory exists
 	if err := s.ensureFilesDirsExist(); err != nil {
-		return response, ctxerrors.Wrap(err, "failed to ensure directories exist")
+		return response, ctxerrors.Wrap(
+			err, "failed to ensure directories exist",
+		)
 	}
 
 	// Generate destination path in data uploads directory
@@ -90,7 +92,9 @@ func (s *PIrateRF) iqFilePostprocessor(
 
 	// Ensure IQ directory exists
 	if err := s.ensureFilesDirsExist(); err != nil {
-		return response, ctxerrors.Wrap(err, "failed to ensure directories exist")
+		return response, ctxerrors.Wrap(
+			err, "failed to ensure directories exist",
+		)
 	}
 
 	// Generate destination path in IQ uploads directory

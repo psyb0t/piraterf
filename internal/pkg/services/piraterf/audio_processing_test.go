@@ -113,7 +113,9 @@ func TestFileConversionPostprocessor(t *testing.T) {
 				req.Form.Set("module", module)
 			}
 
-			result, err := service.fileConversionPostprocessor(tt.inputResponse, req)
+			result, err := service.fileConversionPostprocessor(
+				tt.inputResponse, req,
+			)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -239,7 +241,9 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 				}
 			}
 
-			result, err := service.audioConversionPostprocessor(tt.inputResponse)
+			result, err := service.audioConversionPostprocessor(
+				tt.inputResponse,
+			)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -252,11 +256,15 @@ func TestAudioConversionPostprocessor(t *testing.T) {
 			// Check if conversion happened as expected
 			converted, hasConverted := result["converted"].(bool)
 			if tt.expectConversion {
-				assert.True(t, hasConverted, "Result should have 'converted' key")
+				assert.True(
+					t, hasConverted, "Result should have 'converted' key",
+				)
 				assert.True(t, converted, "File should be marked as converted")
 			} else if hasConverted {
 				// Either no converted key or converted=false
-				assert.False(t, converted, "File should not be marked as converted")
+				assert.False(
+					t, converted, "File should not be marked as converted",
+				)
 			}
 		})
 	}
@@ -296,7 +304,9 @@ func TestConvertAudioFileWithFFmpeg(t *testing.T) {
 
 			if tt.mockError {
 				mock := commander.NewMock()
-				mock.Expect("ffmpeg").ReturnError(ctxerrors.New("mock ffmpeg error"))
+				mock.Expect("ffmpeg").ReturnError(
+					ctxerrors.New("mock ffmpeg error"),
+				)
 				mockCmd = mock
 			} else {
 				// Create a custom mock commander that creates output files
@@ -440,7 +450,9 @@ func TestGetPlaylistOutputPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.getPlaylistOutputPath(tt.playlistName, tt.outputDir...)
+			result := service.getPlaylistOutputPath(
+				tt.playlistName, tt.outputDir...,
+			)
 			if tt.expectPath == "" {
 				assert.Equal(t, "", result)
 

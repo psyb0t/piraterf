@@ -28,7 +28,9 @@ func TestSendAudioPlaylistCreateSuccessEvent(t *testing.T) {
 	service := &PIrateRF{websocketHub: hub}
 
 	require.NotPanics(t, func() {
-		service.sendAudioPlaylistCreateSuccessEvent("test_playlist", "/test/path.wav")
+		service.sendAudioPlaylistCreateSuccessEvent(
+			"test_playlist", "/test/path.wav",
+		)
 	})
 }
 
@@ -41,7 +43,9 @@ func TestSendAudioPlaylistCreateErrorEvent(t *testing.T) {
 	service := &PIrateRF{websocketHub: hub}
 
 	require.NotPanics(t, func() {
-		service.sendAudioPlaylistCreateErrorEvent("clientID", "eventID", "test error")
+		service.sendAudioPlaylistCreateErrorEvent(
+			"clientID", "eventID", "test error",
+		)
 	})
 }
 

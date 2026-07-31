@@ -43,7 +43,8 @@ func TestCopyFileStream(t *testing.T) {
 			name: "destination directory doesn't exist",
 			setupSrc: func() string {
 				srcFile := filepath.Join(tempDir, "source.txt")
-				if err := os.WriteFile(srcFile, []byte("test content"), 0o600); err != nil {
+				err := os.WriteFile(srcFile, []byte("test content"), 0o600)
+				if err != nil {
 					t.Fatalf("Failed to write test file: %v", err)
 				}
 
@@ -192,7 +193,9 @@ func TestConvertImageToYUV(t *testing.T) {
 
 			if tt.mockError {
 				mock := commander.NewMock()
-				mock.Expect("convert").ReturnError(ctxerrors.New("mock imagemagick error"))
+				mock.Expect("convert").ReturnError(
+					ctxerrors.New("mock imagemagick error"),
+				)
 				mockCmd = mock
 			} else {
 				// Create a custom mock commander that creates output files
@@ -278,7 +281,8 @@ func TestImageConversionPostprocessor(t *testing.T) {
 					0xAE, 0x42, 0x60, 0x82,
 				}
 				testFile := filepath.Join(tempDir, "test_red_100x50.png")
-				if err := os.WriteFile(testFile, pngContent, 0o600); err != nil {
+				err := os.WriteFile(testFile, pngContent, 0o600)
+				if err != nil {
 					return ""
 				}
 
@@ -364,7 +368,9 @@ func TestImageConversionPostprocessor(t *testing.T) {
 				}
 			}
 
-			result, err := service.imageConversionPostprocessor(tt.inputResponse)
+			result, err := service.imageConversionPostprocessor(
+				tt.inputResponse,
+			)
 
 			if tt.expectError {
 				assert.Error(t, err)

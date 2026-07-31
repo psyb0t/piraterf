@@ -209,7 +209,9 @@ func (s *PIrateRF) convertImageToRGBFormat(
 		"rgb:" + outputPath, // Output as raw RGB format
 	})
 	if err != nil {
-		return "", ctxerrors.Wrapf(err, "failed to start convert command for RGB")
+		return "", ctxerrors.Wrapf(
+			err, "failed to start convert command for RGB",
+		)
 	}
 
 	if err := process.Wait(); err != nil {
