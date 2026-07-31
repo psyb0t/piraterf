@@ -1,0 +1,22 @@
+name: git-mirror
+
+# Kept separate from any pipeline workflow on purpose. The mirror has to see
+# every branch and every tag, while a release pipeline is usually tag-only --
+# widening that trigger to match would fire the publish jobs on every push.
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+
+jobs:
+  git-mirror:
+    uses: psyb0t/reusable-github-workflows/.github/workflows/git-mirror.yml@master
+    with:
+      gitlab_enabled: true
+      # Gitee is off: it requires a mobile number bound to the account before
+      # any repository can be public, and rather than refusing it creates the
+      # repo private, so the mirror runs green while nobody can see it. Turn it
+      # back on once the account is verified.
+      gitee_enabled: false
+    secrets:
+      gitlab_token: ${{ secrets.GITLAB_TOKEN }}
