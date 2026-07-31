@@ -15,3 +15,4 @@ research_files
 uploads
 /images/
 git-update.sh
+.telemetry/
