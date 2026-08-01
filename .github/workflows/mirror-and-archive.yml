@@ -1,0 +1,47 @@
+name: mirror-and-archive
+
+# The offsite copies of this repository: the GitLab mirror, the Wayback Machine
+# and Software Heritage. Kept out of pipeline.yml because they share a trigger
+# set with each other and with nothing in the build chain -- folding them in
+# would drag the monthly cron across every build job, and each one would need an
+# event guard to ignore it.
+on:
+  # Every branch and every tag. The mirror has to see all of them; a mirror that
+  # only saw the default branch would silently drop the rest.
+  push:
+  # Staggered per repository. The Wayback Machine is rate-limited and one save
+  # takes ~110s, so a shared cron would have every repo throttling the rest.
+  # Without it the archive would never run for a repo that rarely cuts releases.
+  schedule:
+    - cron: "42 10 3 * *"
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    if: github.event_name == 'push'
+    uses: psyb0t/reusable-github-workflows/.github/workflows/git-mirror.yml@master
+    with:
+      gitlab_enabled: true
+      # Gitee is off: it requires a mobile number bound to the account before
+      # any repository can be public, and rather than refusing it creates the
+      # repo private, so the mirror runs green while nobody can see it. Turn it
+      # back on once the account is verified.
+      gitee_enabled: false
+    secrets:
+      gitlab_token: ${{ secrets.GITLAB_TOKEN }}
+
+  # Not on every feature-branch push: the archive is rate-limited and there is
+  # nothing to gain from saving a branch tip.
+  archive:
+    if: >-
+      github.event_name != 'push' ||
+      github.ref_name == github.event.repository.default_branch ||
+      startsWith(github.ref, 'refs/tags/')
+    uses: psyb0t/reusable-github-workflows/.github/workflows/archive.yml@master
+    with:
+      # Off because no archive.org keys are set on this repo. Outlink capture
+      # only works on the authenticated Save Page Now API; on the keyless path
+      # the flag is silently ignored, so leaving it on would just log a warning
+      # every run. Add wayback_access_key / wayback_secret_key and flip this to
+      # true to sweep in every page the README links to.
+      capture_outlinks: false
