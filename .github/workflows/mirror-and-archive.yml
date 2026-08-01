@@ -1,17 +1,8 @@
 name: mirror-and-archive
 
-# The offsite copies of this repository: the GitLab mirror, the Wayback Machine
-# and Software Heritage. Kept out of pipeline.yml because they share a trigger
-# set with each other and with nothing in the build chain -- folding them in
-# would drag the monthly cron across every build job, and each one would need an
-# event guard to ignore it.
 on:
-  # Every branch and every tag. The mirror has to see all of them; a mirror that
-  # only saw the default branch would silently drop the rest.
   push:
-  # Staggered per repository. The Wayback Machine is rate-limited and one save
-  # takes ~110s, so a shared cron would have every repo throttling the rest.
-  # Without it the archive would never run for a repo that rarely cuts releases.
+  # Staggered per repo: Wayback is rate-limited and one save takes ~110s.
   schedule:
     - cron: "42 10 3 * *"
   workflow_dispatch:
@@ -23,17 +14,14 @@ jobs:
     with:
       gitlab_enabled: true
       codeberg_enabled: true
-      # Gitee is off: it requires a mobile number bound to the account before
-      # any repository can be public, and rather than refusing it creates the
-      # repo private, so the mirror runs green while nobody can see it. Turn it
-      # back on once the account is verified.
+      # Gitee wants a mobile number bound to the account; without one it creates
+      # the repo private instead of refusing.
       gitee_enabled: false
     secrets:
       gitlab_token: ${{ secrets.GITLAB_TOKEN }}
       codeberg_token: ${{ secrets.CODEBERG_TOKEN }}
 
-  # Not on every feature-branch push: the archive is rate-limited and there is
-  # nothing to gain from saving a branch tip.
+  # Off feature-branch pushes -- the archive is rate-limited.
   archive:
     if: >-
       github.event_name != 'push' ||
@@ -41,11 +29,7 @@ jobs:
       startsWith(github.ref, 'refs/tags/')
     uses: psyb0t/reusable-github-workflows/.github/workflows/archive.yml@master
     with:
-      # Sweeps in every page the README links to, not just the repo page itself.
-      # Only works on the authenticated Save Page Now API, which is why it sat
-      # off until the key pair below existed -- on the keyless path the flag is
-      # accepted and silently ignored.
       capture_outlinks: true
     secrets:
-      wayback_access_key: ${{ secrets.WAYBACK_ACCESS_KEY }}
-      wayback_secret_key: ${{ secrets.WAYBACK_SECRET_KEY }}
+      archiveorg_access_key: ${{ secrets.ARCHIVEORG_ACCESS_KEY }}
+      archiveorg_secret_key: ${{ secrets.ARCHIVEORG_SECRET_KEY }}
