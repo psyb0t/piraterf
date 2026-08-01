@@ -1,0 +1,18 @@
+name: issue-pull
+
+on:
+  # Staggered per repo, and the job jitters on top of that: GitHub fires an
+  # account's crons together, so a shared minute is a thundering herd at both
+  # mirrors every six hours.
+  schedule:
+    - cron: "19 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  issue-pull:
+    permissions:
+      issues: write
+    uses: psyb0t/reusable-github-workflows/.github/workflows/issue-pull.yml@master
+    secrets:
+      codeberg_token: ${{ secrets.CODEBERG_TOKEN }}
+      gitlab_token: ${{ secrets.GITLAB_TOKEN }}
