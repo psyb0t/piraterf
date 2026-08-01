@@ -22,6 +22,7 @@ jobs:
     uses: psyb0t/reusable-github-workflows/.github/workflows/git-mirror.yml@master
     with:
       gitlab_enabled: true
+      codeberg_enabled: true
       # Gitee is off: it requires a mobile number bound to the account before
       # any repository can be public, and rather than refusing it creates the
       # repo private, so the mirror runs green while nobody can see it. Turn it
@@ -29,6 +30,7 @@ jobs:
       gitee_enabled: false
     secrets:
       gitlab_token: ${{ secrets.GITLAB_TOKEN }}
+      codeberg_token: ${{ secrets.CODEBERG_TOKEN }}
 
   # Not on every feature-branch push: the archive is rate-limited and there is
   # nothing to gain from saving a branch tip.
