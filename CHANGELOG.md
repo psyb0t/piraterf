@@ -2,6 +2,22 @@
 
 All notable changes to this pirate-ass project will be documented in this fuckin file.
 
+## v0.1.3 — 2026-08-01
+
+Pure CI plumbing — not a single line of the app changed, so the binary and the
+web UI behave exactly as in v0.1.2.
+
+- Every push now mirrors this repo to both GitLab and Codeberg. The old
+  separate `git-mirror.yml` and `archive.yml` workflows were folded into one
+  `mirror-and-archive.yml`.
+- Pushes to the default branch and to tags, plus a monthly cron, submit the
+  repo to the Wayback Machine and Software Heritage through the authenticated
+  Save Page Now API.
+- Issues opened on the GitLab or Codeberg mirrors get pulled back into GitHub
+  every six hours, so nobody's bug report gets lost on a mirror.
+- `.telemetry/` is now ignored by git and excluded from the Docker build
+  context.
+
 ## 2026-07-31
 
 - Fixed the lint gate, red since 2026-07-27. `lll` was flagging lines over the
