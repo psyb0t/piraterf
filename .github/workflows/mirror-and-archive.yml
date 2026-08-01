@@ -41,9 +41,11 @@ jobs:
       startsWith(github.ref, 'refs/tags/')
     uses: psyb0t/reusable-github-workflows/.github/workflows/archive.yml@master
     with:
-      # Off because no archive.org keys are set on this repo. Outlink capture
-      # only works on the authenticated Save Page Now API; on the keyless path
-      # the flag is silently ignored, so leaving it on would just log a warning
-      # every run. Add wayback_access_key / wayback_secret_key and flip this to
-      # true to sweep in every page the README links to.
-      capture_outlinks: false
+      # Sweeps in every page the README links to, not just the repo page itself.
+      # Only works on the authenticated Save Page Now API, which is why it sat
+      # off until the key pair below existed -- on the keyless path the flag is
+      # accepted and silently ignored.
+      capture_outlinks: true
+    secrets:
+      wayback_access_key: ${{ secrets.WAYBACK_ACCESS_KEY }}
+      wayback_secret_key: ${{ secrets.WAYBACK_SECRET_KEY }}
