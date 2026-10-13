@@ -3,6 +3,7 @@
 [![CI](https://github.com/psyb0t/piraterf/actions/workflows/pipeline.yml/badge.svg?branch=main)](https://github.com/psyb0t/piraterf/actions/workflows/pipeline.yml)
 [![version](https://raw.githubusercontent.com/psyb0t/piraterf/badges/version.svg)](https://github.com/psyb0t/piraterf/releases)
 [![license](https://raw.githubusercontent.com/psyb0t/piraterf/badges/license.svg)](LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/psyb0t/piraterf)
 
 ![PIrateRF](./assets/piraterf.png)
 
