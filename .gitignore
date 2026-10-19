@@ -15,4 +15,5 @@ research_files
 uploads
 /images/
 git-update.sh
+git-update.sh.debot
 .telemetry/
