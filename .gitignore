@@ -17,3 +17,5 @@ uploads
 git-update.sh
 git-update.sh.debot
 .telemetry/
+*.local.json
+.testing/

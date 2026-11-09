@@ -67,6 +67,7 @@ PIrateRF is designed for amateur radio experimentation and education - including
   - [SSTV Standard Frequencies](#sstv-standard-frequencies)
   - [FM Repeater Standard Splits](#fm-repeater-standard-splits)
 - [🔗 Core Dependencies](#-core-dependencies)
+- [☕ Sponsor](#-sponsor)
 - [📝 License](#-license)
 - [📋 Changelog](./CHANGELOG.md)
 - [TODO](#todo)
@@ -696,6 +697,10 @@ PIrateRF supports the full amateur radio spectrum. Here are common frequencies f
 - **[gorpitx](https://github.com/psyb0t/gorpitx)** - Go wrapper providing clean API for rpitx
 - **[servicepack](https://github.com/psyb0t/servicepack)** - Development and deployment framework
 - **[aichteeteapee](https://github.com/psyb0t/aichteeteapee)** - HTTP server with WebSocket support
+
+## ☕ Sponsor
+
+<a href="https://www.buymeacoffee.com/psyb0t"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me a Coffee" height="60" width="217"></a>
 
 ## 📝 License
 
