@@ -49,3 +49,14 @@
 .nav-list .nav-list-item .nav-list-link {
   font-size: 0.9412rem;
 }
+
+// The theme pins the sidebar header to one line's height, so a long site
+// title spilled over the top. Let the header grow with the wrapped title.
+.site-header {
+  height: auto;
+  max-height: none;
+}
+
+.site-title {
+  line-height: 1.3;
+}
