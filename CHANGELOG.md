@@ -2,6 +2,16 @@
 
 All notable changes to this pirate-ass project will be documented in this fuckin file.
 
+## Unreleased
+
+Documentation only. The app is unchanged.
+
+- The documentation is published at https://psyb0t.github.io/piraterf/,
+  built from `docs/`. It adds pages for configuration, the HTTP and WebSocket
+  API and security, and corrects several mode details against the code (FM
+  upload formats, SSTV output files, the IQ and FM timeout default, FT8 slots).
+  The README keeps the overview and links to it.
+
 ## v0.1.3 — 2026-08-01
 
 Pure CI plumbing — not a single line of the app changed, so the binary and the

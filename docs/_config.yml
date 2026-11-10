@@ -1,0 +1,51 @@
+title: PIrateRF - Software-Defined Radio Transmission Platform
+tagline: Raspberry Pi Zero W RF transmitter with a web UI
+description: PIrateRF turns a Raspberry Pi Zero W into a portable RF transmitter with its own WiFi access point and a browser UI for 12 modes, from FM with RDS to FT8 and SSTV.
+lang: en
+url: https://psyb0t.github.io
+baseurl: /piraterf
+repository: psyb0t/piraterf
+author: Ciprian Mandache
+
+remote_theme: just-the-docs/just-the-docs@v0.12.0
+color_scheme: mocha
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-relative-links
+  - jekyll-include-cache
+
+permalink: pretty
+
+relative_links:
+  enabled: true
+  collections: false
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+      seo:
+        type: TechArticle
+
+search:
+  heading_level: 3
+
+aux_links:
+  GitHub:
+    - https://github.com/psyb0t/piraterf
+aux_links_new_tab: true
+
+nav_external_links:
+  - title: Changelog
+    url: https://github.com/psyb0t/piraterf/blob/main/CHANGELOG.md
+
+gh_edit_link: true
+gh_edit_link_text: Edit this page on GitHub
+gh_edit_repository: https://github.com/psyb0t/piraterf
+gh_edit_branch: main
+gh_edit_source: docs
+gh_edit_view_mode: tree

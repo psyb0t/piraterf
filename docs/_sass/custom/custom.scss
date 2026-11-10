@@ -1,0 +1,51 @@
+// The theme sets table text with !important, so these need it too.
+.main-content td,
+.main-content th {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9412rem !important;
+  line-height: 1.55;
+  vertical-align: top;
+  min-width: 0;
+}
+
+.main-content code {
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  color: #cba6f7;
+}
+
+.main-content td code,
+.main-content th code {
+  font-size: 0.95em;
+}
+
+.main-content pre code,
+.main-content div.highlighter-rouge code {
+  font-size: 0.9412rem;
+  line-height: 1.6;
+  padding: 0;
+  color: inherit;
+}
+
+.main-content tbody tr:nth-child(even) td {
+  background-color: #181825;
+}
+
+.main-content h1 {
+  font-weight: 600;
+}
+
+.main-content h2,
+.main-content h3 {
+  margin-top: 2.2rem;
+}
+
+.main-content h4 {
+  text-transform: none;
+  font-size: 1rem !important;
+  letter-spacing: 0;
+}
+
+.nav-list .nav-list-item .nav-list-link {
+  font-size: 0.9412rem;
+}

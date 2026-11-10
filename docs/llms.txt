@@ -1,0 +1,15 @@
+---
+layout: null
+permalink: /llms.txt
+sitemap: false
+search_exclude: true
+nav_exclude: true
+---
+# PIrateRF - Software-Defined Radio Transmission Platform
+
+> {{ site.description }}
+
+{% assign pages = site.pages | where_exp: "item", "item.description" | where_exp: "item", "item.sitemap != false" | sort: "nav_order" -%}
+{% for item in pages -%}
+- [{{ item.title }}]({{ item.url | absolute_url }}): {{ item.description }}
+{% endfor -%}

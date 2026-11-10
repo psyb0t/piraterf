@@ -1,0 +1,26 @@
+// Dark scheme using the Catppuccin Mocha palette (MIT), https://catppuccin.com
+@import "./color_schemes/dark";
+
+$color-scheme: dark;
+
+$body-background-color: #1e1e2e;
+$sidebar-color: #181825;
+$body-heading-color: #e6e9f5;
+$body-text-color: #cdd6f4;
+$link-color: #89b4fa;
+$nav-child-link-color: #bac2de;
+$base-button-color: #313244;
+$btn-primary-color: #89b4fa;
+$code-background-color: #181825;
+$feedback-color: #181825;
+$table-background-color: #1e1e2e;
+$search-background-color: #181825;
+$search-result-preview-color: #bac2de;
+$border-color: #45475a;
+
+// The theme scales the whole page from these, so 17px body text also scales
+// spacing, navigation, and headings.
+$font-size-4: 1rem;
+$font-size-5: 1.0625rem;
+$content-line-height: 1.7;
+$content-width: 56rem;

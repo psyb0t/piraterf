@@ -4,11 +4,14 @@
 # Override framework variables (optional)
 MIN_TEST_COVERAGE := 70
 
+DOCS_SITE := .testing/docs-site
+JEKYLL_IMAGE := ghcr.io/actions/jekyll-build-pages:v1.0.13@sha256:6791ebfd912185ed59bfb5fb102664fa872496b79f87ff8b9cfba292a7345041
+
 # Include servicepack framework commands
 include Makefile.servicepack
 
 .PHONY: lint lint-fix tls pi-setup-deps pi-setup-ap pi-setup-branding \
-	pi-reboot ssh deploy uninstall install pi pi-image
+	pi-reboot ssh deploy uninstall install pi pi-image docs
 
 lint: ## Lint Go files
 	@echo ""
@@ -77,3 +80,16 @@ pi: ## Complete setup of the fkin' Pi
 
 pi-image: ## Clone and shrink the fucking Pi SD card images for chaos distribution
 	@./$(SCRIPTS_DIR)/make/pi_image.sh
+
+docs: ## Build the documentation site into .testing/docs-site
+	@mkdir -p "$(DOCS_SITE)"
+	@docker run --rm \
+		--user $$(id -u):$$(id -g) \
+		-e HOME=/tmp \
+		-e GITHUB_WORKSPACE=/work \
+		-e GITHUB_REPOSITORY=psyb0t/piraterf \
+		-e INPUT_SOURCE=docs \
+		-e INPUT_DESTINATION="$(DOCS_SITE)" \
+		-e INPUT_VERBOSE=false \
+		-v "$(CURDIR):/work" \
+		$(JEKYLL_IMAGE)
