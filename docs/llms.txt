@@ -5,7 +5,7 @@ sitemap: false
 search_exclude: true
 nav_exclude: true
 ---
-# PIrateRF - Software-Defined Radio Transmission Platform
+# PIrateRF
 
 > {{ site.description }}
 

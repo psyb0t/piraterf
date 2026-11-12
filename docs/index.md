@@ -7,7 +7,9 @@ seo:
   type: WebSite
 ---
 
-# PIrateRF - Software-Defined Radio Transmission Platform
+# PIrateRF
+
+**Software-Defined Radio Transmission Platform**
 
 PIrateRF turns a **Raspberry Pi Zero W** into a portable RF signal generator that spawns its own WiFi hotspot. You connect a phone or laptop to that hotspot, open the web UI and transmit anything from FM broadcasts with RDS to FT8, POCSAG pager messages, SSTV pictures and raw IQ replays.
 

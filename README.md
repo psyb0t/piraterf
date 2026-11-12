@@ -1,4 +1,6 @@
-# 🏴‍☠️ PIrateRF - Software-Defined Radio Transmission Platform
+# 🏴‍☠️ PIrateRF
+
+**Software-Defined Radio Transmission Platform**
 
 [![CI](https://github.com/psyb0t/piraterf/actions/workflows/pipeline.yml/badge.svg?branch=main)](https://github.com/psyb0t/piraterf/actions/workflows/pipeline.yml)
 [![version](https://raw.githubusercontent.com/psyb0t/piraterf/badges/version.svg)](https://github.com/psyb0t/piraterf/releases)

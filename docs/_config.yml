@@ -1,4 +1,5 @@
-title: PIrateRF - Software-Defined Radio Transmission Platform
+title: PIrateRF
+tagline: Software-Defined Radio Transmission Platform
 tagline: Raspberry Pi Zero W RF transmitter with a web UI
 description: PIrateRF turns a Raspberry Pi Zero W into a portable RF transmitter with its own WiFi access point and a browser UI for 12 modes, from FM with RDS to FT8 and SSTV.
 lang: en
